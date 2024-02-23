@@ -8,10 +8,33 @@ function adminQuizCreate(authUserId, name, description) {
     }
   }
   
+// Description
+// Given a particular quiz, permanently remove the quiz.
 
+function adminQuizRemove(authUserId, quizId) {
+    return {
+    }
+}
+  
 
-//stub for the adminQuizInfo
-//Get all of the relevant information about the current quiz.
+// Description
+// Provide a list of all quizzes that are owned by the currently logged in user.
+function adminQuizList(authUserId) {
+   return {
+        quizzes: [
+            {
+                quizId: 1,
+                name: 'My Quiz',
+            }
+        ]
+   }
+}
+  
+
+// Description
+// Get all of the relevant information about the current quiz.
+
+>>>>>>> src/quiz.js
 function adminQuizInfo (authUserId, quizId) {
     return {
         quizId: 1,
@@ -22,4 +45,7 @@ function adminQuizInfo (authUserId, quizId) {
     }
 }
 
+<<<<<<< src/quiz.js
 
+=======
+>>>>>>> src/quiz.js
