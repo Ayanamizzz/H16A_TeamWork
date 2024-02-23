@@ -1,4 +1,3 @@
-
 // Description:
 // Given basic details about a new quiz, create one for the logged in user.
 
@@ -34,7 +33,7 @@ function adminQuizList(authUserId) {
 // Description
 // Get all of the relevant information about the current quiz.
 
->>>>>>> src/quiz.js
+
 function adminQuizInfo (authUserId, quizId) {
     return {
         quizId: 1,
@@ -44,8 +43,3 @@ function adminQuizInfo (authUserId, quizId) {
         description: 'This is my quiz',
     }
 }
-
-<<<<<<< src/quiz.js
-
-=======
->>>>>>> src/quiz.js
