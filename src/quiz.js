@@ -11,3 +11,9 @@ function adminQuizInfo (authUserId, quizId) {
     }
 }
 
+//stub for the adminQuizNameUpdate
+//Update the name of the relevant quiz.
+function adminQuizNameUpdate(authUserId, quizId, name) {
+    return {}
+}
+
