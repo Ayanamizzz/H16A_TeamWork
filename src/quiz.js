@@ -1,3 +1,14 @@
+
+
+// Description
+// Given a particular quiz, permanently remove the quiz.
+
+function adminQuizRemove(authUserId, quizId) {
+    return {
+    }
+}
+  
+
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 function adminQuizList(authUserId) {
@@ -14,6 +25,7 @@ function adminQuizList(authUserId) {
 
 // Description
 // Get all of the relevant information about the current quiz.
+
 function adminQuizInfo (authUserId, quizId) {
     return {
         quizId: 1,
@@ -23,5 +35,4 @@ function adminQuizInfo (authUserId, quizId) {
         description: 'This is my quiz',
     }
 }
-
 
