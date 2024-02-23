@@ -11,6 +11,16 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
 
 
 //Description
+//Given details relating to a password change, update the password of a logged in user.
+
+function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
+    return {
+       
+    }
+}
+
+
+//Description
 //Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
 
 function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
@@ -47,5 +57,4 @@ function adminAuthLogin(email, passworld) {
         authUserId: 1,
     }
 }
-
 
