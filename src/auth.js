@@ -1,3 +1,4 @@
+
 // Description
 // Given a registered user's email and password returns their authUserId value.
 
@@ -6,3 +7,4 @@ function adminAuthLogin(email, passworld) {
         authUserId: 1,
     }
 }
+
