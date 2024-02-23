@@ -1,4 +1,17 @@
 
+// QuizList
+// Provide a list of all quizzes that are owned by the currently logged in user.
+function adminQuizList(authUserId) {
+    quizzes: [
+        {
+          quizId: 1,
+          name: 'My Quiz',
+        }
+    ]
+}
+  
+
+
 //stub for the adminQuizInfo
 //Get all of the relevant information about the current quiz.
 function adminQuizInfo (authUserId, quizId) {
@@ -10,4 +23,5 @@ function adminQuizInfo (authUserId, quizId) {
         description: 'This is my quiz',
     }
 }
+
 
