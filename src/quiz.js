@@ -130,7 +130,6 @@ function adminQuizCreate(authUserId, name, description) {
     const currentTime = Date.now();
 
     const newQuiz = {
-        // authUserId:
         quizId: Id,
         name: name,
         description: description,
