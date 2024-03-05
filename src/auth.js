@@ -3,9 +3,8 @@
 // authUserId value.
 
 function adminAuthRegister(email, password, nameFirst, nameLast) {
-    return {
-        authUserId: 1,
-    }
+
+    return id;
 }
 
 
@@ -15,9 +14,26 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
 // Description:
 // Given a registered user's email and password returns their authUserId value.
 
-function adminAuthLogin(email, passworld) {
+function adminAuthLogin(email, password) {
+    //接入数据 从数据库里提取data
+    let data = getData();
+    //判断邮箱是否重复
+    for (let i = 0; i < data.users.length; i++) {
+        if (data.users[i].email === email) {
+            if (data.users[i].password === password) {
+                return {
+                    authUserId: data.users[i].authUserId
+                }
+            } else {
+                return { 
+                    error: 'Password is not correct for the given email.' 
+                };
+            }
+        }
+    }
+    
     return {
-        authUserId: 1,
+        error: 'Email address does not exist.'
     }
 }
 
