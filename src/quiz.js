@@ -1,3 +1,5 @@
+import { getData, setData } from './dataStore';
+
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 
@@ -32,7 +34,24 @@ function adminQuizCreate(authUserId, name, description) {
 // Description
 // Given a particular quiz, permanently remove the quiz.
 
+/*
+Error checking:
+1. AuthUserId is not a valid user.
+2. Quiz ID does not refer to a valid quiz.
+3. Quiz ID does not refer to a quiz that this user owns.
+*/
+
 function adminQuizRemove(authUserId, quizId) {
+    // Get the dataStore.
+    const data = getData();
+
+
+
+
+
+
+
+
     return {
     }
 }
@@ -77,3 +96,4 @@ function adminQuizDescriptionUpdate (authUserId, quizId, description) {
     return {}
 }
 
+export { adminQuizRemove };
