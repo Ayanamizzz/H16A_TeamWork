@@ -34,6 +34,10 @@ function adminQuizCreate(authUserId, name, description) {
 // Description
 // Given a particular quiz, permanently remove the quiz.
 
+//  * @param {authUserId} UserId - for example, 1.
+//  * @param {quizId} quizId - for example, 1.
+//  * @returns {} .
+
 /*
 Error checking:
 1. AuthUserId is not a valid user.
@@ -44,6 +48,40 @@ Error checking:
 function adminQuizRemove(authUserId, quizId) {
     // Get the dataStore.
     const data = getData();
+
+    // AuthUserId is not a valid user:
+    // Set tracker check vaild authUserId.
+    let valid_authUserId = 0;
+
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            valid_authUserId = 1;
+        }
+    }
+
+    if (valid_authUserId === 0) {
+        // AuthUserId is not a valid user.
+        return {
+            error: 'AuthUserId is not a valid user'
+        }
+    }
+
+    // Quiz ID does not refer to a valid quiz:
+    // Set tracker check vaild quizId.
+    let valid_quizId = 0;
+
+    for (const quiz of data.quizzes) {
+        if (quizId === user.quizId) {
+            valid_quizId = 1;
+        }
+    }
+
+    if (valid_quizId === 0) {
+        // Quiz ID does not refer to a valid quiz.
+        return {
+            error: 'Quiz ID does not refer to a valid quiz'
+        }
+    } 
 
 
 
