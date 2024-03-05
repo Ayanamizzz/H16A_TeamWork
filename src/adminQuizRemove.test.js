@@ -56,14 +56,14 @@ describe('Tests for function adminQuizRmove', () => {
         const user2 = adminAuthRegister('majin666@gmail.com', 'ziwhidnimnw', 'Ma', 'Jin');
         const quiz2 = adminQuizCreate(user2.authUserId, 'Quiz1', 'The first quiz');
 
-        const result = adminQuizCreate(user1.authUserId, quiz2.quizId);
+        const result = adminQuizRmove(user1.authUserId, quiz2.quizId);
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
 
-    // Test successful adminQuizCreate:
+    // Test successful adminQuizRmove:
 
-    test('Test successful adminQuizCreate', () => {
+    test('Test successful adminQuizRmove', () => {
         // Test successful return value with vaild input.
 
         // Reset before test.
