@@ -1,3 +1,5 @@
+import { getData, setData } from './dataStore';
+
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 
@@ -200,3 +202,5 @@ function adminQuizDescriptionUpdate (authUserId, quizId, description) {
     return {}
 }
 
+
+export { adminQuizCreate };
