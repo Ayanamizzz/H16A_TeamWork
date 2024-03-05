@@ -125,13 +125,14 @@ function adminQuizCreate(authUserId, name, description) {
         // index of users:     0 1 (2)
         // previous id is:     0 1 ()
         // thus the new id will be  2
-        Id = (length * 1);
+        Id = length;
     }
 
     // Get the current time created.
     const currentTime = Date.now();
 
     const newQuiz = {
+        ownerId: authUserId,
         quizId: Id,
         name: name,
         description: description,
