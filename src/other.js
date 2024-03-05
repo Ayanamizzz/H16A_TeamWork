@@ -7,7 +7,7 @@ export function clear() {
     let data = getData();
     data.users = [];
     //添加更多数据库里的内容
-    //data.quizzes = [];
+    data.quizzes = [];
     
     setData(data);
     return {};
