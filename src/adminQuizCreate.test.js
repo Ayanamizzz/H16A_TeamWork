@@ -12,9 +12,8 @@ import { clear } from './other.js'
 import { adminQuizCreate } from './quiz.js'
 
 
-describe('courseCreate', () => {
-    // Tests for function adminQuizCreate \\
-
+describe('Tests for function adminQuizCreate', () => {
+    
     // Test invaild input:
 
     test('Test invalid input', () => {
