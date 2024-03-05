@@ -67,12 +67,14 @@ function adminQuizRemove(authUserId, quizId) {
     }
 
     // Quiz ID does not refer to a valid quiz:
-    // Set tracker check vaild quizId.
+    // Set tracker check vaild quizId and get the ownerId of this quiz.
     let valid_quizId = 0;
+    let check_ownerId = 0;
 
     for (const quiz of data.quizzes) {
-        if (quizId === user.quizId) {
+        if (quizId === quiz.quizId) {
             valid_quizId = 1;
+            check_ownerId = quiz.ownerId;
         }
     }
 
@@ -83,15 +85,27 @@ function adminQuizRemove(authUserId, quizId) {
         }
     } 
 
-
-
-
-
-
-
-
-    return {
+    // Quiz ID does not refer to a quiz that this user owns:
+    if (check_ownerId !== authUserId) {
+        // Quiz ID does not refer to a quiz that this user owns.
+        return {
+            error: 'Quiz ID does not refer to a quiz that this user owns'
+        }
     }
+
+    const quizReplace = {};
+
+    for (const quiz of data.quizzes) {
+        if (quizId === quiz.quizId) {
+           if (check_ownerId === authUserId) {
+            quiz = quizReplace;
+            data.quizzes.push(quiz);
+           }
+        
+        }
+    }
+
+    return {};
 }
   
 
