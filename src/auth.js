@@ -8,6 +8,16 @@ import { getData, setData } from './dataStore.js';
 //从npmjs.com/package/validator调用isEmail
 import isEmail from 'validator/lib/isEmail';
 
+/*
+ * @params {string} email
+ * @params {string} password
+ * @params {string} nameFirst
+ * $params {string} nameLast
+ * @returns {quizId} Id of quiz
+ * 
+ * 
+*/
+
 
 // Description:
 // Given a registered user's email and password returns their authUserId value.
