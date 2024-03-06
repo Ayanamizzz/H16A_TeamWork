@@ -10,11 +10,9 @@ import { clear } from './other.js'
 import { adminQuizCreate, adminQuizRmove } from './quiz.js'
 
 
-describe('Tests for function adminQuizRmove', () => {
+describe('Test invaild input for function adminQuizRmove', () => {
 
-    // Test invaild input:
-
-    test('Test invalid input', () => {
+    test('Test invalid authUserId', () => {
         // AuthUserId is not a valid user.
 
         // Reset before test.
@@ -29,7 +27,7 @@ describe('Tests for function adminQuizRmove', () => {
     });
 
 
-    test('Test invalid input', () => {
+    test('Test invalid quizId', () => {
         // Quiz ID does not refer to a valid quiz.
 
         // Reset before test.
@@ -43,7 +41,7 @@ describe('Tests for function adminQuizRmove', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
-    test('Test invalid input', () => {
+    test('Test invalid quizId', () => {
         // Quiz ID does not refer to a quiz that this user owns.
 
         // Reset before test.
@@ -60,8 +58,10 @@ describe('Tests for function adminQuizRmove', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
+});
 
-    // Test successful adminQuizRmove:
+
+describe('Test successful case for function adminQuizRmove', () => {
 
     test('Test successful adminQuizRmove', () => {
         // Test successful return value with vaild input.
@@ -76,5 +76,6 @@ describe('Tests for function adminQuizRmove', () => {
         const result = adminQuizRmove(user.authUserId, quiz.quizId);
         expect(result).toStrictEqual({ });
     });
+
 });
 
