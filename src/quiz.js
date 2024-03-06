@@ -24,7 +24,7 @@ function adminQuizList(authUserId) {
 /*
  * @params {autherUserId} UserId
  * @params {name} name of quiz
- * @params {description} description
+ * @params {description} description of quiz
  * @returns {quizId} Id of quiz
  * 
 */
