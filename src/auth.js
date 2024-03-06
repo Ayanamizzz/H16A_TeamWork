@@ -8,6 +8,16 @@ import { getData, setData } from './dataStore.js';
 //从npmjs.com/package/validator调用isEmail
 import isEmail from 'validator/lib/isEmail';
 
+/*
+ * @params {string} email
+ * @params {string} password
+ * @params {string} nameFirst
+ * $params {string} nameLast
+ * @returns {quizId} Id of quiz
+ * 
+ * 
+*/
+
 function adminAuthRegister(email, password, nameFirst, nameLast) {
     //提取数据到data
     let data = getData();
