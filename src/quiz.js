@@ -34,9 +34,12 @@ function adminQuizCreate(authUserId, name, description) {
 // Description
 // Given a particular quiz, permanently remove the quiz.
 
-//  * @param {authUserId} UserId - for example, 1.
-//  * @param {quizId} quizId - for example, 1.
-//  * @returns {} .
+/*
+ * @params {autherUserId} UserId
+ * @params {quizId} quizId
+ * @returns {} 
+ * 
+*/
 
 /*
 Error checking:
@@ -106,6 +109,9 @@ function adminQuizRemove(authUserId, quizId) {
         
         }
     }
+
+    // Update the data.
+    setData(data);
 
     return {};
 }
