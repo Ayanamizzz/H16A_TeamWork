@@ -14,7 +14,7 @@ import { adminQuizCreate } from './quiz.js'
 
 describe('Test invaild input for function adminQuizCreate', () => {
 
-    test('Test invalid input', () => {
+    test('Test invalid authUserId', () => {
         // AuthUserId is not a valid user.
 
         // Reset before test.
@@ -28,7 +28,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
     });
 
 
-    test('Test invalid input', () => {
+    test('Test invalid name', () => {
         // Name contains invalid characters（Valid characters are alphanumeric and spaces.）
 
         // Reset before test.
@@ -41,7 +41,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
     });
 
 
-    test('Test invalid input', () => {
+    test('Test invalid name', () => {
         // Name is either less than 3 characters long or more than 30 characters long.
         // This test will check name is less than 3 characters long.
 
@@ -54,7 +54,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
-    test('Test invalid input', () => {
+    test('Test invalid name', () => {
         // Name is either less than 3 characters long or more than 30 characters long.
         // This test will check name is more than 30 characters long.
 
@@ -67,7 +67,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
-    test('Test invalid input', () => {
+    test('Test invalid name', () => {
         // Name is already used by the current logged in user for another quiz.
 
         // Reset before test.
@@ -81,7 +81,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         expect(result2).toStrictEqual({ error: expect.any(String) });
     });
 
-    test('Test invalid input', () => {
+    test('Test invalid description', () => {
         // Description is more than 100 characters in length (note: empty strings are OK).
 
         // Reset before test.
