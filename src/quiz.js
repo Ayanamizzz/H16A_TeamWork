@@ -93,8 +93,10 @@ function adminQuizRemove(authUserId, quizId) {
         }
     }
 
+    // Create a empty quiz that replace the previous one
     const quizReplace = {};
 
+    // Find the quiz with given quizId, and replace it to empty.
     for (const quiz of data.quizzes) {
         if (quizId === quiz.quizId) {
            if (check_ownerId === authUserId) {
