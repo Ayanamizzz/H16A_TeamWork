@@ -37,7 +37,7 @@ function adminQuizList(authUserId) {
     // setData(data);
 
    return {
-        quizzes: []
+        quizzes: quizzes
    }
 }
 
