@@ -7,10 +7,10 @@ Error checking:
 
 import { adminAuthRegister } from './auth.js'
 import { clear } from './other.js'
-import { adminQuizCreate, adminQuizRmove } from './quiz.js'
+import { adminQuizCreate, adminQuizRemove } from './quiz.js'
 
 
-describe('Test invaild input for function adminQuizRmove', () => {
+describe('Test invaild input for function adminQuizRemove', () => {
 
     test('Test invalid authUserId', () => {
         // AuthUserId is not a valid user.
@@ -22,7 +22,7 @@ describe('Test invaild input for function adminQuizRmove', () => {
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const quiz = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
 
-        const result = adminQuizRmove(user.authUserId + 1, quiz.quizId);
+        const result = adminQuizRemove(user.authUserId + 1, quiz.quizId);
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
@@ -37,7 +37,7 @@ describe('Test invaild input for function adminQuizRmove', () => {
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const quiz = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
 
-        const result = adminQuizRmove(user.authUserId, quiz.quizId + 1);
+        const result = adminQuizRemove(user.authUserId, quiz.quizId + 1);
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
@@ -54,7 +54,7 @@ describe('Test invaild input for function adminQuizRmove', () => {
         const user2 = adminAuthRegister('majin666@gmail.com', 'ziwhidnimnw', 'Ma', 'Jin');
         const quiz2 = adminQuizCreate(user2.authUserId, 'Quiz1', 'The first quiz');
 
-        const result = adminQuizRmove(user1.authUserId, quiz2.quizId);
+        const result = adminQuizRemove(user1.authUserId, quiz2.quizId);
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
@@ -73,7 +73,7 @@ describe('Test successful case for function adminQuizRmove', () => {
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const quiz = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
 
-        const result = adminQuizRmove(user.authUserId, quiz.quizId);
+        const result = adminQuizRemove(user.authUserId, quiz.quizId);
         expect(result).toStrictEqual({ });
     });
 
