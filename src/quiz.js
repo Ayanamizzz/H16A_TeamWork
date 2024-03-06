@@ -21,10 +21,13 @@ function adminQuizList(authUserId) {
 // Description:
 // Given basic details about a new quiz, create one for the logged in user.
 
-//  * @param {authUserId} UserId - for example, 1.
-//  * @param {name} name - for example, Jack Smith.
-//  * @param {adescription} description - for example, 'This is my quiz'.
-//  * @returns {quizId} Id of quiz.
+/*
+ * @params {autherUserId} UserId
+ * @params {name} name of quiz
+ * @params {description} description
+ * @returns {quizId} Id of quiz
+ * 
+*/
 
 /*
 Error checking:
