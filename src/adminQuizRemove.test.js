@@ -69,7 +69,7 @@ describe('Tests for function adminQuizRmove', () => {
         // Reset before test.
         clear();
 
-        // Create quiz that return quizId if no error
+        // Create quiz that return null if no error
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const quiz = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
 
