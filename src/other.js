@@ -1,5 +1,11 @@
 // Description:
 // Reset the state of the application back to the start.
+
+/*
+ * @params {autherUserId} UserId
+ * @returns {quizId} Id of quiz
+ * 
+*/
 import { getData, setData } from "./dataStore.js";
 
 
