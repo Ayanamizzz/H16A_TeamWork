@@ -12,9 +12,7 @@ import { clear } from './other.js'
 import { adminQuizCreate } from './quiz.js'
 
 
-describe('Tests for function adminQuizCreate', () => {
-    
-    // Test invaild input:
+describe('Test invaild input for function adminQuizCreate', () => {
 
     test('Test invalid input', () => {
         // AuthUserId is not a valid user.
@@ -95,9 +93,10 @@ describe('Tests for function adminQuizCreate', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
+});
 
 
-    // Test successful adminQuizCreate:
+describe('Test successful case for function adminQuizCreate', () => {
 
     test('Test successful adminQuizCreate', () => {
         // Test successful return value with vaild input.
@@ -110,5 +109,5 @@ describe('Tests for function adminQuizCreate', () => {
         const result = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
         expect(result).toStrictEqual({ quizId: expect.any(Number) });
     });
-});
 
+});
