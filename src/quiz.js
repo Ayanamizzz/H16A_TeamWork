@@ -1,14 +1,43 @@
+import { getData, setData } from './dataStore';
+
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 
+/*
+ * @params {autherUserId} UserId
+ * @returns {quizzes[]} array of object for quizzes list
+ * 
+*/
+
+/*
+Error checking:
+1. AuthUserId is not a valid user.
+*/
+
 function adminQuizList(authUserId) {
+    // Get the dataStore.
+    const data = getData();
+
+    // Create an empty array to contains the list of quizzes that sare owned 
+    // by the currently logged in user.
+    const quizzes = [];
+
+    for (const quiz of data.quizzes) {
+        if (authUserId === quiz.ownerId) {
+            const quizAdd = {
+                quizId: quiz.quizId,
+                name: quiz.name,
+            };
+            quizzes.push(quizAdd);
+        }
+    }
+
+    // Just list all the quizzes, no need to setData.
+    // // Update the data.
+    // setData(data);
+
    return {
-        quizzes: [
-            {
-                quizId: 1,
-                name: 'My Quiz',
-            }
-        ]
+        quizzes: []
    }
 }
 
@@ -77,3 +106,5 @@ function adminQuizDescriptionUpdate (authUserId, quizId, description) {
     return {}
 }
 
+
+export { adminQuizList };
