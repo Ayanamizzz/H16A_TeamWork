@@ -8,11 +8,9 @@ import { clear } from './other.js'
 import { adminQuizCreate, adminQuizList} from './quiz.js'
 
 
-describe('Tests for function adminQuizList', () => {
+describe('Test invalid input for function adminQuizList', () => {
 
-    // Test invaild input:
-
-    test('Test invalid input', () => {
+    test('Test invalid authUserId', () => {
         // AuthUserId is not a valid user.
 
         // Reset before test.
@@ -26,8 +24,10 @@ describe('Tests for function adminQuizList', () => {
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
+});
 
-    // Test successful adminQuizList:
+
+describe('Test successful case for function adminQuizList', () => {
 
     test('Test successful adminQuizList', () => {
         // Test successful return value with vaild input.
@@ -54,5 +54,6 @@ describe('Tests for function adminQuizList', () => {
             ]
         });
     });
+    
 });
 
