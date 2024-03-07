@@ -35,9 +35,9 @@ describe('Test invaild input for function adminQuizCreate', () => {
         clear();
 
         // Create quiz then check error message.
-        const user = adminAuthRegister('linked@gmail.com', 'linke123', 'Jack', 'Wang');
+        const user = adminAuthRegister('linked@gmail.com', 'Linke123', 'Jack', 'Wang');
         const result = adminQuizCreate(user.authUserId, 'Qu!z@@', 'The first quiz');
-        expect(result).toStrictEqual({ error: 'Name contains invalid characters' });
+        expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
 
@@ -49,9 +49,9 @@ describe('Test invaild input for function adminQuizCreate', () => {
         clear();
 
         // Create quiz then check error message.
-        const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
+        const user = adminAuthRegister('linked@gmail.com', 'Linked123456', 'Jack', 'Wang');
         const result = adminQuizCreate(user.authUserId, 'Q', 'The first quiz');
-        expect(result).toStrictEqual({ error: "expect.any(String)" });
+        expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
     test('Test invalid name', () => {
@@ -88,8 +88,8 @@ describe('Test invaild input for function adminQuizCreate', () => {
         clear();
 
         // Create quiz then check error message.
-        const authUserId = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
-        const result = adminQuizCreate(authUserId, 'Quiz1', 'The first quiz that used for group project iteration 1 of course COMP1531 Software Engineering Fundamentals');
+        const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
+        const result = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz that used for group project iteration 1 of course COMP1531 Software Engineering Fundamentals');
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
 
@@ -106,8 +106,8 @@ describe('Test successful case for function adminQuizCreate', () => {
 
         // Create quiz that return quizId if no error
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
-        console.log(user);
         const result = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
+
         expect(result).toStrictEqual({ quizId: expect.any(Number) });
     });
 

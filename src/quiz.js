@@ -1,23 +1,5 @@
 import { getData, setData } from './dataStore';
 
-// Description
-// Provide a list of all quizzes that are owned by the currently logged in user.
-
-function adminQuizList(authUserId) {
-   return {
-        quizzes: [
-            {
-                quizId: 1,
-                name: 'My Quiz',
-            }
-        ]
-   }
-}
-
-
-
-
-
 // Description:
 // Given basic details about a new quiz, create one for the logged in user.
 
@@ -59,23 +41,15 @@ function adminQuizCreate(authUserId, name, description) {
         }
     }
 
-    // Name contains invalid characters:
-    // Set tracker check vaild name.
-    let valid_name = 0;
 
-    // Check name only contains alphanumeric(characters and numbers) and spaces.
-    for(const each of name) {
-        if (('A' <= each <= 'Z'|| 'a' <= each <= 'z') && ('0' <= each <= '9') && each === '') {
-            valid_name = 1;
-        }
-    }
+    const nameFormat = /^[a-zA-Z0-9\s]*$/;
 
-    if (valid_name === 0) {
-        // Name contains invalid characters. 
+    if (nameFormat.test(name) !== true) {
         return {
-            error: 'Name contains invalid characters'
-        }
+          error: 'Name contains invalid characters'
+        };
     }
+    
 
     // Name is either less than 3 characters long or more than 30 characters long:
     if (name.length < 3) {
@@ -116,17 +90,17 @@ function adminQuizCreate(authUserId, name, description) {
     let Id = 0;
 
     // Set unique Id.
-    let length = dataStore.users.length;
+    let length = data.quizzes.length;
 
     if (length === 0) {
-        // empty users.
+        // empty quizzes.
         Id = 0;
         
     } else {
-        // users is not empty.
+        // quiz is not empty.
         // e.g. length = 2
-        // index of users:     0 1 (2)
-        // previous id is:     0 1 ()
+        // index of quiz:     0 1 (2)
+        // previous id is:    0 1 ()
         // thus the new id will be  2
         Id = length;
     }
@@ -152,59 +126,5 @@ function adminQuizCreate(authUserId, name, description) {
         quizId: Id
     };
 }
-
-  
-
-
-
-
-// Description
-// Given a particular quiz, permanently remove the quiz.
-
-function adminQuizRemove(authUserId, quizId) {
-    return {
-    }
-}
-  
-
-
-
-
-// Description:
-// Get all of the relevant information about the current quiz.
-
-function adminQuizInfo (authUserId, quizId) {
-    return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-    }
-}
-
-
-
-
-
-
-// Description:
-// Update the name of the relevant quiz.
-
-function adminQuizNameUpdate(authUserId, quizId, name) {
-    return {}
-}
-
-
-
-
-
-// Description:
-// Update the description of the relevant quiz.
-
-function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-    return {}
-}
-
 
 export { adminQuizCreate };
