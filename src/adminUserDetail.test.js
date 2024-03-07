@@ -1,5 +1,4 @@
-import { adminUserDetails } from './auth.js';
-import { adminAuthRegister } from './auth.js';
+import { adminUserDetails, adminAuthRegister } from './auth.js';
 import { clear } from './other.js';
 // Test for adminUserDetail
 
