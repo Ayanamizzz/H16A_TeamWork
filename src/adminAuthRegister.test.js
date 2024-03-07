@@ -169,15 +169,15 @@ describe("adminAuthRegister", () => {
 
 
 describe("Successful check", () => {
-        //check is that return id
-        test("Successful registration of a new user", () => {
-            const response = adminAuthRegister(
-                "newuser@example.com",
-                "StrongPassword123",
-                "John",
-                "Doe"
-            );
-            expect(response).toStrictEqual({authUserId: expect.any(Number)}); // Check if authUserId attribute is returned
-        });
+    //check is that return id
+    test("Successful registration of a new user", () => {
+        const response = adminAuthRegister(
+            "newuser@example.com",
+            "StrongPassword123",
+            "John",
+            "Doe"
+        );
+        expect(response).toStrictEqual({authUserId: expect.any(Number)}); // Check if authUserId attribute is returned
+    });
     
 })
