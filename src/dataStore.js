@@ -2,7 +2,6 @@
 let data = {
   users:[],
   quizzes:[],
-  //这里添加你所需要的一切
 };
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
