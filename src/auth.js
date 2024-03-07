@@ -59,7 +59,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     };
 
     for (let i = 0; i < nameFirst.length; i++) {
-        //charCodeAt 可以得到unicode
+        //charCodeAt can get unicode
         let letter = nameFirst.charCodeAt(i);
         if (letter > 122 || (letter < 65 && letter !=32 && letter != 45 && letter != 39)) {
             return {
