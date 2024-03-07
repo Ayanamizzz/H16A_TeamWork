@@ -1,3 +1,6 @@
+import { getData, setData } from './dataStore.js';
+import { adminAuthLogin } from './auth.js';
+import { clear } from './others.js';
 // Description: 
 // Register a user with an email, password, and names, then returns their 
 // authUserId value.
@@ -30,17 +33,43 @@ function adminAuthLogin(email, passworld) {
 // concatenated with a single space between them.
 
 function adminUserDetails(authUserId) {
-    return {
-        user:
-        {
-            userId: 1,
-            name: 'Hayden Smith',
-            email: 'hayden.smith@unsw.edu.au',
-            numSuccessfulLogins: 3,
-            numFailedPasswordsSinceLastLogin: 1,
+    let data = getData();
+    // check whether the authUserId is a valid user
+    for (let i = 0; i < data.users.length; i++) {
+
+        if (data.users[i].authUserId === authUserId) {
+            name = data.users[i].nameFirst + data.users[i].nameLast;
+            email = data.users[i].email;
+
+            // Checking for the number of successful login and number wrong password since last successful login
+            const result = adminAuthLogin(email, password);
+            let numFailedPasswordsSinceLastLogin = 0;
+            let numSuccessfulLogins = 1;
+            if (result === authUserId) {
+                numSuccessfulLogins++;
+                numFailedPasswordsSinceLastLogin = 0;
+            } else if (result === 'error') {
+                numFailedPasswordsSinceLastLogin++;
+            }
+            return {
+                user:
+                {
+                    userId: authUserId,
+                    name: name,
+                    email: email,
+                    numSuccessfulLogins: numSuccessfulLogins,
+                    numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin,
+                }
+
+            };
         }
+        return {
+            error: 'AuthUserId is not a valid user.'
+        }
+
     }
 }
+
 
 
 
@@ -71,5 +100,4 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
 
 
 
-
-
+export { adminUserDetails };
