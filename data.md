@@ -3,7 +3,7 @@ let data = {
     // TODO: insert your data structure that contains 
     // users + quizzes here
 
-    //用户添加在这
+
     user: [
         {
             email: '1010284295@qq.com',
@@ -14,7 +14,7 @@ let data = {
             authUserId: 5437798,
         },
     ],
-    //quiz添加在这
+    //quiz added by here
     quizes: [
         {
             quizId: 5,
