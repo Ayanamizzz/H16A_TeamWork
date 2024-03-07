@@ -35,9 +35,9 @@ describe('Test invaild input for function adminQuizCreate', () => {
         clear();
 
         // Create quiz then check error message.
-        const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
+        const user = adminAuthRegister('linked@gmail.com', 'linke123', 'Jack', 'Wang');
         const result = adminQuizCreate(user.authUserId, 'Qu!z@@', 'The first quiz');
-        expect(result).toStrictEqual({ error: expect.any(String) });
+        expect(result).toStrictEqual({ error: 'Name contains invalid characters' });
     });
 
 
@@ -51,7 +51,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         // Create quiz then check error message.
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const result = adminQuizCreate(user.authUserId, 'Q', 'The first quiz');
-        expect(result).toStrictEqual({ error: expect.any(String) });
+        expect(result).toStrictEqual({ error: "expect.any(String)" });
     });
 
     test('Test invalid name', () => {
@@ -106,6 +106,7 @@ describe('Test successful case for function adminQuizCreate', () => {
 
         // Create quiz that return quizId if no error
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
+        console.log(user);
         const result = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
         expect(result).toStrictEqual({ quizId: expect.any(Number) });
     });
