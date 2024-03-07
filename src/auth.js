@@ -101,7 +101,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     let isLetter = 0;
     let isNumber = 0;
 
-    for (let i = 0; i < password.lengthl; i++) {
+    for (let i = 0; i < password.length; i++) {
         const letter = password.charCodeAt(i);
         //A - Z的ascii的范围是65-90
         //a - z的ascii的范围是97-122
@@ -118,15 +118,15 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
-    let new_id = 1;
-    const find_ids = dataStore.users.map((user) => user.userId);
-    //用has查找现在Id
-    //即便是用户删除了 导致id出现中断可以产生唯一id
-    //每次循环查找数组确保id是否存在
-    //has -> include
-    while (find_ids.has(new_id)) {
-        new_id++;
+    let new_id = 0;
+    const length = data.users.length;
+
+    if (length === 0) {
+        new_id = 0;
+    } else {
+        new_id = length;
     }
+
 
     data.users.push({
         email: email,
