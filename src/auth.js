@@ -11,9 +11,7 @@ import isEmail from 'validator/lib/isEmail';
 /*
  * @params {string} email
  * @params {string} password
- * @params {string} nameFirst
- * $params {string} nameLast
- * @returns {quizId} Id of quiz
+ * @returns {authuserId} Id of user
  * 
  * 
 */
