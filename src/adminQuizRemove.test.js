@@ -51,8 +51,8 @@ describe('Test invaild input for function adminQuizRemove', () => {
         const user1 = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
         const quiz1 = adminQuizCreate(user1.authUserId, 'Quiz1', 'The first quiz');
 
-        const user2 = adminAuthRegister('majin666@gmail.com', 'ziwhidnimnw', 'Ma', 'Jin');
-        const quiz2 = adminQuizCreate(user2.authUserId, 'Quiz1', 'The first quiz');
+        const user2 = adminAuthRegister('majin666@gmail.com', 'Linked12256', 'Ma', 'Jin');
+        const quiz2 = adminQuizCreate(user2.authUserId, 'Quiz2', 'The second quiz');
 
         const result = adminQuizRemove(user1.authUserId, quiz2.quizId);
         expect(result).toStrictEqual({ error: expect.any(String) });

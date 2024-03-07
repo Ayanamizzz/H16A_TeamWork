@@ -1,145 +1,6 @@
 import { getData, setData } from './dataStore';
 
 // Description
-// Provide a list of all quizzes that are owned by the currently logged in user.
-
-function adminQuizList(authUserId) {
-   return {
-        quizzes: [
-            {
-                quizId: 1,
-                name: 'My Quiz',
-            }
-        ]
-   }
-}
-
-
-
-
-
-function adminQuizCreate(authUserId, name, description) {
-    // Get the dataStore.
-    const data = getData();
-
-    // AuthUserId is not a valid user:
-    // Set tracker check vaild authUserId.
-    let valid_authUserId = 0;
-
-    for (const user of data.users) {
-        if (authUserId === user.authUserId) {
-            valid_authUserId = 1;
-        }
-    } 
-
-    if (valid_authUserId === 0) {
-        // AuthUserId is not a valid user.
-        return {
-            error: 'AuthUserId is not a valid user'
-        }
-    }
-
-    // Name contains invalid characters:
-    // Set tracker check vaild name.
-    let valid_name = 0;
-
-    // Check name only contains alphanumeric(characters and numbers) and spaces.
-    for(const each of name) {
-        if (('A' <= each <= 'Z'|| 'a' <= each <= 'z') && ('0' <= each <= '9') && each === '') {
-            valid_name = 1;
-        }
-    }
-
-    if (valid_name === 0) {
-        // Name contains invalid characters. 
-        return {
-            error: 'Name contains invalid characters'
-        }
-    }
-
-    // Name is either less than 3 characters long or more than 30 characters long:
-    if (name.length < 3) {
-        // Name is less than 3 characters long.
-        return {
-            error: 'Name is less than 3 characters long'
-        }
-    }
-
-    if (name.length > 30) {
-        // Name is more than 30 characters long.
-        return {
-            error: 'Name is more than 30 characters long'
-        }
-    }
-
-    // Name is already used by the current logged in user for another quiz:
-    for (const quiz of data.quizzes) {
-        if (name === quiz.name) {
-            // Name is already used by the current logged in user for another quiz. 
-            return {
-                error: 'Name is already used by the current logged in user for another quiz'
-            }    
-        }
-
-    }
-
-    // Description is more than 100 characters in length (note: empty strings are OK):
-    if (description.length > 100) {
-        // Description is more than 100 characters in length.
-        return {
-            error: 'Description is more than 100 characters in length'
-        }         
-    }
-
-    // After error checking, create the new quiz with updated quizId:
-    // Set the quizId start from 1.
-    let Id = 0;
-
-    // Set unique Id.
-    let length = dataStore.users.length;
-
-    if (length === 0) {
-        // empty users.
-        Id = 0;
-        
-    } else {
-        // users is not empty.
-        // e.g. length = 2
-        // index of users:     0 1 (2)
-        // previous id is:     0 1 ()
-        // thus the new id will be  2
-        Id = length;
-    }
-
-    // Get the current time created.
-    const currentTime = Date.now();
-
-    const newQuiz = {
-        ownerId: authUserId,
-        quizId: Id,
-        name: name,
-        description: description,
-        timeCreated: currentTime,
-    };
-
-    // Store the info of new quiz.
-    data.quizzes.push(newQuiz);
-
-    // Update the data.
-    setData(data);
-
-    return {
-        quizId: Id
-    };
-}
-
-
-  
-
-
-
-
-// Description
 // Given a particular quiz, permanently remove the quiz.
 
 /*
@@ -177,41 +38,43 @@ function adminQuizRemove(authUserId, quizId) {
         }
     }
 
+
     // Quiz ID does not refer to a valid quiz:
-    // Set tracker check vaild quizId and get the ownerId of this quiz.
-    let valid_quizId = 0;
-    let check_ownerId = 0;
+    // let quizReplace be null.
+    let quizReplace = null;
 
     for (const quiz of data.quizzes) {
         if (quizId === quiz.quizId) {
-            valid_quizId = 1;
-            check_ownerId = quiz.ownerId;
+            // copy the quiz to quizReplace.
+            quizReplace = quiz;
+            break; 
         }
     }
 
-    if (valid_quizId === 0) {
-        // Quiz ID does not refer to a valid quiz.
+    if (quizReplace === null) {
+        // quizId does not refer to a valid quiz.
         return {
             error: 'Quiz ID does not refer to a valid quiz'
-        }
-    } 
+        }      
+    }
+
 
     // Quiz ID does not refer to a quiz that this user owns:
-    if (check_ownerId !== authUserId) {
+    if (quizReplace.ownerId !== authUserId) {
+        // quizId refer to a valid quiz.
         // Quiz ID does not refer to a quiz that this user owns.
         return {
             error: 'Quiz ID does not refer to a quiz that this user owns'
         }
     }
 
-    // Create a empty quiz that replace the previous one
-    const quizReplace = null;
-
+    // Remove the quiz that this user owns:
     // Find the quiz with given quizId, and replace it to empty.
-    for (const quiz of data.quizzes) {
+    for (let quiz of data.quizzes) {
         if (quizId === quiz.quizId) {
-           if (check_ownerId === authUserId) {
-            quiz = quizReplace;
+           if (authUserId === quiz.ownerId) {
+            // remove this quiz.
+            quiz = null;
            }
         
         }
@@ -222,45 +85,5 @@ function adminQuizRemove(authUserId, quizId) {
 
     return {};
 }
-  
 
-
-
-
-// Description:
-// Get all of the relevant information about the current quiz.
-
-function adminQuizInfo (authUserId, quizId) {
-    return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-    }
-}
-
-
-
-
-
-
-// Description:
-// Update the name of the relevant quiz.
-
-function adminQuizNameUpdate(authUserId, quizId, name) {
-    return {}
-}
-
-
-
-
-
-// Description:
-// Update the description of the relevant quiz.
-
-function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-    return {}
-}
-
-export { adminQuizRemove, adminQuizCreate };
+export { adminQuizRemove };
