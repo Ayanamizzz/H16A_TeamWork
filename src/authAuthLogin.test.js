@@ -32,6 +32,11 @@ describe("adminAuthLogin", () => {
         );
     });
 
+
+});
+
+describe("Successful check", () => {
+    // successful to check Password
     test("Success: Password is correct.", () => {
         adminAuthRegister(
             "sby1010284295@gmail.com",
@@ -44,4 +49,4 @@ describe("adminAuthLogin", () => {
     });
 
 
-});
+})
