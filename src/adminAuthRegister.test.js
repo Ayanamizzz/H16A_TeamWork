@@ -40,7 +40,7 @@ describe("adminAuthRegister", () => {
             "John",
             "Doe"
         );
-        expect(response).toStrictEqual(ERROR); // 检查是否返回了authUserId属性
+        expect(response).toStrictEqual({authUserId: expect.any(Number)}); // 检查是否返回了authUserId属性
     });
 
     //email格式不对
