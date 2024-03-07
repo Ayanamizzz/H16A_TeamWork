@@ -1,15 +1,16 @@
 import { getData, setData } from './dataStore.js';
-
 import { clear } from './other.js';
 // Description: 
 // Register a user with an email, password, and names, then returns their 
 // authUserId value.
+
 
 function adminAuthRegister(email, password, nameFirst, nameLast) {
     return {
         authUserId: 1,
     }
 }
+
 
 
 
@@ -43,8 +44,8 @@ function adminUserDetails(authUserId) {
 
             // Checking for the number of successful login and number wrong password since last successful login
             const result = adminAuthLogin(email, password);
-            let numFailedPasswordsSinceLastLogin = 0;
-            let numSuccessfulLogins = 1;
+            const numFailedPasswordsSinceLastLogin = 0;
+            const numSuccessfulLogins = 1;
             if (result === authUserId) {
                 numSuccessfulLogins++;
                 numFailedPasswordsSinceLastLogin = 0;
