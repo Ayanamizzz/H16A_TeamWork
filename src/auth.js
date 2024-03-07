@@ -1,5 +1,5 @@
 import { getData, setData } from './dataStore.js';
-import { adminAuthLogin } from './auth.js';
+
 import { clear } from './other.js';
 // Description: 
 // Register a user with an email, password, and names, then returns their 
