@@ -1,6 +1,6 @@
 import { adminAuthRegister } from './auth.js';
 import { adminUserDetailsUpdate } from './auth.js'
-import { clear } from './others.js';
+import { clear } from './other.js';
 
 // Test for successful adminUserDetailsUpdate
 test('Test successful adminUserDetailsUpdate', () => {
