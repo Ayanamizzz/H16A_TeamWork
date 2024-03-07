@@ -4,10 +4,10 @@ import { clear } from "./other.js";
 const ERROR = { error: expect.any(String) };
 
 describe("adminAuthRegister", () => {
-    
+
     //Email Register Test//
     test("Error: Email address is used by another user.", () => {
-        //创建一个user
+        //create a new user
         adminAuthRegister(
             "sby1010284295@gmail.com",
             "wind4ever233",
@@ -27,7 +27,6 @@ describe("adminAuthRegister", () => {
     });
     //when another people used this email
 
-    //
 
     //check is that return id
     test("Successful registration of a new user", () => {
@@ -37,10 +36,22 @@ describe("adminAuthRegister", () => {
             "John",
             "Doe"
         );
-        expect(response).toStrictEqual({authUserId: expect.any(Number)}); // 检查是否返回了authUserId属性
+        expect(response).toStrictEqual({authUserId: expect.any(Number)}); // Check if authUserId attribute is returned
     });
 
-    //email格式不对
+    //check is password letter or number
+
+    test("check is password letter or number", () => {
+        const response = adminAuthRegister(
+            "linked@gmail.com",
+            "Linked123456",
+            "Jack",
+            "Wang"
+        );
+        expect(response).toStrictEqual({authUserId: expect.any(Number)});
+    });
+
+    //email format is not right
     test("Error: Email does not satify.", () => {
         const response = adminAuthRegister(
             "invalidemail",
@@ -51,30 +62,30 @@ describe("adminAuthRegister", () => {
         expect(response).toStrictEqual(ERROR);
     });
 
-    //姓有非法字符
+    //if firstname contains illegal characters
     test("Error: First name invalid", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
             "StrongPassword123",
-            "J$", // 非法字符
+            "J$", // illegal characters
             "Doe"
         );
         expect(response).toStrictEqual(ERROR);
     });
 
-    //名有非法字符
+    // if lastname contains illegal characters
     test("Error: Last name invalid", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
             "StrongPassword123",
             "John",
-            "D@e" // 非法字符
+            "D@e" // illegal characters
         );
         expect(response).toStrictEqual(ERROR);
     });
 
 
-    //姓太短
+    //first name is too short
     test("Error: First name is less than 2 characters", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
@@ -85,7 +96,7 @@ describe("adminAuthRegister", () => {
         expect(response).toStrictEqual(ERROR);
     });
 
-    //名太短
+    //last name is too short
     test("Error: Last is less than 2 characters", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
@@ -97,7 +108,7 @@ describe("adminAuthRegister", () => {
     });
 
 
-    //姓太长
+    //fitst name is too long
     test("Error: First name is more than 20 characters", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
@@ -108,7 +119,7 @@ describe("adminAuthRegister", () => {
         expect(response).toStrictEqual(ERROR);
     });
 
-    //名太长
+    //last name is too long
     test("Error: Last name is more than 20 characters", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
@@ -121,21 +132,18 @@ describe("adminAuthRegister", () => {
 
 
 
-
-
-
-    //密码太短
+    //password is too weak
     test("Error: Password is less than 8 characters", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",
-            "weak1", // 密码太短
+            "weak1", // password is too short..
             "John",
             "Doe"
         );
         expect(response).toMatchObject(ERROR);
     });
 
-    //密码全是数字
+    //password is all num
     test("Error: Password does not contain at least one letter", () => {
         const response = adminAuthRegister(
             "johndoe@example.com",

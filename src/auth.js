@@ -2,10 +2,10 @@
 // Register a user with an email, password, and names, then returns their 
 // authUserId value.
 
-//从dataStore.js里提取function来获得数据
+//Extract function from dataStore.js to obtain data
 import { getData, setData } from './dataStore.js';
 
-//从npmjs.com/package/validator调用isEmail
+//from npmjs.com/package/validator to obtain isEmail
 import isEmail from 'validator/lib/isEmail';
 
 /*
@@ -19,7 +19,7 @@ import isEmail from 'validator/lib/isEmail';
 */
 
 function adminAuthRegister(email, password, nameFirst, nameLast) {
-    //提取数据到data
+    //getdata to data. and i will use data to do the next step
     let data = getData();
     //If allow_display_name is set to true, the validator will also match Display Name <email-address>. 
     //If require_display_name is set to true, the validator will reject strings without the format Display Name <email-address>. 
@@ -43,7 +43,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         host_blacklist: [] 
     }
     
-    //查询所有user的email 是否是 查询 email
+    //Query all user's email whether it is query email
     for (let i = 0; i < data.users.length; i++) {
         if (data.users[i].email === email) {
             return {
@@ -51,7 +51,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
             }
         }
     }
-    //调用网站的isEmail function来判断是不是邮箱
+    //Call the isEmail function of the website to determine whether it is an email address
     if (isEmail(email, options) === false) {
         return {
             error: 'Email does not satisfy',
@@ -69,7 +69,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     }
 
     for (let i = 0; i < nameLast.length; i++) {
-        //charCodeAt 可以得到unicode
+        //charCodeAt i can get unicode to judge the letter.
         let letter = nameLast.charCodeAt(i);
         if (letter > 122 || (letter < 65 && letter !=32 && letter != 45 && letter != 39)) {
             return {
@@ -78,6 +78,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         } 
     }
 
+    //Name must be at least two characters long， Maximum 20 characters
 
     if (nameFirst.length < 2 || nameFirst.length > 20) {
         return {
@@ -85,6 +86,7 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
+    //Name must be at least two characters long， Maximum 20 characters
     if (nameLast.length < 2 || nameLast.length > 20) {
         return {
             error: 'NameLast is less than 2 characters or more than 20 characters.',
@@ -98,13 +100,15 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
+    // make a tracker to decide the letter and number
     let isLetter = 0;
     let isNumber = 0;
 
+    //for loop length
     for (let i = 0; i < password.length; i++) {
         const letter = password.charCodeAt(i);
-        //A - Z的ascii的范围是65-90
-        //a - z的ascii的范围是97-122
+        //The range of A-Z ascii is 65-90
+        //The range of ascii for a - z is 97-122
         if ((letter >= 65 && letter <= 90) || (letter >= 97 && letter <= 122)) {
             isLetter = 1;
         } else if (letter >= 48 && letter <= 57) {
@@ -118,16 +122,22 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
+    //create a new id from 0
+    //and use length to decide how many people we have, and how many id we take
+
     let new_id = 0;
     const length = data.users.length;
 
+    // if length is 0, it's means is this is the 1st people we register
     if (length === 0) {
         new_id = 0;
     } else {
+        // finlly we can get a id for a people
         new_id = length;
     }
 
 
+    //push users'data to dataStore(and setData to data)
     data.users.push({
         email: email,
         password: password,
@@ -135,9 +145,9 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         nameLast: nameLast,
         authUserId: new_id,
     })
-    //用set来存储现在有的用户id 
+    //Use set to store current user IDs
     setData(data);
-
+    // return userId
     const id = {
         authUserId: new_id,
     }
