@@ -1,4 +1,3 @@
-
 import { getData, setData } from './dataStore.js';
 import isEmail from 'validator/lib/isEmail';
 
@@ -215,19 +214,53 @@ export { adminAuthRegister, adminAuthLogin };
 // concatenated with a single space between them.
 
 function adminUserDetails(authUserId) {
-    return {
-        user:
-        {
-            userId: 1,
-            name: 'Hayden Smith',
-            email: 'hayden.smith@unsw.edu.au',
-            numSuccessfulLogins: 3,
-            numFailedPasswordsSinceLastLogin: 1,
+
+
+    // Get dataStore.
+    let data = getData();
+
+    // check whether the authUserId is a valid user
+    // set tracker check user is exist or not.
+    let valid_authUserId = 0;
+
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            valid_authUserId = 1;
+        }
+    }
+
+    if (valid_authUserId === 0) {
+        // authUserId is not a valid user.
+        return {
+            error: 'AuthUserId is not a valid user'
+        }
+    }
+
+    // user exist, find details of user.
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            const name = user.nameFirst + ' ' + user.nameLast;
+            const email = user.email;
+            const numSuccessfulLogins = user.numSuccessfulLogins;
+            const numFailedPasswordsSinceLastLogin = user.numFailedPasswordsSinceLastLogin;
+
+            return {
+                user:
+                {
+                    userId: authUserId,
+                    name: name,
+                    email: email,
+                    numSuccessfulLogins: numSuccessfulLogins,
+                    numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin,
+                }
+            };
 
         }
     }
 
 }
+
+export { adminUserDetails };
 
 
 
@@ -348,8 +381,11 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 
 }
 
+
 export { adminUserDetailsUpdate };   
 
+
+   
 
 
 
