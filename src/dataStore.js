@@ -1,6 +1,6 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 let data = {
-  user:[],
+  users:[],
   quizzes: [],
 };
 
