@@ -48,7 +48,7 @@ describe ('Error case for function adminQuizNameUpdate', () => {
     });  
     test ('Quiz ID does not refer to a vaild quiz', () => {
         clear();
-        const validAuthUserId = adminAuthRegister('email@example.com', 'password', 'John', 'Doe').authUserId;
+        const validAuthUserId = adminAuthRegister('email@example.com', 'password233', 'John', 'Doe').authUserId;
         //assume -1 is impossible to be a valid quiz's id
         const invalidQuizId = -1;
         const updateResult = adminQuizNameUpdate(validAuthUserId, invalidQuizId, 'New Quiz Name');
@@ -57,9 +57,9 @@ describe ('Error case for function adminQuizNameUpdate', () => {
     test ('Quiz ID does not refer to a quiz that this user owns', () => {
         clear();
         //register a user 
-        const user1 = adminAuthRegister('email@example.com', 'password', 'John', 'Doe');
+        const user1 = adminAuthRegister('email@example.com', 'password31231', 'John', 'Doe');
         //register another user
-        const user2 = adminAuthRegister('usertwo@example.com', 'password', 'Jane', 'Smith');
+        const user2 = adminAuthRegister('usertwo@example.com', 'password32323', 'Jane', 'Smith');
         //user1 create a quiz
         const UserOneQuiz = adminQuizCreate(user1.authUserId, 'User1 quiz name', 'Description');
         //the second user trying to create another quiz with user 1's quiz id
@@ -69,7 +69,7 @@ describe ('Error case for function adminQuizNameUpdate', () => {
     test ('Name contains invalid characters. Valid characters are alphanumeric and spaces.', () => {
         clear();
         //register a user
-        const user = adminAuthRegister('email@example.com', 'password', 'Yuchao', 'Wang');
+        const user = adminAuthRegister('email@example.com', 'password23232', 'Yuchao', 'Wang');
         const quiz = adminQuizCreate(user.authUserId, 'Original Quiz Name', 'A description');
         const invalidName = 'InvalidName@#$%^&*';
         const updateResult = adminQuizNameUpdate(user.authUserId, quiz.quizId, invalidName);
