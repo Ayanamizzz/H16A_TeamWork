@@ -79,8 +79,6 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     }
 
     //Name must be at least two characters long， Maximum 20 characters
-
-
     // Description:
     // Given a registered user's email and password returns their authUserId value.
 
@@ -149,6 +147,8 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         nameFirst: nameFirst,
         nameLast: nameLast,
         authUserId: new_id,
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0,
     })
     //Use set to store current user IDs
     setData(data);
@@ -157,13 +157,12 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         authUserId: new_id,
     }
     return id;
-
 }
-
 
 
 // Description:
 // Given a registered user's email and password returns their authUserId value.
+
 
 function adminAuthLogin(email, password) {
     //Access data Extract data from the database
@@ -173,21 +172,31 @@ function adminAuthLogin(email, password) {
         //decide emaill = emial in dataStore
         if (data.users[i].email === email) {
             if (data.users[i].password === password) {
+                // Detail need these code to record times of fail login
+                data.users[i].numSuccessfulLogins++;
+                data.users[i].numFailedPasswordsSinceLastLogin = 0;
+                setData(data);
                 return {
                     authUserId: data.users[i].authUserId
                 }
             } else {
+                // Detail need these code to record times of successful login
+                data.users[i].numFailedPasswordsSinceLastLogin++;
+                setData(data);
                 return { 
                     error: 'Password is not correct for the given email.' 
                 };
             }
         }
     }
+
     // Error address does not exist
     setData(data);
+
     return {
         error: 'Email address does not exist.'
     }
+
 }
 
 export { adminAuthRegister, adminAuthLogin };
