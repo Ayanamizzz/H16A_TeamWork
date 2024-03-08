@@ -1,79 +1,52 @@
-// Description
-// Provide a list of all quizzes that are owned by the currently logged in user.
+import { getData, setData } from './dataStore';
 
-function adminQuizList(authUserId) {
-   return {
-        quizzes: [
-            {
-                quizId: 1,
-                name: 'My Quiz',
-            }
-        ]
-   }
-}
+/**
+ * Update the name of the specified quiz.
+ * 
+ * @param {number} authUserId - The ID of the user attempting the update.
+ * @param {number} quizId - The ID of the quiz to be updated.
+ * @param {string} newName - The new name for the quiz.
+ * @returns {Object} - An object indicating success or containing an error message.
+ * 
+ * Error checking:
+ * - AuthUserId is not a valid user.
+ * - QuizId does not refer to a valid quiz.
+ * - QuizId does not refer to a quiz this user owns.
+ * - NewName contains invalid characters. Valid characters are alphanumeric and spaces.
+ * - NewName is either less than 3 characters long or more than 30 characters long.
+ * - NewName is already used by the current logged in user for another quiz.
+ */
 
-
-
-
-
-// Description:
-// Given basic details about a new quiz, create one for the logged in user.
-
-function adminQuizCreate(authUserId, name, description) {
-    return {
-        quizId: 2,
-    }
-}
-  
-
-
-
-
-// Description
-// Given a particular quiz, permanently remove the quiz.
-
-function adminQuizRemove(authUserId, quizId) {
-    return {
-    }
-}
-  
-
-
-
-
-// Description:
-// Get all of the relevant information about the current quiz.
-
-function adminQuizInfo (authUserId, quizId) {
-    return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-    }
-}
-
-
-
-
-
-
-// Description:
-// Update the name of the relevant quiz.
 
 function adminQuizNameUpdate(authUserId, quizId, name) {
+    const data = getData();
+    const user = data.users.find(user => user.userId === authUserId);
+    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+    // Check if authUserId is a valid user
+    if (!data.users.some(user => user.authUserId === authUserId)) {
+        return { error: 'AuthUserId is not a valid user.' };
+    }
+    // Check if quizId refers to a valid quiz
+    if (!quiz) {
+        return { error: 'Quiz ID does not refer to a valid quiz.' };
+    }
+    // Check if the quiz belongs to the user
+    if (quiz.ownerId !== authUserId) {
+        return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+    } else if  (/[^a-zA-Z0-9\s]/.test(name)) {
+        return { error: 'Name contains invalid characters. Valid characters are alphanumeric and spaces.' };
+    } else if (name.length < 3) {
+        return { error: 'Name is less than 3 characters long.' };  
+    }
+    else if (name.length > 30) {
+        return { error: 'Name is longer than 30 characters long.' };
+    }
+    else if (data.quizzes.some(quiz => quiz.name === name)) {
+        return { error: 'Name is already used by the current logged in user for another quiz.' };
+    }
+    quiz.name = name;
+    setData(data);
     return {}
 }
 
-
-
-
-
-// Description:
-// Update the description of the relevant quiz.
-
-function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-    return {}
-}
-
+export { adminQuizNameUpdate };
