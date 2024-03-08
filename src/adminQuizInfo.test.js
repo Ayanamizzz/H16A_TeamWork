@@ -51,7 +51,8 @@ describe ( 'Error Case for adminQuizInfo', () => {
     test('Quiz ID does not refer to a valid quiz', () => {
         clear();
         const user = adminAuthRegister('user@example.com', 'password123', 'Jane', 'Doe').authUserId;
-        const invalidQuizId = -1; // 假设的无效quizId
+        //assume that the quiz id is invalid
+        const invalidQuizId = -1; 
         const quizInfo = adminQuizInfo(user, invalidQuizId);
         expect(quizInfo).toStrictEqual({
             error: 'Quiz ID does not refer to a valid quiz'
