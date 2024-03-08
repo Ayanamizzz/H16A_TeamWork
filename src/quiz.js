@@ -5,7 +5,7 @@ import { getData, setData } from './dataStore';
 
 /*
  * @params {autherUserId} UserId
- * @returns {quizzes[]} array of object for quizzes list
+ * @returns {quizzes} array of object for quiz list
  * 
 */
 
@@ -17,6 +17,23 @@ Error checking:
 function adminQuizList(authUserId) {
     // Get the dataStore.
     const data = getData();
+        
+    // AuthUserId is not a valid user:
+    // Set tracker check vaild authUserId.
+    let valid_authUserId = 0;
+
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            valid_authUserId = 1;
+        }
+    } 
+
+    if (valid_authUserId === 0) {
+        // AuthUserId is not a valid user.
+        return {
+            error: 'AuthUserId is not a valid user'
+        }
+    }
 
     // Create an empty array to contains the list of quizzes that sare owned 
     // by the currently logged in user.
@@ -24,6 +41,8 @@ function adminQuizList(authUserId) {
 
     for (const quiz of data.quizzes) {
         if (authUserId === quiz.ownerId) {
+            // found the quiz that user owns:
+            // create a new object push the Id and name of this quiz to quizzes(array).
             const quizAdd = {
                 quizId: quiz.quizId,
                 name: quiz.name,
@@ -33,78 +52,10 @@ function adminQuizList(authUserId) {
     }
 
     // Just list all the quizzes, no need to setData.
-    // // Update the data.
-    // setData(data);
 
    return {
         quizzes: quizzes
    }
 }
-
-
-
-
-
-// Description:
-// Given basic details about a new quiz, create one for the logged in user.
-
-function adminQuizCreate(authUserId, name, description) {
-    return {
-        quizId: 2,
-    }
-}
-  
-
-
-
-
-// Description
-// Given a particular quiz, permanently remove the quiz.
-
-function adminQuizRemove(authUserId, quizId) {
-    return {
-    }
-}
-  
-
-
-
-
-// Description:
-// Get all of the relevant information about the current quiz.
-
-function adminQuizInfo (authUserId, quizId) {
-    return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-    }
-}
-
-
-
-
-
-
-// Description:
-// Update the name of the relevant quiz.
-
-function adminQuizNameUpdate(authUserId, quizId, name) {
-    return {}
-}
-
-
-
-
-
-// Description:
-// Update the description of the relevant quiz.
-
-function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-    return {}
-}
-
 
 export { adminQuizList };

@@ -45,11 +45,11 @@ describe('Test successful case for function adminQuizList', () => {
             quizzes: [
                 {
                     quizId: quiz1.quizId,
-                    name: quiz1.name
+                    name: 'Quiz1'
                 },
                 {
                     quizId: quiz2.quizId,
-                    name: quiz2.name
+                    name: 'Quiz2'
                 }
             ]
         });
