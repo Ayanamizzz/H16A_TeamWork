@@ -16,6 +16,9 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
 
 
 
+
+
+
 // Description:
 // Given a registered user's email and password returns their authUserId value.
 
@@ -24,6 +27,8 @@ function adminAuthLogin(email, passworld) {
         authUserId: 1,
     }
 }
+
+
 
 
 
@@ -44,8 +49,8 @@ function adminUserDetails(authUserId) {
 
             // Checking for the number of successful login and number wrong password since last successful login
             const result = adminAuthLogin(email, password);
-            const numFailedPasswordsSinceLastLogin = 0;
-            const numSuccessfulLogins = 1;
+            let numFailedPasswordsSinceLastLogin = 0;
+            let numSuccessfulLogins = 1;
             if (result === authUserId) {
                 numSuccessfulLogins++;
                 numFailedPasswordsSinceLastLogin = 0;
@@ -81,7 +86,7 @@ function adminUserDetails(authUserId) {
 
 function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
     return {
- 
+
     }
 }
 
@@ -94,7 +99,7 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
 
 function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
     return {
-       
+
     }
 }
 
