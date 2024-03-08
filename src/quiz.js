@@ -94,7 +94,7 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 
 export { adminQuizNameUpdate };
 
-import { getData, setData } from './dataStore';
+
 
 /**
  * Updates the description of a specific quiz.
