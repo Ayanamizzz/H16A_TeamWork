@@ -66,8 +66,6 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
                 error: 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.'
             }
         } 
-    return {
-        authUserId: 1,
     }
 
     for (let i = 0; i < nameLast.length; i++) {
@@ -79,12 +77,13 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
             }
         } 
     }
-}
 
     //Name must be at least two characters long， Maximum 20 characters
 
-// Description:
-// Given a registered user's email and password returns their authUserId value.
+
+    // Description:
+    // Given a registered user's email and password returns their authUserId value.
+
 
     if (nameFirst.length < 2 || nameFirst.length > 20) {
         return {
@@ -99,6 +98,12 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
+    
+    if (password.length < 8) {
+        return {
+            error: 'Password is less than 8 characters.',
+        }
+    }
 
     // make a tracker to decide the letter and number
     let isLetter = 0;
@@ -151,20 +156,15 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     const id = {
         authUserId: new_id,
     }
-    // Error address does not exist
-    setData(data);
-    return {
-        error: 'Email address does not exist.'
-    }
+    return id;
 }
 
-/*
- * @params {string} email
- * @params {string} password
- * @returns {authuserId} Id of user
- * 
- * 
-*/
+
+
+
+
+// Description:
+// Given a registered user's email and password returns their authUserId value.
 
 function adminAuthLogin(email, password) {
     //Access data Extract data from the database
@@ -184,12 +184,51 @@ function adminAuthLogin(email, password) {
             }
         }
     }
+    // Error address does not exist
+    setData(data);
+    return {
+        error: 'Email address does not exist.'
+    }
 }
 
 export { adminAuthRegister, adminAuthLogin };
 
 
 
+
+
+
+// Description:
+// Given an admin user's authUserId, return details about the user. "name" is the first and last name 
+// concatenated with a single space between them.
+
+function adminUserDetails(authUserId) {
+    return {
+        user:
+        {
+            userId: 1,
+            name: 'Hayden Smith',
+            email: 'hayden.smith@unsw.edu.au',
+            numSuccessfulLogins: 3,
+            numFailedPasswordsSinceLastLogin: 1,
+        }
+    }
+}
+
+
+
+
+
+// Description:
+// Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+
+function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
+    return {
+ 
+    }
+}
+
+    
 
 
 
@@ -201,4 +240,5 @@ function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
        
     }
 }
+
 
