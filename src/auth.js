@@ -81,8 +81,8 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
     //Name must be at least two characters long， Maximum 20 characters
 
 
-// Description:
-// Given a registered user's email and password returns their authUserId value.
+    // Description:
+    // Given a registered user's email and password returns their authUserId value.
 
 
     if (nameFirst.length < 2 || nameFirst.length > 20) {
@@ -228,7 +228,7 @@ function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
     }
 }
 
-
+    
 
 
 
