@@ -1,37 +1,5 @@
 import { getData, setData } from './dataStore.js';
 import { clear } from './other.js';
-// Description: 
-// Register a user with an email, password, and names, then returns their 
-// authUserId value.
-
-
-function adminAuthRegister(email, password, nameFirst, nameLast) {
-    return {
-        authUserId: 1,
-    }
-}
-
-
-
-
-
-
-
-
-
-// Description:
-// Given a registered user's email and password returns their authUserId value.
-
-function adminAuthLogin(email, passworld) {
-    return {
-        authUserId: 1,
-    }
-}
-
-
-
-
-
 
 
 // Description:
@@ -39,24 +7,36 @@ function adminAuthLogin(email, passworld) {
 // concatenated with a single space between them.
 
 function adminUserDetails(authUserId) {
+
+    // Get dataStore.
     let data = getData();
+
     // check whether the authUserId is a valid user
-    for (let i = 0; i < data.users.length; i++) {
+    // set tracker check user is exist or not.
+    let valid_authUserId = 0;
 
-        if (data.users[i].authUserId === authUserId) {
-            name = data.users[i].nameFirst + data.users[i].nameLast;
-            email = data.users[i].email;
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            valid_authUserId = 1;
+        }
+    }
 
-            // Checking for the number of successful login and number wrong password since last successful login
-            const result = adminAuthLogin(email, password);
-            let numFailedPasswordsSinceLastLogin = 0;
-            let numSuccessfulLogins = 1;
-            if (result === authUserId) {
-                numSuccessfulLogins++;
-                numFailedPasswordsSinceLastLogin = 0;
-            } else if (result === 'error') {
-                numFailedPasswordsSinceLastLogin++;
-            }
+    if (valid_authUserId === 0) {
+        // authUserId is not a valid user.
+        return {
+            error: 'AuthUserId is not a valid user'
+        }
+    }
+
+
+    // user exist, find details of user.
+    for (const user of data.users) {
+        if (authUserId === user.authUserId) {
+            const name = user.nameFirst + ' ' + user.nameLast;
+            const email = user.email;
+            const numSuccessfulLogins = user.numSuccessfulLogins;
+            const numFailedPasswordsSinceLastLogin = user.numFailedPasswordsSinceLastLogin;
+
             return {
                 user:
                 {
@@ -66,44 +46,10 @@ function adminUserDetails(authUserId) {
                     numSuccessfulLogins: numSuccessfulLogins,
                     numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin,
                 }
-
             };
+
         }
-        return {
-            error: 'AuthUserId is not a valid user.'
-        }
-
     }
+
 }
-
-
-
-
-
-
-// Description:
-// Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
-
-function adminUserDetailsUpdate(authUserId, email, nameFirst, nameLast) {
-    return {
-
-    }
-}
-
-
-
-
-
-// Description:
-// Given details relating to a password change, update the password of a logged in user.
-
-function adminUserPasswordUpdate(authUserId, oldPassword, newPassword) {
-    return {
-
-    }
-}
-
-
-
-
 export { adminUserDetails };
