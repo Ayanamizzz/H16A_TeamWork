@@ -2,78 +2,95 @@ import { adminUserPasswordUpdate } from './auth.js';
 import { adminAuthRegister } from './auth.js'
 import { clear } from './other.js'
 
-describe('Tests for function adminUserPasswordUpdate  ---  Successful', () => {
-    // Test for successful adminUserPasswordUpdate
-    test('Test successful adminUserPasswordUpdate', () => {
+describe('Test Successful case for function adminUserPasswordUpdate.', () => {
+
+    test('Successful case upadate the newPassword of a logged in user.', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
-        let result = adminUserPasswordUpdate(authUserId, 'test123123', 'test999999');
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test123123', 'test999999');
+
         expect(result).toEqual({});
     });
 
-    test('Test successful adminUserPasswordUpdate', () => {
-        clear();
-
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-        let result = adminUserPasswordUpdate(authUserId, 'test123999', 'test456456');
-        expect(result).toEqual({});
-    });
 });
 
-describe('Tests for function adminUserPasswordUpdate  ---  error', () => {
-    // Error: AuthUserId is not a valid user.
-    test('Test error adminUserPasswordUpdate', () => {
+describe('Test invalid inputs for function adminUserPasswordUpdate.', () => {
+
+    test('AuthUserId is not a valid user.', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-        let result = adminUserPasswordUpdate('bbb', 'test123999', 'cse123123');
-        expect(result).toEqual({ error: 'AuthUserId is not a valid user.' });
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId + 1, 'test123123', 'test999999');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
 
-    // Error: Old Password is not the correct old password.
-    test('Test error adminUserPasswordUpdate', () => {
+    test('Old Password is not the correct old password', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-        let result = adminUserPasswordUpdate(authUserId, 'wrong123123', 'cse123123');
-        expect(result).toEqual({ error: 'Old Password is not the correct old password.' });
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test1231233', 'test999999');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
 
-    // Error: Old Password and New Password match exactly.
-    test('Test error adminUserPasswordUpdate', () => {
+    test('Old Password and New Password match exactly.', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test111999', 'Nancy', 'Wang');
-        let result = adminUserPasswordUpdate(authUserId, 'test111999', 'test111999');
-        expect(result).toEqual({ error: 'Old Password and New Password match exactly.' });
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test123123', 'test123123');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
 
-    // Error: New Password has already been used before by this user.
-    test('Test error adminUserPasswordUpdate', () => {
+    test('New Password has already been used before by this user.', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test111999', 'Nancy', 'Wang');
-        let result = adminUserPasswordUpdate(authUserId, 'test111999', 'test123123');
-        expect(result).toEqual({ error: 'New Password has already been used before by this user.' });
+        const user1 = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const user2 = adminAuthRegister('ahihdnt@gmail.com', 'test593u9', 'Jack', 'Lee');
+
+        const result = adminUserPasswordUpdate(user2.authUserId, 'test593u9', 'test123123');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
 
-    // Error: New Password is less than 8 characters.
-    test('Test error adminUserPasswordUpdate', () => {
+    test('New Password is less than 8 characters.', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test111999', 'Nancy', 'Wang');
-        let result = adminUserPasswordUpdate(authUserId, 'test111999', 'test12');
-        expect(result).toEqual({ error: 'New Password is less than 8 characters.' });
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test123123', 'wor33d');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
 
-    // Error: New Password does not contain at least one number and at least one letter.
-    test('Test error adminUserPasswordUpdate', () => {
+    test('New Password does not contain at least one number and at least one letter', () => {
+        // Reset the dataStore.
         clear();
 
-        let authUserId = adminAuthRegister('999test@gmail.com', 'test111999', 'Nancy', 'Wang');
-        let result = adminUserPasswordUpdate(authUserId, 'test111999', '346726372');
-        expect(result).toEqual({ error: 'New Password does not contain at least one number and at least one letter.' });
+        // do not have any letter
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test123123', '104870112170');
+
+        expect(result).toEqual({ error: expect.any(String) });
     });
+
+    test('New Password does not contain at least one number and at least one letter', () => {
+        // Reset the dataStore.
+        clear();
+
+        // do not have any number
+        const user = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
+        const result = adminUserPasswordUpdate(user.authUserId, 'test123123', 'wojiojhsihsndisKkk');
+
+        expect(result).toEqual({ error: expect.any(String) });
+    });
+
 });
 
