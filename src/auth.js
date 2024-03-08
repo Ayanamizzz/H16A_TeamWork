@@ -157,9 +157,8 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         authUserId: new_id,
     }
     return id;
+
 }
-
-
 
 
 

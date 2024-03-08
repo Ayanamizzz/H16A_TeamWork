@@ -12,4 +12,4 @@ export function clear() {
     setData(data);
     return {};
 }
-  
+
