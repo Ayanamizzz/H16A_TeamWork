@@ -41,7 +41,8 @@ function adminQuizCreate(authUserId, name, description) {
         }
     }
 
-
+    // Name contains invalid characters:
+    // Set format that name could only contains number, character and space.
     const nameFormat = /^[a-zA-Z0-9\s]*$/;
 
     if (nameFormat.test(name) !== true) {
