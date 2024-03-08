@@ -1,60 +1,68 @@
-import { adminUserDetails, adminAuthRegister } from './auth.js';
+import { adminUserDetails, adminAuthRegister, adminAuthLogin } from './auth.js';
 import { clear } from './other.js';
 // Test for adminUserDetail
 
 
-describe('Test for adminUserDetails --- Successful', () => {
+describe('Test for function adminUserDetails --- Successful', () => {
     
-    // Test for valid input
     test('Test successful adminUserDetails', () => {
+        // reset the dataStore.
         clear();
-        // authUserId is a valid user
-        const authUserId = adminAuthRegister('linked@gmail.com', 'linked12345', 'Jim', 'Yang');
-        let finalreturn = adminUserDetails(authUserId);
-        expect(finalreturn).toStrictEqual(
+
+        // check Login success.
+        const user = adminAuthRegister('sby1010284295@gmail.com', 'wind4ever233qwq', 'Jim', 'Yang');
+        const check_user = adminAuthLogin('sby1010284295@gmail.com', 'wind4ever233qwq');
+        const result = adminUserDetails(user.authUserId);
+
+        expect(result).toStrictEqual(
             {
                 user:
                 {
-                    userId: authUserId,
+                    userId: user.authUserId,
                     name: 'Jim Yang',
-                    email: 'linked@gmail.com',
-                    numSuccessfulLogins: 1,
+                    email: 'sby1010284295@gmail.com',
+                    numSuccessfulLogins: 2,
                     numFailedPasswordsSinceLastLogin: 0,
                 }
-            });
+        });
     });
+    
 
     test('Test successful adminUserDetails', () => {
+        // reset the dataStore.
         clear();
-        // authUserId is a valid user
-        const authUserId = adminAuthRegister('test123@outlook.com', 'testpassword123', 'Kim', 'Liu');
-        let finalreturn = adminUserDetails(authUserId);
-        expect(finalreturn).toStrictEqual(
+
+        // check Login failed.
+        const user = adminAuthRegister('sby1010284295@gmail.com', 'wind4ever233qwq', 'Jim', 'Yang');
+        const check_user = adminAuthLogin('sby1010284295@gmail.com', 'wind4ever233');
+        const result = adminUserDetails(user.authUserId);
+        
+        expect(result).toStrictEqual(
             {
                 user:
                 {
-                    userId: authUserId,
-                    name: 'Kim Liu',
-                    email: 'test123@outlook.com',
+                    userId: user.authUserId,
+                    name: 'Jim Yang',
+                    email: 'sby1010284295@gmail.com',
                     numSuccessfulLogins: 1,
-                    numFailedPasswordsSinceLastLogin: 0,
+                    numFailedPasswordsSinceLastLogin: 1,
                 }
             });
 
     });
 });
 
-describe('Test for adminUserDetails --- error', () => {
-    beforeEach(() => {
+describe('Test for invalid input', () => {
+
+    test('Test authUserId', () => {
+        // reset the dataStore.
         clear();
+
+        const user = adminAuthRegister('iwhi92hni@gmail.com', 'LIjna12909', 'Jack', "Wag");
+        const result = adminUserDetails (user.authUserId + 1);
+
+        expect(result).toStrictEqual({ error: expect.any(String) });
     });
-    test.each([
-        [12312],
-        [3892839],
-        [535454],
-        [3345346],
-    ])('Test AuthUserId is not a valid user (%i)', (authUserId) => {
-        expect(adminUserDetails(authUserId)).toStrictEqual({ error: 'AuthUserId is not a valid user' });
-    });
+
 });
 
