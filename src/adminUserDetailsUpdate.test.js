@@ -3,99 +3,122 @@ import { adminUserDetailsUpdate } from './auth.js'
 import { clear } from './other.js';
 
 
+describe("Test successful case for adminUserDetailsUpdate", () => {
 
-// Test for successful adminUserDetailsUpdate
-test('Test successful adminUserDetailsUpdate', () => {
-    clear();
+    test("Successful case, return empty object.", () => {
+        // Reset dataStore.
+        clear();
 
-    let authUserId = adminAuthRegister('123test@gmail.com', 'test123123', 'Nancy', 'Wang');
-    let result = adminUserDetailsUpdate(authUserId, '123123test@gmail.com', 'Sally', 'Zhang');
-    expect(result).toEqual({});
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'Jack', 'Woe');
+
+        expect(result).toStrictEqual({})
+    });
+
 });
 
-test('Test successful adminUserDetailsUpdate', () => {
-    clear();
+describe("Test invalid input fot adminUserDetailsUpdate", () => {
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate(authUserId, '123123test@gmail.com', 'Bob', 'Wang');
-    expect(result).toEqual({});
-});
+    test("AuthUserId is not a valid user", () => {
+        // Reset dataStore.
+        clear();
 
-// Error: AuthUserId is not a valid user.
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId + 1, 'auhdia@gmail.com', 'Jack', 'Woe');
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob', 'Wang');
-    expect(result).toEqual({error: 'AuthUserId is not a valid user.'});
-});
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
 
-// Error: Email is currently used by another user.
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+    test("Email is currently used by another user.", () => {
+        // Reset dataStore.
+        clear();
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob', 'Wang');
-    expect(result).toEqual({error: 'Email is currently used by another user.'});
-});
+        // Create a user then update the email, nameFirst and nameLast.
+        const user1 = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const user2 = adminAuthRegister('hiahsfid2@gmail.com', 'sinq8901L', 'Ma', 'Jin');
 
-// Error: Email does not satisfy this: https://www.npmjs.com/package/validator (validator.isEmail)
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        const result = adminUserDetailsUpdate(user2.authUserId, 'ew129090hj@gmail.com', 'Jack', 'Woe');
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@.com', 'Bob', 'Wang');
-    expect(result).toEqual({error: 'Email is not valid.'});
-});
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
 
-// Error: NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+    test("Email does not satisfy.", () => {
+        // Reset dataStore.
+        clear();
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob1', 'Wang');
-    expect(result).toEqual({error: 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.'});
-});
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'invalidemail', 'Jack', 'Woe');
 
-// Error: NameFirst is less than 2 characters or more than 20 characters.
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'B', 'Wang');
-    expect(result).toEqual({error: 'NameFirst is less than 2 characters or more than 20 characters.'});
-});
+    test("NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
+        // Reset dataStore.
+        clear();
 
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'J$', 'Woe');
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'nameisnacywangfromchina', 'Wang');
-    expect(result).toEqual({error: 'NameFirst is less than 2 characters or more than 20 characters.'});
-});
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
 
-// Error: NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+    test("NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
+        // Reset dataStore.
+        clear();
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob', 'Wang123');
-    expect(result).toEqual({error: 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.'});
-});
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'Jack', 'W@@');
 
-// Error: NameLast is less than 2 characters or more than 20 characters
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob', 'W');
-    expect(result).toEqual({error: 'NameLast is less than 2 characters or more than 20 characters.'});
-});
+    test("NameFirst is less than 2 characters", () => {
+        // Reset dataStore.
+        clear();
 
-test('Test error adminUserDetailsUpdate', () => {
-    clear();
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'J', 'Woe');
 
-    let authUserId = adminAuthRegister('999test@gmail.com', 'test123999', 'Nancy', 'Yang');
-    let result = adminUserDetailsUpdate('bbb', '123123test@gmail.com', 'Bob', 'imqixuanWangfromchinayyyyy');
-    expect(result).toEqual({error: 'NameLast is less than 2 characters or more than 20 characters.'});
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
+
+    test("NameFirst is more than 20 characters", () => {
+        // Reset dataStore.
+        clear();
+
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'Jishfiainhindeuahfaihfue', 'Woe');
+
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
+
+    test("NameLast is less than 2 characters", () => {
+        // Reset dataStore.
+        clear();
+
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'Jack', 'W');
+
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
+
+    test("NameLast is more than 20 characters", () => {
+        // Reset dataStore.
+        clear();
+
+        // Create a user then update the email, nameFirst and nameLast.
+        const user = adminAuthRegister('ew129090hj@gmail.com', 'hjdh1783hj', 'Leo', 'Wang');
+        const result = adminUserDetailsUpdate(user.authUserId, 'auhdia@gmail.com', 'Jack', 'Woeajbhiebuqjfhniksnid');
+
+        expect(result).toStrictEqual({ error: expect.any(String) })
+    });
+
 });
