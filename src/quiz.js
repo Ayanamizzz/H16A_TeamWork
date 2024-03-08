@@ -7,6 +7,13 @@ import { getData, setData } from './dataStore';
  * @param {number} quizId The ID of the quiz whose description is being updated.
  * @param {string} newDescription The new description for the quiz.
  * @returns {Object}  empty object indicating the success of the operation or containing an error message.
+ * return error message if
+ * - authUserId is not a valid user
+ * - quizId does not refer to a valid quiz
+ * - quizId does not refer to a quiz that this user owns
+ * - newDescription is more than 100 characters in length (note: empty strings are OK)
+ * return empty object if
+ * - the description of the quiz is successfully updated
  */
 
 function adminQuizDescriptionUpdate (authUserId, quizId, description) {
