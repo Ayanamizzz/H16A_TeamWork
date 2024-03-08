@@ -2,42 +2,42 @@ import { adminUserDetails, adminAuthRegister } from './auth.js';
 import { clear } from './other.js';
 // Test for adminUserDetail
 
-beforeEach(() => {
-    clear();
-});
 
 describe('Test for adminUserDetails --- Successful', () => {
+    
     // Test for valid input
     test('Test successful adminUserDetails', () => {
+        clear();
         // authUserId is a valid user
         const authUserId = adminAuthRegister('linked@gmail.com', 'linked12345', 'Jim', 'Yang');
         let finalreturn = adminUserDetails(authUserId);
-        expect(finalreturn).tobe(
+        expect(finalreturn).toStrictEqual(
             {
                 user:
                 {
                     userId: authUserId,
                     name: 'Jim Yang',
                     email: 'linked@gmail.com',
-                    numSuccessfulLogins: numSuccessfulLogins,
-                    numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin,
+                    numSuccessfulLogins: 1,
+                    numFailedPasswordsSinceLastLogin: 0,
                 }
             });
     });
 
     test('Test successful adminUserDetails', () => {
+        clear();
         // authUserId is a valid user
         const authUserId = adminAuthRegister('test123@outlook.com', 'testpassword123', 'Kim', 'Liu');
         let finalreturn = adminUserDetails(authUserId);
-        expect(finalreturn).tobe(
+        expect(finalreturn).toStrictEqual(
             {
                 user:
                 {
                     userId: authUserId,
                     name: 'Kim Liu',
                     email: 'test123@outlook.com',
-                    numSuccessfulLogins: numSuccessfulLogins,
-                    numFailedPasswordsSinceLastLogin: numFailedPasswordsSinceLastLogin,
+                    numSuccessfulLogins: 1,
+                    numFailedPasswordsSinceLastLogin: 0,
                 }
             });
 
@@ -45,6 +45,9 @@ describe('Test for adminUserDetails --- Successful', () => {
 });
 
 describe('Test for adminUserDetails --- error', () => {
+    beforeEach(() => {
+        clear();
+    });
     test.each([
         [12312],
         [3892839],
@@ -54,5 +57,4 @@ describe('Test for adminUserDetails --- error', () => {
         expect(adminUserDetails(authUserId)).toStrictEqual({ error: 'AuthUserId is not a valid user' });
     });
 });
-
 
