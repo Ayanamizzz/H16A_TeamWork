@@ -1,7 +1,16 @@
 // Description:
 // Reset the state of the application back to the start.
 
-function clear() {
-    return {}
+import { getData, setData } from "./dataStore.js";
+
+
+export function clear() {
+    let data = getData();
+    data.users = [];
+    data.quizzes = [];
+    
+    setData(data);
+    return {};
 }
+
   
