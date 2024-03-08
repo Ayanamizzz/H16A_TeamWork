@@ -83,9 +83,6 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
 
     //Name must be at least two characters long， Maximum 20 characters
 
-
-
-
 // Description:
 // Given a registered user's email and password returns their authUserId value.
 
@@ -102,24 +99,6 @@ function adminAuthRegister(email, password, nameFirst, nameLast) {
         }
     }
 
-
-
-
-// Description:
-// Given an admin user's authUserId, return details about the user. "name" is the first and last name 
-// concatenated with a single space between them.
-
-function adminUserDetails(authUserId) {
-    return {
-        user:
-        {
-            userId: 1,
-            name: 'Hayden Smith',
-            email: 'hayden.smith@unsw.edu.au',
-            numSuccessfulLogins: 3,
-            numFailedPasswordsSinceLastLogin: 1,
-        }
-    }
 
     // make a tracker to decide the letter and number
     let isLetter = 0;
@@ -172,7 +151,43 @@ function adminUserDetails(authUserId) {
     const id = {
         authUserId: new_id,
     }
+    // Error address does not exist
+    setData(data);
+    return {
+        error: 'Email address does not exist.'
+    }
 }
+
+/*
+ * @params {string} email
+ * @params {string} password
+ * @returns {authuserId} Id of user
+ * 
+ * 
+*/
+
+function adminAuthLogin(email, password) {
+    //Access data Extract data from the database
+    let data = getData();
+    //Determine whether the mailbox is duplicated
+    for (let i = 0; i < data.users.length; i++) {
+        //decide emaill = emial in dataStore
+        if (data.users[i].email === email) {
+            if (data.users[i].password === password) {
+                return {
+                    authUserId: data.users[i].authUserId
+                }
+            } else {
+                return { 
+                    error: 'Password is not correct for the given email.' 
+                };
+            }
+        }
+    }
+}
+
+export { adminAuthRegister, adminAuthLogin };
+
 
 
 
