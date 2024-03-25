@@ -9,7 +9,6 @@ const ERROR = { error: expect.any(String) };
 
 
 describe("adminAuthRegister", () => {
-
     beforeEach(() => {
         request('DELETE', `${url}:${port}/v1/clear`, {});
     });

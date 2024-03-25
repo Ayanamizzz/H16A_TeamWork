@@ -1,7 +1,21 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
-let data = {
+export interface User {
+  userId: number,
+  nameFirst: string,
+  nameLast: string,
+  email: string,
+  password: string,
+  numSuccessfulLogins: number,
+  numFailedPasswordsSinceLastLogin: number,
+  item: Array<string>,
+}
+
+export interface Data {
+  users: User[],
+
+}
+let data: Data = {
   users:[],
-  quizzes:[],
 };
 
 
@@ -29,7 +43,7 @@ function getData() {
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData) {
+function setData(newData: Data) {
   data = newData;
 }
 
