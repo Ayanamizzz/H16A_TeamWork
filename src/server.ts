@@ -48,8 +48,8 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   // request adminQuizCreate.
-  const name = req.body.name;
-  const description = req.body.description;
+  const name = req.body.name as string;
+  const description = req.body.description as string;
 
   const result = adminQuizCreate(parseInt(req.params.token), body.name, body.description);
 
