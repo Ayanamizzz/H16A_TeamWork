@@ -35,6 +35,38 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(echo(data));
 });
 
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  const body = req.body;
+  const { email, password, nameFirst, nameLast } = body;
+
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response)
+});
+
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  // request adminQuizCreate.
+  const name = req.body.name;
+  const description = req.body.description;
+
+  const result = adminQuizCreate(parseInt(req.params.token), body.name, body.description);
+
+  // check error.
+  if ('error' in result) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      // Token does not refer to valid logged in user session.
+      return res.status(401).json(result);
+    }
+  } else {
+    return res.status(400).json(result);
+  }
+
+  // successful return.
+  return res.json(result);
+});
+
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   // request adminQuizList.
   const token = req.query.token as string;
