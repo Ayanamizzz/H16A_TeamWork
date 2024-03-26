@@ -14,7 +14,7 @@ Error checking:
 1. AuthUserId is not a valid user.
 */
 
-function adminQuizList(authUserId) {
+function adminQuizList(authUserId: number) {
     // Get the dataStore.
     const data = getData();
         

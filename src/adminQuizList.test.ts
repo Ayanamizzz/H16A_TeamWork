@@ -5,53 +5,116 @@ const port = config.port;
 const url = config.url;
 
 
-import { adminAuthRegister } from './auth.js'
-// import { clear } from './other.js'
-import { adminQuizCreate, adminQuizList} from './quiz.js'
-
-
-describe('Test invalid input for function adminQuizList', () => {
+describe('Test invalid input of adminQuizList', () => {
 
     test('Test invalid authUserId', () => {
         // AuthUserId is not a valid user.
-
         // Reset before test.
-        clear();
+        request('DELETE', `${url}:${port}/v1/clear`, {});
+        // Create quiz that return quizId if no error
+        const res1 = request(
+          'POST',
+                `${url}:${port}/v1/admin/auth/register`,
+                {
+                  qs: {
+                    email: 'linked@gmail.com',
+                    password: 'linked123456',
+                    nameFirst: 'Jack',
+                    nameLast: 'Wang'    
+                  },
+                  // adding a timeout will help you spot when your server hangs
+                //   timeout: 100
+                }
+        );
+        const bodyObj1 = JSON.parse(res1.body as string);
 
-        // Create quiz then check error message.
-        const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
-        const quiz = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
+        const res2 = request(
+          'POST',
+                `${url}:${port}/v1/admin/quiz`,
+                {
+                  qs: {
+                    token: bodyObj1.authUserId,
+                    name: "Quiz1",
+                    description: "The first quiz"
+                  },
+                  // adding a timeout will help you spot when your server hangs
+                //   timeout: 100
+                }
+        );
+        const bodyObj2 = JSON.parse(res2.body as string);
 
-        const result = adminQuizList(user.authUserId + 1);
-        expect(result).toStrictEqual({ error: expect.any(String) });
+        const res3 = request(
+            'GET',
+                  `${url}:${port}/v1/admin/quiz/list`,
+                  {
+                    qs: {
+                      token: bodyObj1.authUserId + 1,
+                    },
+                    // adding a timeout will help you spot when your server hangs
+                  //   timeout: 100
+                  }
+        );
+        const bodyObj3 = JSON.parse(res3.body as string);
+        expect(bodyObj3.error).toStrictEqual(expect.any(String));
     });
 
 });
 
 
-describe('Test successful case for function adminQuizList', () => {
+describe('Test successful case of adminQuizList', () => {
 
     test('Test successful adminQuizList', () => {
-        // Test successful return value with vaild input.
-
         // Reset before test.
-        clear();
-
-        // Create quizzes that return list of quizzes if no error
-        const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');
-        const quiz1 = adminQuizCreate(user.authUserId, 'Quiz1', 'The first quiz');
-        const quiz2 = adminQuizCreate(user.authUserId, 'Quiz2', 'The second quiz');
-
-        const result = adminQuizList(user.authUserId);
-        expect(result).toStrictEqual({ 
-            quizzes: [
+        request('DELETE', `${url}:${port}/v1/clear`, {});
+        // Create quiz that return quizId if no error
+        const res1 = request(
+          'POST',
+                `${url}:${port}/v1/admin/auth/register`,
                 {
-                    quizId: quiz1.quizId,
-                    name: 'Quiz1'
-                },
+                  qs: {
+                    email: 'linked@gmail.com',
+                    password: 'linked123456',
+                    nameFirst: 'Jack',
+                    nameLast: 'Wang'    
+                  },
+                  // adding a timeout will help you spot when your server hangs
+                //   timeout: 100
+                }
+        );
+        const bodyObj1 = JSON.parse(res1.body as string);
+
+        const res2 = request(
+          'POST',
+                `${url}:${port}/v1/admin/quiz`,
                 {
-                    quizId: quiz2.quizId,
-                    name: 'Quiz2'
+                  qs: {
+                    token: bodyObj1.authUserId,
+                    name: "Quiz1",
+                    description: "The first quiz"
+                  },
+                  // adding a timeout will help you spot when your server hangs
+                //   timeout: 100
+                }
+        );
+        const bodyObj2 = JSON.parse(res2.body as string);
+
+        const res3 = request(
+            'GET',
+                  `${url}:${port}/v1/admin/quiz/list`,
+                  {
+                    qs: {
+                      token: bodyObj1.authUserId,
+                    },
+                    // adding a timeout will help you spot when your server hangs
+                  //   timeout: 100
+                  }
+        );
+        const bodyObj3 = JSON.parse(res3.body as string);
+        expect(bodyObj3.quizzes).toStrictEqual({ 
+            "quizzes": [
+                {
+                "quizId": bodyObj2.quizId,
+                "name": 'Quiz1'
                 }
             ]
         });
