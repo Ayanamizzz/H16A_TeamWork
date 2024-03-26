@@ -1,3 +1,6 @@
+import request from 'sync-request';
+import config from './config.json'
+
 /* adminQuizCreate.test.js
 Error checking:
 1. AuthUserId is not a valid user.
@@ -7,9 +10,9 @@ Error checking:
 5. Description is more than 100 characters in length (note: empty strings are OK).
 */
 
-import { adminAuthRegister } from './auth.js'
-import { clear } from './other.js'
-import { adminQuizCreate } from './quiz.js'
+// import { adminAuthRegister } from './auth.js'
+// import { clear } from './other.js'
+// import { adminQuizCreate } from './quiz.js'
 
 
 describe('Test invaild input for function adminQuizCreate', () => {
@@ -18,7 +21,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         // AuthUserId is not a valid user.
 
         // Reset before test.
-        clear();
+        request('clear', )
 
         // Create quiz then check error message.
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');

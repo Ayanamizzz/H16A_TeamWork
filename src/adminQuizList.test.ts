@@ -1,10 +1,12 @@
-/* adminQuizList.test.js
-Error checking:
-1. AuthUserId is not a valid user.
-*/
+import request from 'sync-request-curl';
+import config from './config.json';
+
+const port = config.port;
+const url = config.url;
+
 
 import { adminAuthRegister } from './auth.js'
-import { clear } from './other.js'
+// import { clear } from './other.js'
 import { adminQuizCreate, adminQuizList} from './quiz.js'
 
 
