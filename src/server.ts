@@ -35,6 +35,24 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(echo(data));
 });
 
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  // request adminQuizList.
+  const token = req.query.token as string;
+  const result = adminQuizList(token);
+
+  // check error.
+  if ('error' in result) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      // Token does not refer to valid logged in user session.
+      return res.status(401).json(result);
+    }
+  } 
+
+  // successful return.
+  return res.json(result);
+});
+
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
