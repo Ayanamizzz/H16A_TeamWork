@@ -6,7 +6,7 @@ import { getData, setData } from './dataStore';
 /*
  * @params {number} token / Id of user after registration
  * @params {number} quizId / Id of quiz after creation
- * @returns {{}} Returns an empty object
+ * @returns {{}} Returns an empty objec
  * 
 */
 
