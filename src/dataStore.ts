@@ -1,23 +1,44 @@
-// YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 export interface User {
+  userId: number;
+  nameFirst: string;
+  nameLast: string;
+  email: string;
+  password: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
+  token: Array<string>;
+}
+
+export interface Quiz {
+  quizId: number; 
+  name: string; 
+  description: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  authUserId: number;
+  ownerId: number
+
+}
+
+export interface Session {
+  sessionId: number,
   userId: number,
-  nameFirst: string,
-  nameLast: string,
-  email: string,
-  password: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
-  item: Array<string>,
 }
 
 export interface Data {
-  users: User[],
-
+  users: User[];
+  quizzes: Quiz[];
+  quizzesTrash: Quiz[];
+  sessions: Session[];
 }
+
 let data: Data = {
   users:[],
+  quizzes: [],
+  quizzesTrash: [],
+  sessions: [],
 };
-
+  
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
