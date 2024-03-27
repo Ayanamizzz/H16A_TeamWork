@@ -4,28 +4,31 @@ import config from './config.json';
 const port = config.port;
 const url = config.url;
 
-describe('Test invaild input of adminQuizRemove', () => {
-    test('Test invalid authUserId', () => {
-        // AuthUserId is not a valid user.
-        // Reset before test.
-        request('DELETE', `${url}:${port}/v1/clear`, {});
-        // Create quiz that return quizId if no error
-        const res1 = request(
-            'POST',
+beforeEach(() => {
+    // Reset before test.
+    request('DELETE', `${url}:${port}/v1/clear`, {});
+    // Create quiz that return quizId if no error
+    const res1 = request(
+        'POST',
                 `${url}:${port}/v1/admin/auth/register`,
                 {
-                    qs: {
+                qs: {
                     email: 'linked@gmail.com',
                     password: 'linked123456',
                     nameFirst: 'Jack',
                     nameLast: 'Wang'    
-                    },
-                    // adding a timeout will help you spot when your server hangs
+                },
+                // adding a timeout will help you spot when your server hangs
                 //   timeout: 100
                 }
         );
-        const bodyObj1 = JSON.parse(res1.body as string);
-    
+    const bodyObj1 = JSON.parse(res1.body as string);
+});
+
+
+describe('Test invalid input of adminQuizRemove', () => {
+    test('Test invalid authUserId', () => {
+        // AuthUserId is not a valid user.
         const res2 = request(
             'POST',
                 `${url}:${port}/v1/admin/quiz`,
@@ -59,26 +62,6 @@ describe('Test invaild input of adminQuizRemove', () => {
 
     test('Test invalid quizId', () => {
         // Quiz ID does not refer to a valid quiz.
-        // AuthUserId is not a valid user.
-        // Reset before test.
-        request('DELETE', `${url}:${port}/v1/clear`, {});
-        // Create quiz that return quizId if no error
-        const res1 = request(
-            'POST',
-                `${url}:${port}/v1/admin/auth/register`,
-                {
-                    qs: {
-                    email: 'linked@gmail.com',
-                    password: 'linked123456',
-                    nameFirst: 'Jack',
-                    nameLast: 'Wang'    
-                    },
-                    // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj1 = JSON.parse(res1.body as string);
-    
         const res2 = request(
             'POST',
                 `${url}:${port}/v1/admin/quiz`,
@@ -112,26 +95,6 @@ describe('Test invaild input of adminQuizRemove', () => {
 
     test('Test invalid quizId', () => {
         // Quiz ID does not refer to a quiz that this user owns.
-        // AuthUserId is not a valid user.
-        // Reset before test.
-        request('DELETE', `${url}:${port}/v1/clear`, {});
-        // Create quiz.
-        const res1 = request(
-            'POST',
-                `${url}:${port}/v1/admin/auth/register`,
-                {
-                    qs: {
-                    email: 'linked@gmail.com',
-                    password: 'linked123456',
-                    nameFirst: 'Jack',
-                    nameLast: 'Wang'    
-                    },
-                    // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj1 = JSON.parse(res1.body as string);
-    
         const res2 = request(
             'POST',
                 `${url}:${port}/v1/admin/quiz`,
@@ -199,25 +162,6 @@ describe('Test invaild input of adminQuizRemove', () => {
 
 describe('Test successful adminQuizRmove', () => {
     test('Test successful case', () => {
-        // Reset before test.
-        request('DELETE', `${url}:${port}/v1/clear`, {});
-        // Create quiz that return quizId if no error
-        const res1 = request(
-            'POST',
-                `${url}:${port}/v1/admin/auth/register`,
-                {
-                    qs: {
-                    email: 'linked@gmail.com',
-                    password: 'linked123456',
-                    nameFirst: 'Jack',
-                    nameLast: 'Wang'    
-                    },
-                    // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj1 = JSON.parse(res1.body as string);
-    
         const res2 = request(
             'POST',
                 `${url}:${port}/v1/admin/quiz`,
@@ -249,4 +193,3 @@ describe('Test successful adminQuizRmove', () => {
         expect(bodyObj3).toStrictEqual({});
     });
 });
-
