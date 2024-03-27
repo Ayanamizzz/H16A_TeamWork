@@ -36,40 +36,6 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 
-// adminAuthRegister
-app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
-  const body = req.body;
-  const { email, password, nameFirst, nameLast } = body;
-
-  const response = adminAuthRegister(email, password, nameFirst, nameLast);
-  if ('error' in response) {
-    return res.status(400).json(response);
-  }
-  res.json(response)
-});
-
-
-// adminQuizCreate
-app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  const token = req.query.token as string;
-  const name = req.body.name as string;
-  const description = req.body.description as string;
-  
-  const result = adminQuizCreate(token, name, description);
-
-  // check error.
-  if ('error' in result) {
-    if (result.error === 'Token does not refer to valid logged in user session') {
-      return res.status(401).json(result);
-    }
-  } else {
-    return res.status(400).json(result);
-  }
-
-  return res.json(result);
-});
-
-
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const token = req.query.token as string;
