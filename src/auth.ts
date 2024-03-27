@@ -9,6 +9,7 @@ import { getData, setData } from './dataStore.js';
 import { nanoid } from 'nanoid';
 
 
+
 /*
  * @params {string} email
  * @params {string} password
@@ -79,7 +80,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
         return true;
     }
     
-    let token;
+    let token: string;
     do {
         token = nanoid(10);
     } while (!isnotSameToken(token));
@@ -179,12 +180,12 @@ export function adminAuthLogin(email: string, password: string): { token: string
 export function adminAuthLogout(token: string): object | {error: string} {
     const data = getData();
     const user = data.users.find((user) => user.token.includes(token));
-    // const user = data.users.find(user => user.item.includes(token));
-  
+    // const user = data.users.find((user) => user.token === token);
     if (!user) {
       return { error: 'Code 401 - Token is invalid or already logged out' };
     } else {
-        user.token.filter(users => users === token);
+        // user.token = null;
+        user.token.filter((user) => user === token);
         setData(data);  
         return {};
     }
