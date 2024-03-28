@@ -213,25 +213,25 @@ app.use((req: Request, res: Response) => {
   res.json({ error });
 });
 
-//adminQuizInfo
-app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
-  const quizid = parseInt(req.params.quizid);
-  const token = req.query.token as string;
+//adminNameUpdate
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, name } = req.body;
 
-  const response = adminQuizInfo(token, quizid);
+  const response = adminQuizNameUpdate(token, quizId, name);
 
   if ('error' in response) {
     switch (response.error) {
-      case 'Token is not a valid structure':
-        return res.status(401).json(response);
-      case 'Provided token is valid structure, but is not for a currently logged in session':
-        return res.status(403).json(response);
+      case 'Token is empty or invalid':
+        return res.status(401).json({ error: response.error });
+      case 'Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz':
+        return res.status(403).json({ error: response.error });
       default:
-        return res.status(400).json(response);
+        return res.status(400).json({ error: response.error });
     }
   }
 
-  return res.json(response);
+  return res.json({});
 });
 
 // start server
