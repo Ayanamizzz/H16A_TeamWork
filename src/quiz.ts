@@ -1,59 +1,55 @@
 import { getData, setData } from './dataStore';
 
 /**
- * Get all of the relevant information about the current quiz.
- * @param {number} authUserId - The authentication ID of the user
- * @param {number} quizId - The ID of the quiz to get information for
- * @returns {Object} - An object containing quiz information or an error message
- * it will return error when
- * - authUserId is not a valid user
- * - quizId does not refer to a valid quiz
- * - quizId does not refer to a quiz this user owns
+ * Update the name of the specified quiz.
+ * 
+ * @param {number} authUserId - The ID of the user attempting the update.
+ * @param {number} quizId - The ID of the quiz to be updated.
+ * @param {string} newName - The new name for the quiz.
+ * @returns {Object} - An object indicating success or containing an error message.
+ * 
+ * Error checking:
+ * - AuthUserId is not a valid user.
+ * - QuizId does not refer to a valid quiz.
+ * - QuizId does not refer to a quiz this user owns.
+ * - NewName contains invalid characters. Valid characters are alphanumeric and spaces.
+ * - NewName is either less than 3 characters long or more than 30 characters long.
+ * - NewName is already used by the current logged in user for another quiz.
  */
 
-function adminQuizInfo(token: string, quizId: number) {
-  const data = getData();
 
+function adminQuizNameUpdate(token: string, quizId: number, name: string) {
+  const data = getData();
   // Check userId by token:
   const userId = getUserId(token);
-
-  const user = data.users.find(u => u.userId === userId);
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user' };
+  const user = data.users.find(user => user.userId === authUserId);
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  // Check if authUserId is a valid user
+  if (!data.users.some(user => user. userId === userId)) {
+      return { error: 'AuthUserId is not a valid user.' };
   }
-    
-  // First, check if the Quiz ID refers to a valid quiz
-  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
-  if (validQuiz === undefined) {
-    return { error: 'Quiz ID does not refer to a valid quiz' };
+  // Check if quizId refers to a valid quiz
+  if (!quiz) {
+      return { error: 'Quiz ID does not refer to a valid quiz.' };
   }
-
-    // Then, check if the quiz belongs to the user
-  if (validQuiz.ownerId !== authUserId) {
-    return { error: 'Quiz ID does not refer to a quiz this user owns' };
+  // Check if the quiz belongs to the user
+  if (quiz.ownerId !== userId) {
+      return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+  } else if  (/[^a-zA-Z0-9\s]/.test(name)) {
+      return { error: 'Name contains invalid characters. Valid characters are alphanumeric and spaces.' };
+  } else if (name.length < 3) {
+      return { error: 'Name is less than 3 characters long.' };  
   }
-
-  // All checks passed, return relevant quiz info
-  return {
-    quizId: quiz.quizId,
-    name: quiz.name,
-    timeCreated: quiz.timeCreated,
-    timeLastEdited: quiz.timeLastEdited || quiz.timeCreated,
-    description: quiz.description,
-    numQuestions: quiz.questions.length,
-    questions: quiz.questions.map(question => ({
-      questionId: question.questionId,
-      question: question.question,
-      duration: question.duration,
-      points: question.points,
-      answers: question.answers.map(answer => ({
-        answerId: answer.answerId,
-        answer: answer.answer,
-        colour: answer.colour,
-        correct: answer.correct,
-      })),
-    })),
-    duration: quiz.duration,
-  };
+  else if (name.length > 30) {
+      return { error: 'Name is longer than 30 characters long.' };
+  }
+  else if (data.quizzes.some(quiz => quiz.name === name)) {
+      return { error: 'Name is already used by the current logged in user for another quiz.' };
+  }
+  quiz.name = name;
+  setData(data);
+  return {}
 }
+
+
 
