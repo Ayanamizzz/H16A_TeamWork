@@ -1,4 +1,11 @@
-```javascript
+// Default dataStore
+let data = {
+  users: [],
+  quizzes: [],
+  quizzesTrash: [],
+}
+
+/*
 const data = {
     // TODO: insert your data structure that contains 
     // users + quizzes here
@@ -36,3 +43,4 @@ const data = {
 
 
 [Optional] short description:
+*/
