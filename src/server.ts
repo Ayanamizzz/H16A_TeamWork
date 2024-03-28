@@ -213,6 +213,27 @@ app.use((req: Request, res: Response) => {
   res.json({ error });
 });
 
+//adminQuizInfo
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizid = parseInt(req.params.quizid);
+  const token = req.query.token as string;
+
+  const response = adminQuizInfo(token, quizid);
+
+  if ('error' in response) {
+    switch (response.error) {
+      case 'Token is not a valid structure':
+        return res.status(401).json(response);
+      case 'Provided token is valid structure, but is not for a currently logged in session':
+        return res.status(403).json(response);
+      default:
+        return res.status(400).json(response);
+    }
+  }
+
+  return res.json(response);
+});
+
 // start server
 const server = app.listen(PORT, HOST, () => {
   // DO NOT CHANGE THIS LINE
