@@ -18,7 +18,7 @@ describe('Test invaild input for function adminQuizCreate', () => {
         // AuthUserId is not a valid user.
 
         // Reset before test.
-        clear();
+        request('clear', )
 
         // Create quiz then check error message.
         const user = adminAuthRegister('linked@gmail.com', 'linked123456', 'Jack', 'Wang');

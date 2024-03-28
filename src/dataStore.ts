@@ -1,5 +1,31 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
-let data = {
+export interface User {
+  userId: number;
+  nameFirst: string;
+  nameLast: string;
+  email: string;
+  password: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
+  item: Array<string>;
+}
+
+export interface Quiz {
+  quizId: number; 
+  name: string; 
+  description: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  ownerId: number
+
+}
+
+export interface Data {
+  users: User[];
+  quizzes: Quiz[];
+}
+
+let data: Data = {
   users:[],
   quizzes: [],
 };
