@@ -2,10 +2,16 @@ import { adminAuthRegister } from './auth.js';
 import { adminQuizCreate } from './quiz.js';
 import { adminQuizInfo } from './quiz.js';
 import { clear } from './other.js';
-import { port, url } from './config.json';
+import request from 'sync-request-curl';
+import config from './config.json';
+
+const port = config.port;
+const url = config.url;
+
+
 
 beforeEach(() => {
-  return axios.delete(`${url}:${port}/v1/admin/other/clear`);
+  request('DELETE', `${url}:${port}/v1/admin/other/clear`, {});
 });
 
 /*
@@ -16,56 +22,144 @@ It return error massage if
 - Quiz ID does not refer to a valid quiz
 - Quiz ID does not refer to a quiz that this user owns
 */
-describe('GET/v1/admin/quiz/{quizid}', () => {
-    describe ( 'Test Success Case for adminQuizInfo', () => {
-        test ('All relevant information is correctly input', () => {
-            //register a user and create a quiz
-            const newToken = adminAuthRegister ('jackierandom231@gmail.com', 'jackierandom2313','Jackie','Random');
-            const quizId = adminQuizCreate (userResult.authUserId, 'Quiz 1', 'This is a quiz');
-            const quizInfo = adminQuizInfo (userResult.authUserId, quizId.quizId);
-            expect(quizInfo).toStrictEqual({
-                quizId: quizId.quizId,
-                quizName: 'Quiz 1',
-                timeCreated: expect.any(Number),
-                timeLastEdited: expect.any(Number),
-                description: 'This is a quiz',
-            });    
-        });
-    });
-});
+describe('adminQuizInfo', () => {
+  describe('Test Success Case for adminQuizInfo', () => {
+    test('All relevant information is correctly input', () => {
+      const authRegisterRes = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        json: {
+          email: 'jackierandom231@gmail.com',
+          password: 'jackierandom2313',
+          firstName: 'Jackie',
+          lastName: 'Random',
+        },
+      });
+      const token = JSON.parse(authRegisterRes.body as string).token;
+      
+      const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
+        json: {
+          token: token,
+          name: 'Quiz 1',
+          description: 'This is a quiz',
+        },
+      });
+      const quizId = JSON.parse(quizCreateRes.body as string).quizId;
 
+      const quizInfoRes = request('GET', `${url}:${port}/v1/admin/quiz/${quizId}`, {
+        qs: { token },
+      });
+      const quizInfo = JSON.parse(quizInfoRes.body as string);
 
-describe('GET/v1/admin/quiz/{quizid}', () => {
-    describe ( 'Error Case for adminQuizInfo', () => {
-        //Error : AuthUserId is not a valid user.
-        test ('AuthUserId is not a valid user, It should return an error message for invaild AuthUser Id', () => {
-            const userResult = adminAuthRegister('email@example.com', 'password4455', 'John', 'Doe');
-            const quizId = adminQuizCreate(userResult.authUserId, 'Quiz 1', 'This is a quiz');
-            const invalidUserId = -1; //assume that the user id is invalid
-            const quizInfo = adminQuizInfo(invalidUserId, quizId);
-            expect(quizInfo).toStrictEqual({
-                error: 'AuthUserId is not a valid user'
-            });
-        });
-        //Error : Quiz ID does not refer to a valid quiz.
-        test('Quiz ID does not refer to a valid quiz', () => {
-            const user = adminAuthRegister('user@example.com', 'password123', 'Jane', 'Doe').authUserId;
-            //assume that the quiz id is invalid
-            const invalidQuizId = -1; 
-            const quizInfo = adminQuizInfo(user, invalidQuizId);
-            expect(quizInfo).toStrictEqual({
-                error: 'Quiz ID does not refer to a valid quiz'
-            });
-        }); 
-        //Quiz ID does not refer to a quiz that this user owns.
-        test('Quiz ID does not refer to a quiz that this user owns', () => {
-            const user1 = adminAuthRegister('user1@example.com', 'password123', 'User', 'One').authUserId;
-            const quizId = adminQuizCreate(user1, 'Quiz 1', 'This is User1\'s quiz').quizId;
-            const user2 = adminAuthRegister('user2@example.com', 'password456', 'User', 'Two').authUserId;
-            const quizInfo = adminQuizInfo(user2, quizId);
-            expect(quizInfo).toStrictEqual({
-                error: 'Quiz ID does not refer to a quiz this user owns'
-            });
-        });    
+      expect(quizInfo).toMatchObject({
+        quizId: quizId,
+        name: 'This is the name of the quiz',
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: 'This quiz is so we can have a lot of fun',
+        numQuestions: 1,
+        questions: [
+          {
+            questionId: questionId,
+            question: 'Who is the Monarch of England?',
+            duration: 4,
+            points: 5,
+            answers: [
+              {
+                answerId: answerId,
+                answer: 'Prince Charles',
+                colour: 'red',
+                correct: true,
+              },
+            ],
+          },
+        ],
+        duration: 44,
+      });
     });
+  });
+
+  describe('Error Case for adminQuizInfo', () => {
+    test('AuthUserId is not a valid user, It should return an error message for invaild AuthUser Id', () => {
+      const authRes = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        json: {
+          email: 'email@example.com',
+          password: 'password4455', 
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+      });
+      const token = JSON.parse(authRes.body as string).token;
+      
+      const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
+        json: {
+          token: token,
+          name: 'Quiz 1',
+          description: 'This is a quiz',  
+        },
+      });
+      const quizId = JSON.parse(quizCreateRes.body as string).quizId;
+
+      const invalidToken = 'invalidToken';
+      const quizInfoRes = request('GET', `${url}:${port}/v1/admin/quiz/${quizId}`, {
+        qs: { token: invalidToken },
+      });
+      const quizInfo = JSON.parse(quizInfoRes.body as string);
+      expect(quizInfo.error).toStrictEqual(expect.any(String));
+    });
+
+    test('Quiz ID does not refer to a valid quiz', () => {
+      const authRes = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        json: {
+          email: 'user@example.com',
+          password: 'password123',
+          firstName: 'Jane',
+          lastName: 'Doe',
+        },  
+      });
+      const token = JSON.parse(authRes.body as string).token;
+      
+      const invalidQuizId = 'invalidQuizId';
+      const quizInfoRes = request('GET', `${url}:${port}/v1/admin/quiz/${invalidQuizId}`, {
+        qs: { token },  
+      });
+      const quizInfo = JSON.parse(quizInfoRes.body as string);
+      expect(quizInfo.error).toStrictEqual(expect.any(String));
+    });
+    
+    test("Quiz ID does not refer to a quiz that this user owns", () => {
+      const user1AuthRes = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        json: {
+          email: "user1@example.com",
+          password: "password123",
+          firstName: "User",
+          lastName: "One",
+        },
+      });
+      const user1Token = JSON.parse(user1AuthRes.body as string).token;
+
+      const user2AuthRes = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        json: {
+          email: "user2@example.com", 
+          password: "password456",
+          firstName: "User",
+          lastName: "Two",
+        },
+      });
+      const user2Token = JSON.parse(user2AuthRes.body as string).token;
+
+      const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
+        json: {
+          token: user1Token, 
+          name: "Quiz 1",
+          description: "This is User1's quiz",
+        },
+      });
+      const quizId = JSON.parse(quizCreateRes.body as string).quizId;
+      
+      const quizInfoRes = request('GET', `${url}:${port}/v1/admin/quiz/${quizId}`, {
+        qs: { token: user2Token },
+      });
+      const quizInfo = JSON.parse(quizInfoRes.body as string);
+      expect(quizInfo.error).toStrictEqual(expect.any(String));
+    });
+  });
 });
