@@ -5,81 +5,129 @@ import { getUser, getUserId } from './other'
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 
-// function adminQuizList(authUserId) {
-//    return {
-//         quizzes: [
-//             {
-//                 quizId: 1,
-//                 name: 'My Quiz',
-//             }
-//         ]
-//    }
-// }
+/*
+ * @params {number} token / 
+ * @returns {quizzes} array of object for quiz list
+ * 
+*/
 
+export function adminQuizList(token: string): {quizzes: {quizId: number, name: string}[]} | { error: string } {
+    const data = getData();
+    
+    // Check userId by token:
+    const userId = getUserId(token);
+    if (userId == null) {
+        // Token is empty.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
 
+    const user = data.users.find((user: user) => user.userId === userId);
+    if (user === undefined) {
+        // Token is invalid.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
 
+    // Create an empty array to contains the list of quizzes that sare owned 
+    // by the currently logged in user.
+    const quizzes = [];
+
+    for (const quiz of data.quizzes) {
+        if (userId === quiz.ownerId) {
+            // found the quiz that user owns:
+            // create a new object push the Id and name of this quiz to quizzes(array).
+            const quizAdd = {
+                quizId: quiz.quizId,
+                name: quiz.name,
+            };
+            quizzes.push(quizAdd);
+        }
+    }
+
+   return {
+        quizzes: quizzes
+   }
+}
 
 
 // Description:
 // Given basic details about a new quiz, create one for the logged in user.
 
-// function adminQuizCreate(authUserId, name, description) {
-//     return {
-//         quizId: 2,
-//     }
-// }
-  
+/*
+ * @params {number} token / Id of user after registration
+ * @params {string} name / New quiz's name
+ * @params {string} description / New quiz's description
+ * @returns {{ quizId: number }} An object contains the new quizId after creating a quiz.
+ * 
+*/
+
+export function adminQuizCreate(token: string, name: string, description: string): { error: string } | { quizId: number} {
+    const data = getData();
+
+    // Check userId by token:
+    const userId = getUserId(token);
+    if (userId == null) {
+        // Token is empty.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
+
+    const user = data.users.find((user: user) => user.userId === userId);
+    if (user === undefined) {
+        // Token is invalid.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
+
+    // Name contains invalid characters:
+    const nameFormat = /^[a-zA-Z0-9\s]*$/;
+    if (nameFormat.test(name) !== true) {
+        return { error: 'Name contains invalid characters' };
+    }
+    
+    // Name is either less than 3 characters long or more than 30 characters long:
+    if (name.length < 3) {
+        // Name is less than 3 characters long.
+        return { error: 'Name is less than 3 characters long' };
+    } else if (name.length > 30) {
+        // Name is more than 30 characters long.
+        return { error: 'Name is more than 30 characters long' };
+    }
+
+    // Name is already used by the current logged in user for another quiz:
+    for (const quiz of data.quizzes) {
+        if (name === quiz.name) {
+            // Name is already used by the current logged in user for another quiz. 
+            return { error: 'Name is already used by the current logged in user for another quiz' };    
+        }
+    }
+
+    // Description is more than 100 characters in length (note: empty strings are OK):
+    if (description.length > 100) {
+        // Description is more than 100 characters in length.
+        return { error: 'Description is more than 100 characters in length' };         
+    }
+
+    // create the new quiz with updated quizId:
+    let Id = data.quizzes.length;
+    
+    const newQuiz = {
+        ownerId: authUserId,
+        quizId: Id,
+        name: name,
+        description: description,
+        timeCreated: Date.now(),
+    };
+    data.quizzes.push(newQuiz);
+
+    setData(data);
+    return { quizId: Id };
+}
 
 
 
 
-// Description
-// Given a particular quiz, permanently remove the quiz.
-
-// function adminQuizRemove(authUserId, quizId) {
-//     return {
-//     }
-// }
-  
 
 
 
 
-// Description:
-// Get all of the relevant information about the current quiz.
-
-// function adminQuizInfo (authUserId, quizId) {
-//     return {
-//         quizId: 1,
-//         name: 'My Quiz',
-//         timeCreated: 1683125870,
-//         timeLastEdited: 1683125871,
-//         description: 'This is my quiz',
-//     }
-// }
-
-
-
-
-
-
-// Description:
-// Update the name of the relevant quiz.
-
-// function adminQuizNameUpdate(authUserId, quizId, name) {
-//     return {}
-// }
-
-
-
-
-
-// Description:
-// Update the description of the relevant quiz.
-
-// function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-//     return {}
-// }
 
 
 /**
