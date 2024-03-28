@@ -54,12 +54,12 @@ app.use((req: Request, res: Response) => {
   res.json({ error });
 });
 
-//adminNameUpdate
-app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+//adminQuizDescription
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token, name } = req.body;
+  const { token, description } = req.body;
 
-  const response = adminQuizNameUpdate(token, quizId, name);
+  const response = adminQuizDescriptionUpdate(token, quizId, description);
 
   if ('error' in response) {
     switch (response.error) {
