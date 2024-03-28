@@ -122,12 +122,55 @@ export function adminQuizCreate(token: string, name: string, description: string
 }
 
 
+// Description
+// Given a particular quiz, permanently remove the quiz.
 
+/*
+ * @params {number} token / Id of user after registration
+ * @params {number} quizId / Id of quiz after creation
+ * @returns {{}} Returns an empty objec
+ * 
+*/
 
+export function adminQuizRemove(token: string, quizId: number): { error: string } | {}  {
+    const data = getData();
 
+    // Check userId by token:
+    const userId = getUserId(token);
+    if (userId == null) {
+        // Token is empty.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
 
+    const user = data.users.find((user: user) => user.userId === userId);
+    if (!user) {
+        // Token is invalid.
+        return { error: 'Token does not refer to valid logged in user session' };
+    }
 
+    // Quiz ID does not refer to a valid quiz:
+    const quiz = data.quizzes.find((quiz: quiz) => quiz.quizId === quizId);
+    if (quiz === undefined) {
+        return { error: 'Quiz ID does not refer to a valid quiz' };
+    }
 
+    // Quiz ID does not refer to a quiz that this user owns:
+    if (quiz.ownerId !== userId) {
+        return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+    }
+
+    // Remove the quiz that this user owns:
+    for (let quiz of data.quizzes) {
+        if (quizId === quiz.quizId) {
+           if (UserId === quiz.ownerId) {
+            quiz = null;
+           }
+        }
+    }
+
+    setData(data);
+    return {};
+}
 
 
 /**
@@ -137,8 +180,6 @@ export function adminQuizCreate(token: string, name: string, description: string
  * @param { string } token - the token of the current logged in admin user.
  * @returns { }
  */
-
-
 
 export function adminQuiztrash(token: string): { trash: {name: string, quizId: number}[] } | {error: string} {
     const user = getUser(token);
@@ -189,8 +230,9 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
 
     trashQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
     data.quizzes.push(trashQuiz);
-    //用splice来从垃圾桶里移除测试， 并且添加到列表里
+    // use splice remove test from trash and add it to the list.
     data.quizzesTrash.splice(trashQuizIndex, 1);
     setData(data);
     return {};
 }
+

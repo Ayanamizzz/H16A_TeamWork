@@ -39,6 +39,42 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 
+// adminAuthRegister
+app.get('/v1/admin/auth/register', (req: Request, res: Response) => {
+  const body = req.body;
+  const { email, password, nameFirst, nameLast } = body;
+
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response)
+});
+
+
+// adminAuthLogin
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const response = adminAuthLogin(email, password);
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+
+// adminAuthLogout
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  const token = req.body.token;
+
+  const response = adminAuthLogout(token);
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  res.json(response);
+});
+
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const token = req.query.token as string;
@@ -74,6 +110,65 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 
   return res.json(result);
 });
+
+
+// adminQuizRemove
+app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const quizId = parseInt(req.query.quizId);
+
+  const result = adminQuizRemove(token, quizId);
+
+  // check error.
+  if ('error' in result) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      // Token does not refer to valid logged in user session.
+      return res.status(401).json(result);
+    } else {
+      // Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz.
+      return res.status(403).json(result);
+    }
+  } 
+
+  return res.json(result);
+});
+
+
+// adminQuizTrash
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const response = adminQuiztrash(token);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response && response.error.includes('403')) {
+    return res.status(403).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+})
+
+
+// adminQuizRestore
+app.post('/v1/admin/quiz/restore', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizId);
+  const token = req.body.token as string;
+  const response = adminQuizRestore(quizId, token);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response && response.error.includes('403')) {
+    return res.status(403).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+})
 
 
 // ====================================================================
