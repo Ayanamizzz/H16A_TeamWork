@@ -35,6 +35,29 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(echo(data));
 });
 
+
+// adminUserDetailsUpdate
+app.put('/v1/admin/auth/details', (req: Request, res: Response) => {
+  const token = req.body.token as string;
+  const email = req.body.email as string;
+  const nameFirst = req.body.nameFirst as string;
+  const nameLast = req.body.nameLast as string;
+
+  const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+
+  // check error.
+  if ('error' in result) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      return res.status(401).json(result);
+    } else {
+      return res.status(400).json(result);
+    }
+  }
+
+  return res.json(result);
+});
+
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
