@@ -201,6 +201,28 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 });
 
 
+// adminQuizDescription
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, description } = req.body;
+
+  const response = adminQuizDescriptionUpdate(token, quizId, description);
+
+  if ('error' in response) {
+    switch (response.error) {
+      case 'Token is empty or invalid':
+        return res.status(401).json({ error: response.error });
+      case 'Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz':
+        return res.status(403).json({ error: response.error });
+      default:
+        return res.status(400).json({ error: response.error });
+    }
+  }
+
+  return res.json({});
+});
+
+
 // adminQuizTrash
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.query.token as string;
@@ -267,3 +289,4 @@ const server = app.listen(PORT, HOST, () => {
 process.on('SIGINT', () => {
   server.close(() => console.log('Shutting down server gracefully.'));
 });
+
