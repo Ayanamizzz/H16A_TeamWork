@@ -1,6 +1,6 @@
 import { getData, setData } from "./dataStore";
 import { User } from './dataStore.js';
-import {getUser, getUserId } from './other'
+import { getUser, getUserId } from './other'
 
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
