@@ -6,6 +6,7 @@ export interface User {
   password: string;
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
+  oldPasswords: Array<string>;
   token: Array<string>;
 }
 

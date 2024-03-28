@@ -1,7 +1,7 @@
 // Description:
 // Reset the state of the application back to the start.
 import { getData, setData } from "./dataStore";
-
+import { User } from "./dataStore";
 /**
  * 
  * @returns {Object} empty object
@@ -38,4 +38,28 @@ export function getUserId(token: string): number | null {
     } else {
         return null;
     }
+}
+
+/**
+ * 
+ * @param {string} token 
+ * @returns {User | null}
+ */
+
+export function getUser(token: string): User | null {
+    if (!token) {
+        return null;
+    }
+
+    const data = getData();
+
+    for (const user of data.users) {
+        for (const item of user.token) {
+            if (item === token) {
+                return user;
+            }
+        }
+    }
+    return null;
+
 }

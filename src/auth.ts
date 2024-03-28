@@ -7,7 +7,15 @@
 import isEmail from 'validator/lib/isEmail';
 import { getData, setData } from './dataStore.js';
 import { nanoid } from 'nanoid';
+import { getUser, getUserId } from './other'
 
+interface userInDetail {
+    userId: number;
+    name: string;
+    email: string;
+    numSuccessfulLogins: number;
+    numFailedPasswordsSinceLastLogin: number;
+}
 
 
 /*
@@ -86,7 +94,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
     } while (!isnotSameToken(token));
 
     //push users'data to dataStore(and setData to data)
-
+    const oldPasswordSting: string[] = [];
     data.users.push({
         userId: userId,
         nameFirst: nameFirst,
@@ -95,6 +103,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
         password: password,
         numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
+        oldPasswords: oldPasswordSting,
         token: [token],
     })
     
@@ -143,7 +152,7 @@ export function adminAuthLogin(email: string, password: string): { token: string
                     }
                     return true;
                 }
-                let token;
+                let token: string;
                 do {
                     token = nanoid(10);
                 } while (!isnotSameToken(token));
@@ -169,6 +178,98 @@ export function adminAuthLogin(email: string, password: string): { token: string
 }
 
 
+
+/**
+ * 
+ * @param {string} token 
+ * @returns {user}
+ */
+export function adminUserDetails(token: string): { user: userInDetail } | { error: string } {
+    const user = getUser(token);
+
+    if (!user) {
+        return {
+            error: 'AuthUserId is not a valid user'
+        }
+    }
+
+    return {
+        user:
+        {
+            userId: user.userId,
+            name: user.nameFirst + ' ' + user.nameLast,
+            email: user.email,
+            numSuccessfulLogins: user.numSuccessfulLogins,
+            numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
+        }
+    };
+
+}
+
+
+
+export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): object | {error: string} {
+    // Get dataStore
+    const data = getData();
+  
+    // AuthUserId is not a valid user:
+    // Set tracker check valid authUserId.
+    const Now_user = getUser(token);
+  
+    if (!Now_user) {
+      // AuthUserId is not a valid user.
+      return {
+        error: 'Code 401 - AuthUserId is not a valid user'
+      };
+    }
+  
+
+    if (Now_user.password !== oldPassword) {
+      return {
+        error: 'Code 400 - Old Password is not the correct old password.'
+      };
+    }
+  
+    // Check old Password and New Password match exactly:
+    if (oldPassword === newPassword) {
+      return {
+        error: 'Code 400 - Old Password and New Password match exactly.'
+      };
+    }
+  
+    // Check new Password has already been used before by this user:
+    for (const password of Now_user.oldPasswords) {
+        if (oldPassword === Now_user.password) {
+            return {
+              error: 'Code 400 -New Password has already been used before by this user.'
+            };
+        }
+    }
+
+    // Check new Password is less than 8 characters:
+    if (newPassword.length < 8) {
+        return {
+            error: 'New Password is less than 8 characters.'
+        };
+    }
+
+    // Check whether newPassword contains at least one number and at least one letter:
+    const hasLetter = /[A-Za-z]/.test(newPassword);
+    const hasNumber = /\d/.test(newPassword);
+    if (!hasLetter || !hasNumber) {
+        return { error: 'Code 400 - Password does not contain at least one number and at least one letter.' };
+    }
+  
+    Now_user.password = newPassword;
+    Now_user.oldPasswords.push(oldPassword);
+    // Update the dataStore.
+    setData(data);
+  
+    return {};
+}
+
+  
+  
 
 /**
 *Logs out an admin user who has an active quiz session.
