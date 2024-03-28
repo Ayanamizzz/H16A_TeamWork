@@ -65,7 +65,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("Email is currently used by another user.", () => {
@@ -99,7 +99,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj3 = JSON.parse(res3.body as string);
-        expect(bodyObj3.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj3.error).toStrictEqual(expect.any(String));
     });
 
     test("Email does not satisfy.", () => {
@@ -118,7 +118,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
@@ -137,7 +137,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
@@ -156,7 +156,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameFirst is less than 2 characters", () => {
@@ -175,7 +175,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameFirst is more than 20 characters", () => {
@@ -194,7 +194,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameLast is less than 2 characters", () => {
@@ -213,7 +213,7 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 
     test("NameLast is more than 20 characters", () => {
@@ -232,6 +232,6 @@ describe("Test invalid input of adminUserDetailsUpdate", () => {
                 }
         );
         const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual({ error: expect.any(String) });
+        expect(bodyObj2.error).toStrictEqual(expect.any(String));
     });
 });
