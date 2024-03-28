@@ -8,6 +8,9 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { adminAuthRegister } from './auth'
+import { adminQuizCreate } from './quiz'
+
 
 // Set up web app
 const app = express();
@@ -36,6 +39,27 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 
+// adminQuizCreate
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const name = req.body.name as string;
+  const description = req.body.description as string;
+  
+  const result = adminQuizCreate(token, name, description);
+
+  // check error.
+  if ('error' in result) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      return res.status(401).json(result);
+    } else {
+      return res.status(400).json(result);
+    }
+  } 
+
+  return res.json(result);
+});
+
+
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const token = req.query.token as string;
@@ -50,7 +74,6 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 
   return res.json(result);
 });
-
 
 
 // ====================================================================
