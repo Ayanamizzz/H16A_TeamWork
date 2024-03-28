@@ -1,4 +1,3 @@
-// YOU SHOULD MODIFY THIS OBJECT BELOW ONLY
 export interface User {
   userId: number;
   nameFirst: string;
@@ -7,7 +6,8 @@ export interface User {
   password: string;
   numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
-  item: Array<string>;
+  oldPasswords: Array<string>;
+  token: Array<string>;
 }
 
 export interface Quiz {
@@ -16,21 +16,30 @@ export interface Quiz {
   description: string;
   timeCreated: number;
   timeLastEdited: number;
+  authUserId: number;
   ownerId: number
 
+}
+
+export interface Session {
+  sessionId: number,
+  userId: number,
 }
 
 export interface Data {
   users: User[];
   quizzes: Quiz[];
+  quizzesTrash: Quiz[];
+  sessions: Session[];
 }
 
 let data: Data = {
   users:[],
   quizzes: [],
+  quizzesTrash: [],
+  sessions: [],
 };
-
-
+  
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
@@ -56,7 +65,7 @@ function getData() {
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData) {
+function setData(newData: Data) {
   data = newData;
 }
 
