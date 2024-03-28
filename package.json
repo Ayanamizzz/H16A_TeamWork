@@ -1,9 +1,15 @@
 {
     "scripts": {
-        "test": "jest"
+        "test": "jest",
+        "tsc": "tsc --noEmit",
+        "ts-node": "ts-node",
+        "lint": "eslint '**/*.ts'",
+        "lint-fix": "eslint --fix '**/*.ts'"
     },
+    
     "dependencies": {
         "@types/jest": "^29.5.12",
+        "lint": "^0.8.19",
         "nanoid": "^5.0.6",
         "rewire": "^6.0.0",
         "save-dev": "^0.0.1-security",
@@ -15,6 +21,11 @@
         "@babel/cli": "^7.22.5",
         "@babel/core": "^7.22.5",
         "@babel/preset-env": "^7.22.5",
+        "@typescript-eslint/eslint-plugin": "^7.4.0",
+        "@typescript-eslint/parser": "^7.4.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-jest": "^27.9.0",
+        "eslint-plugin-react": "^7.34.1",
         "jest": "^28.1.0"
     },
     "type": "module"
