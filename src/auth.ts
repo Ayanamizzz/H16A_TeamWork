@@ -263,8 +263,7 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
 
 export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): object | {error: string} {
     // Get dataStore
-    const data = getData();
-  
+    const data = getData(); 
     // AuthUserId is not a valid user:
     // Set tracker check valid authUserId.
     const Now_user = getUser(token);
@@ -286,8 +285,8 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   
     // Check new Password has already been used before by this user:
     for (const password of Now_user.oldPasswords) {
-        if (oldPassword === Now_user.password) {
-            return { error: 'Code 400 -New Password has already been used before by this user' };
+        if (password === newPassword) {
+            return { error: 'Code 400 -    New Password has already been used before by this user' };
         }
     }
 
