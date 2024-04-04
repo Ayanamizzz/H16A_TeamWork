@@ -1,237 +1,547 @@
-import config from './config.json';
-import request from 'stnc-request-curl';
+import config from '../config.json';
+import request from 'sync-request-curl';
 
 const port = config.port;
-const curl = config.curl;
-
-
-beforeEach(() => {
-    request('DELETE', `${url}:${port}/v1/clear`, {});
-
-    const res1 = request(
-        'POST',
-                `${url}:${port}/v1/admin/auth/register`,
-                {
-                qs: {
-                    email: 'linked@gmail.com',
-                    password: 'linked123456',
-                    nameFirst: 'Jack',
-                    nameLast: 'Wang'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-    const bodyObj1 = JSON.parse(res1.body as string);
-});
-
+const url = config.url;
 
 describe("Test successful adminUserDetailsUpdate", () => {
+    beforeEach(() => {
+        request('DELETE', `${url}:${port}` + '/v1/clear', {});
+    });
+
     test("Test successful case", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harley',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2).toStrictEqual({});
+        const user = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+            json: {
+                email: 'MaJin@gmail.com',
+                password: 'Wind4eevv',
+                nameFirst: 'Ma',
+                nameLast: 'Jin'
+            }
+        });
+        const token = JSON.parse(user.body.toString()).token;
+        const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
+            json: {
+                token: token,
+                email: 'JinMa@gmail.com',
+                nameFirst: 'Jin',
+                nameLast: 'Ma',
+            }
+        });
+
+        const data = JSON.parse(response.body.toString());
+        expect(data).toStrictEqual({});
+        expect(response.statusCode).toStrictEqual(200);
     });
 });
+
+
 
 
 describe("Test invalid input of adminUserDetailsUpdate", () => {
-    test("AuthUserId is not a valid user", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId + 1,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harley',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    beforeEach(() => {
+        request('DELETE', `${url}:${port}` + '/v1/clear', {});
+    });
+
+    test("Token is not a valid user", () => {
+        const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
+            json: {
+                token: '',
+                email: 'Majin3321@gmail.com',
+                nameFirst: 'Ma',
+                nameLast: 'Jin'
+            },
+        });
+        const returnData = JSON.parse(response.body.toString());
+        expect(returnData).toStrictEqual({ error: expect.any(String) });
+        expect(response.statusCode).toStrictEqual(401);
     });
 
     test("Email is currently used by another user.", () => {
-        const res2 = request(
+        const user = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+            json: {
+                email: 'Majin@gmail.com',
+                password: 'Wind4eevv',
+                nameFirst: 'Ma',
+                nameLast: 'Jin'
+            },
+        });
+
+        request('POST', `${url}:${port}/v1/admin/auth/register`, {
+            json: {
+                email: 'z5437798@gmail.com',
+                password: 'LoveLive22',
+                nameFirst: 'Jin',
+                nameLast: 'Ma'
+            },
+        });
+        const user_Token = JSON.parse(user.body.toString()).token;
+
+        const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
+            json: {
+                token: user_Token,
+                email: 'z5437798@gmail.com',
+                nameFirst: 'Ma',
+                nameLast: 'Jin',
+            },
+        });
+        const data = JSON.parse(response.body.toString());
+        expect(response.statusCode).toStrictEqual(400);
+        expect(data).toStrictEqual({ error: expect.any(String) });
+    });
+
+
+    test('nameFirst is empty', () => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                }
+            }
+        );
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details', {
+            json: {
+                token: user1Token,
+                email: 'z5437798@gmail.com',
+                nameFirst: '',
+                nameLast: 'Jin'
+            },
+        });
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({ error: expect.any(String) });
+        expect(res.statusCode).toStrictEqual(400);
+    });
+
+
+    test('nameFirst is one character', () => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
+            json: {
+                email: 'z5437798@gmail.com',
+                password: 'Wind4eevv',
+                nameFirst: 'Ma',
+                nameLast: 'Jin'
+            }
+        });
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'M',
+                    nameLast: 'Jin'
+                },
+            }
+        );
+        const data = JSON.parse(res.body.toString());
+        expect(data).toStrictEqual({ error: expect.any(String) });
+        expect(res.statusCode).toStrictEqual(400);
+    });
+
+
+    test('nameFirst is 20 characters', () => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                }
+            }
+        );
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Wocaolenigeshabidongxidema',
+                    nameLast: 'Jin'
+                },
+            }
+        );
+        const data = JSON.parse(res.body.toString());
+        expect(data).toStrictEqual({ error: expect.any(String) });
+        expect(res.statusCode).toStrictEqual(400);
+    });
+
+    test('nameLast is empty', () => {
+        const user1 = request(
             'POST',
-                `${url}:${port}/v1/admin/auth/register`,
-                {
-                qs: {
-                    email: 'auhdia@gmail.com',
-                    password: 'hiahuL123456',
-                    nameFirst: 'Leo',
-                    nameLast: 'Yang'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+            `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
 
-        const res3 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Wade',
-                    nameLast: 'Alfred'    
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: ''
                 },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
+            }
         );
-        const bodyObj3 = JSON.parse(res3.body as string);
-        expect(bodyObj3.error).toStrictEqual(expect.any(String));
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({ error: expect.any(String) });
+        expect(res.statusCode).toStrictEqual(400);
     });
 
-    test("Email does not satisfy.", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'invalidemail',
-                    nameFirst: 'Harley',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+    test('nameLast is one character', () => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: 'J'
+                },
+            }
+        );
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({ error: expect.any(String) });
+        expect(res.statusCode).toStrictEqual(400);
     });
 
-    test("NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harle*%',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+
+
+    test('nameLast is 20 characters', () => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jinqewiqheiwqqwiejqi'
+                },
+            }
+        );
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({});
     });
 
-    test("NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or aposrtrophes.", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
+    test.each([
+        { invalidName: 'name1' },
+        { invalidName: '...' },
+        { invalidName: ':DD' },
+        { invalidName: 'one+one=two' },
+    ])(
+        'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes error',
+        ({ invalidName }) => {
+            const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
                 {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harley',
-                    nameLast: 'Le@%%'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+                    json: {
+                        email: 'z5437798@gmail.com',
+                        password: 'Wind4eevv',
+                        nameFirst: 'Ma',
+                        nameLast: 'Jin'
+                    }
                 }
+            );
+            const user1Token = JSON.parse(user1.body.toString()).token;
+
+            const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+                {
+                    json: {
+                        token: user1Token,
+                        email: 'z5437798@gmail.com',
+                        nameFirst: 'Ma',
+                        nameLast: invalidName
+                    },
+                }
+            );
+
+            const data = JSON.parse(res.body.toString());
+
+            expect(data).toStrictEqual({ error: expect.any(String) });
+            expect(res.statusCode).toStrictEqual(400);
+        }
+    );
+
+    test.each([
+        { weirdName: '  --  ' },
+        { weirdName: '     ' },
+        { weirdName: "'-'-'-" },
+    ])('Weird, but technically valid nameLast', ({ weirdName }) => {
+        const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: weirdName
+                },
+            }
+        );
+
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({});
     });
 
-    test("NameFirst is less than 2 characters", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'H',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
-                }
-        );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+});
+
+
+
+
+describe('PUT /v1/admin/user/details functionality', () => {
+    beforeEach(() => {
+        request('DELETE', `${url}:${port}` + '/v1/clear', { qs: {} });
     });
 
-    test("NameFirst is more than 20 characters", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'HarleyIhiwhdifkhwnikwljowifh',
-                    nameLast: 'Lew'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+    test('email is successfully updated', () => {
+        const user1 = request('POST',`${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        request('PUT', `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                },
+            }
+        );
+
+        const res = request('GET',`${url}:${port}` + '/v1/admin/user/details',
+            {
+                qs: {
+                    token: user1Token
+                }
+            }
+        );
+
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({
+            user: {
+                userId: expect.any(Number),
+                name: 'Ma Jin',
+                email: 'z5437798@gmail.com',
+                numSuccessfulLogins: 1,
+                numFailedPasswordsSinceLastLogin: 0,
+            }
+        });
     });
 
-    test("NameLast is less than 2 characters", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harley',
-                    nameLast: 'L'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+    test('email is successfully updated', () => {
+        const user1 = request('POST',`${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        request('PUT',`${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                },
+            }
+        );
+
+        const res = request('GET',`${url}:${port}` + '/v1/admin/user/details',
+            {
+                qs: {
+                    token: user1Token
+                }
+            }
+        );
+
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({
+            user: {
+                userId: expect.any(Number),
+                name: 'Ma Jin',
+                email: 'z5437798@gmail.com',
+                numSuccessfulLogins: 1,
+                numFailedPasswordsSinceLastLogin: 0,
+            }
+        });
     });
 
-    test("NameLast is more than 20 characters", () => {
-        const res2 = request(
-            'PUT',
-                `${url}:${port}/v1/admin/auth/details`,
-                {
-                qs: {
-                    token: bodyObj1.userId,
-                    email: 'auhdia@gmail.com',
-                    nameFirst: 'Harley',
-                    nameLast: 'Woeajbhiebuqjfhniksnid'    
-                },
-                // adding a timeout will help you spot when your server hangs
-                //   timeout: 100
+    test('nameFirst is successfully updated', () => {
+        const user1 = request('POST',`${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
                 }
+            }
         );
-        const bodyObj2 = JSON.parse(res2.body as string);
-        expect(bodyObj2.error).toStrictEqual(expect.any(String));
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        request(
+            'PUT',
+            `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Liu',
+                    nameLast: 'Jin'
+                },
+            }
+        );
+
+        const res = request('GET',`${url}:${port}` + '/v1/admin/user/details',
+            {
+                qs: {
+                    token: user1Token
+                }
+            }
+        );
+
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({
+            user: {
+                userId: expect.any(Number),
+                name: 'Liu Jin',
+                email: 'z5437798@gmail.com',
+                numSuccessfulLogins: 1,
+                numFailedPasswordsSinceLastLogin: 0,
+            }
+        });
+    });
+
+    test('nameLast is successfully updated', () => {
+        const user1 = request('POST',`${url}:${port}` + '/v1/admin/auth/register',
+            {
+                json: {
+                    email: 'z5437798@gmail.com',
+                    password: 'Wind4eevv',
+                    nameFirst: 'Ma',
+                    nameLast: 'Jin'
+                }
+            }
+        );
+
+        const user1Token = JSON.parse(user1.body.toString()).token;
+
+        request(
+            'PUT',
+            `${url}:${port}` + '/v1/admin/user/details',
+            {
+                json: {
+                    token: user1Token,
+                    email: 'z5437798@gmail.com',
+                    nameFirst: 'Ma',
+                    nameLast: 'Liu'
+                },
+            }
+        );
+
+        const res = request(
+            'GET',
+            `${url}:${port}` + '/v1/admin/user/details',
+            {
+                qs: {
+                    token: user1Token
+                }
+            }
+        );
+
+        const data = JSON.parse(res.body.toString());
+
+        expect(data).toStrictEqual({
+            user: {
+                userId: expect.any(Number),
+                name: 'Ma Liu',
+                email: 'z5437798@gmail.com',
+                numSuccessfulLogins: 1,
+                numFailedPasswordsSinceLastLogin: 0,
+            }
+        });
     });
 });
+
+
+
+
+

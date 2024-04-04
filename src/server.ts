@@ -123,7 +123,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
     return res.status(400).json(response);
   }
 
-  res.json(response);
+  return res.json(response);
 });
 
 // adminUserPasswordUpdate
@@ -136,9 +136,8 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   }
   if ('error' in response) {
     return res.status(400).json(response);
-
   }
-  res.json(response);
+  return res.json(response);
 });
 
 
@@ -175,6 +174,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+
 // adminQuizRemove
 app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizId);
@@ -192,6 +192,7 @@ app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
 
   return res.json(result);
 });
+
 
 
 // adminQuizInfo
@@ -216,6 +217,8 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 });
 
 
+
+
 // adminNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -234,6 +237,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 
   return res.json(response);
 });
+ 
 
 
 // adminQuizDescription
