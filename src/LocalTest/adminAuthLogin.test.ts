@@ -20,12 +20,13 @@ describe("adminAuthLogin", () => {
     test("Error: Email does not exist.", () => {
         //report any error
 
-        let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+        let response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
             json: {
                 email: 'sby1010284295@gmail.com',
-                password: 'wind4ever233qwq',
+                password: 'Wind4ever233',
             },
         });
+        expect(response.statusCode).toStrictEqual(400);
         const returnData = JSON.parse(response.body.toString());
         expect(returnData).toStrictEqual(ERROR);
     });
@@ -43,14 +44,14 @@ describe("adminAuthLogin", () => {
         let returnData = JSON.parse(response.body.toString());
 
         expect(returnData).toStrictEqual({ 
-            authUserId: expect.any(Number),
+            token: expect.any(String),
         });
 
         //Login with a new user
         response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
             json: {
                 email: 'sby1010284295@gmail.com',
-                password: 'lovelive123',
+                password: 'Lovelive123',
             },
         });
 
@@ -62,13 +63,18 @@ describe("adminAuthLogin", () => {
 });
 
 describe("Successful check", () => {
+    // everytime clear
+    beforeEach(() => {
+        //Clear data store when i do test;
+        request('DELETE', `${url}:${port}/v1/clear`, {});
+    });
     // successful to check Password
     test("Success: Password is correct.", () => {
 
         let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
             json: {
                 email: 'sby1010284295@gmail.com',
-                password: 'wind4ever233qwq',
+                password: 'Wind4ever233',
                 nameFirst: 'Ma',
                 nameLast: 'Jin'
             },
@@ -77,20 +83,20 @@ describe("Successful check", () => {
         let returnData = JSON.parse(response.body.toString());
 
         expect(returnData).toStrictEqual({ 
-            authUserId: expect.any(Number),
+            token: expect.any(String),
         });
 
         //Login with a new user
         response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
             json: {
                 email: 'sby1010284295@gmail.com',
-                password: 'wind4ever233qwq',
+                password: 'Wind4ever233',
             },
         });
-
+        expect(response.statusCode).toStrictEqual(200);
         returnData = JSON.parse(response.body.toString());
         expect(returnData).toStrictEqual({
-            authUserId: expect.any(Number),
+            token: expect.any(String),
         });
     });
 

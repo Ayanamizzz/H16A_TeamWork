@@ -20,7 +20,7 @@ describe("adminAuthRegister", () => {
         let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
             json: {
                 email: 'z5437798@gmail.com',
-                password: 'StrongPassword123',
+                password: 'Password123',
                 nameFirst: 'Ma',
                 nameLast: 'Jin'
             },
@@ -36,11 +36,12 @@ describe("adminAuthRegister", () => {
         response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
             json: {
                 email: 'z5437798@gmail.com',
-                password: 'StrongPassword123',
-                nameFirst: 'Jin',
-                nameLast: 'Ma'
+                password: 'Password123',
+                nameFirst: 'Sha',
+                nameLast: 'Bi'
             },
         });
+        expect(response.statusCode).toStrictEqual(400);
         returnData = JSON.parse(response.body.toString());
         expect(returnData).toStrictEqual(ERROR);
     });
@@ -61,7 +62,7 @@ describe("adminAuthRegister", () => {
         
         const returnData = JSON.parse(response.body.toString());
         expect(returnData).toStrictEqual({
-            authUserId: expect.any(Number),
+            token: expect.any(String),
         });
     });
 
@@ -236,7 +237,7 @@ describe("adminAuthRegister", () => {
 
     });
 
-    test("Error: Email address is used by another user.", () => {
+    test("Code 200 - Success: Successful register a user", () => {
     //create a new user
         let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
             json: {
