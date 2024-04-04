@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import { getUser, getUserId } from './other'
 import { User } from './dataStore';
 
+
 interface userInDetail {
     userId: number;
     name: string;
