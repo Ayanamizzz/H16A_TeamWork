@@ -16,7 +16,6 @@ export interface Quiz {
   description: string;
   timeCreated: number;
   timeLastEdited: number;
-  authUserId: number;
   ownerId: number
 
 }

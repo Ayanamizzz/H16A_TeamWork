@@ -46,7 +46,7 @@ export function getUserId(token: string): number | null {
  * @returns {User | null}
  */
 
-export function getUser(token: string): User | null {
+export function getUser(token: string): User {
     if (!token) {
         return null;
     }
@@ -55,11 +55,9 @@ export function getUser(token: string): User | null {
 
     for (const user of data.users) {
         for (const item of user.token) {
-            if (item === token) {
+            if (token = item) {
                 return user;
             }
         }
     }
-    return null;
-
 }
