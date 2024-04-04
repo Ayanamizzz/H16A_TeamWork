@@ -123,7 +123,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
     return res.status(400).json(response);
   }
 
-  res.json(response);
+  return res.json(response);
 });
 
 // adminUserPasswordUpdate
@@ -136,9 +136,8 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   }
   if ('error' in response) {
     return res.status(400).json(response);
-
   }
-  res.json(response);
+  return res.json(response);
 });
 
 

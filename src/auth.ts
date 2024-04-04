@@ -201,41 +201,41 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
     const data = getData();
 
     // Check userId by token:
-    const userId = getUserId(token);
-    if (userId === null) {
+    const Nowuser = getUser(token);
+    if (!Nowuser) {
         // Token is empty.
-        return { error: 'Token does not refer to valid logged in user session' };
+        return { error: 'Code 401 -  Token does not refer to valid logged in user session' };
     }
 
     // Query all user's email whether it is query email
     for (const user of data.users) {
-        if (user.email === email) {
-            return { error: 'Email address is used by another user' };
+        if (user.email === email && user.userId !== Nowuser.userId) {
+            return { error: 'Code 400 - Email address is used by another user' };
         }
     }
 
     // Call the isEmail function of the website to determine whether it is an email address
     if (!validator.isEmail(email)) {
-        return { error: 'Email does not satisfy' };
+        return { error: 'Code 400 - Email does not satisfy' };
     };
 
     // Name must be at least two characters long， Maximum 20 characters
     const isValidName = /^[a-zA-Z\s'-]+$/;
     if (!isValidName.test(nameFirst)) {
-        return { error: 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+        return { error: 'Code 400 - nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
     }
 
     if (!isValidName.test(nameLast)) {
-        return { error: 'nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+        return { error: 'Code 400 - nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
     }
 
     // Check namefirst or namefirst is less than 2 characters or more than 20 characters.
     if (nameFirst.length < 2 || nameFirst.length > 20) {
-        return { error: 'NameFirst is less than 2 characters or more than 20 characters' };
+        return { error: 'Code 400 - NameFirst is less than 2 characters or more than 20 characters' };
     }
 
     if (nameLast.length < 2 || nameLast.length > 20) {
-        return { error: 'NameLast is less than 2 characters or more than 20 characters' };
+        return { error: 'Code 400 - NameLast is less than 2 characters or more than 20 characters' };
     }
 
     // Find the user depends on the given authUserId, then update the details.
@@ -269,7 +269,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
     // Set tracker check valid authUserId.
     const Now_user = getUser(token);
   
-    if (!Now_user) {
+    if (Now_user === null) {
       // AuthUserId is not a valid user.
       return { error: 'Code 401 - AuthUserId is not a valid user' };
     }
@@ -308,7 +308,7 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
     Now_user.password = newPassword;
     Now_user.oldPasswords.push(oldPassword);
     setData(data);
-    
+
     return {};
 }
 
