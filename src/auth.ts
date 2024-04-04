@@ -287,28 +287,28 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
     // Check new Password has already been used before by this user:
     for (const password of Now_user.oldPasswords) {
         if (password === newPassword) {
-            return { error: 'Code 400 -    New Password has already been used before by this user' };
+            return { error: 'Code 400 - New Password has already been used before by this user' };
         }
     }
 
     // Check new Password is less than 8 characters:
     if (newPassword.length < 8) {
         return {
-            error: 'New Password is less than 8 characters.'
+            error: 'Code 400 - New Password is less than 8 characters.'
         };
     }
 
     // Check whether newPassword contains at least one number and at least one letter:
     const hasLetter = /[A-Za-z]/.test(newPassword);
     const hasNumber = /\d/.test(newPassword);
-    if (!hasLetter || !hasNumber) {
+    if (!hasLetter && !hasNumber) {
         return { error: 'Code 400 - Password does not contain at least one number and at least one letter' };
     }
   
     Now_user.password = newPassword;
     Now_user.oldPasswords.push(oldPassword);
-
     setData(data);
+    
     return {};
 }
 

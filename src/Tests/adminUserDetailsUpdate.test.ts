@@ -1,8 +1,8 @@
-import config from './config.json';
-import request from 'stnc-request-curl';
+import config from '../config.json';
+import request from 'sync-request-curl';
 
 const port = config.port;
-const curl = config.curl;
+const url = config.url;
 
 
 beforeEach(() => {

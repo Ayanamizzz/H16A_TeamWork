@@ -1,22 +1,6 @@
-import { getData, setData, User, Quiz } from "./dataStore";
+import { getData, setData } from "./dataStore";
+import { User } from './dataStore.js';
 import { getUser, getUserId } from './other'
-
-export interface ErrorResponse {
-    error: string
-}
-
-export interface QuizInfoResponseV1 {
-    quizId: number;
-    name: string;
-    timeCreated: number;
-    timeLastEdited: number;
-    description: string;
-    // numQuestions: number;
-    // questions: [];
-    // duration: number;
-}
-
-
 
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
@@ -366,15 +350,15 @@ export function adminQuiztrash(token: string): { trash: {name: string, quizId: n
     const trash: {name: string, quizId: number}[] = [];
     for (const quiz of data.quizzes) {
         
-//         trash.push({
-//             quizId: quiz.quizId,
-//             name: quiz.name
-//         });
-//     }
+        trash.push({
+            quizId: quiz.quizId,
+            name: quiz.name
+        });
+    }
     
-//     setData(data);
-//     return { trash };
-// }
+    setData(data);
+    return { trash };
+}
 
 
 // Description
@@ -392,25 +376,25 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
     const data = getData();
     const user = getUser(token);
     
-//     if (!user) {
-//         return { error: 'Code 401 - Token is empty or invalid'}
-//     }
+    if (!user) {
+        return { error: 'Code 401 - Token is empty or invalid'}
+    }
 
-//     const trashQuizIndex = data.quizzesTrash.findIndex(q => q.quizId === quizId);
-//     if (trashQuizIndex === -1) {
-//         return { error: 'Code 400 - Quiz ID refers to a quiz that is not currently in the trash'}
-//     }
+    const trashQuizIndex = data.quizzesTrash.findIndex(q => q.quizId === quizId);
+    if (trashQuizIndex === -1) {
+        return { error: 'Code 400 - Quiz ID refers to a quiz that is not currently in the trash'}
+    }
 
-//     const trashQuiz = data.quizzesTrash[trashQuizIndex];
+    const trashQuiz = data.quizzesTrash[trashQuizIndex];
 
-//     const sameName = data.quizzes.some(q => q.name === trashQuiz.name);
-//     if (sameName) {
-//         return { error: 'Code 400 - Quiz name of the restored quiz is already used by another active quiz'}
-//     }
+    const sameName = data.quizzes.some(q => q.name === trashQuiz.name);
+    if (sameName) {
+        return { error: 'Code 400 - Quiz name of the restored quiz is already used by another active quiz'}
+    }
 
-//     if (trashQuiz.authUserId !== user.userId) {
-//         return { error: 'Code 403 - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz'}
-//     }
+    if (trashQuiz.authUserId !== user.userId) {
+        return { error: 'Code 403 - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz'}
+    }
 
     trashQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
     data.quizzes.push(trashQuiz);
