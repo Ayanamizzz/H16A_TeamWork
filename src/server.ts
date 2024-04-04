@@ -25,8 +25,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate,
   adminQuiztrash,
-  adminQuizRestore,
-
+  //adminQuizRestore,
 } from './quiz';
 import { clear } from './other';
 
@@ -63,6 +62,7 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
   }
   return res.json(response);
 });
+
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
@@ -112,112 +112,38 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
 });
 
 // adminUserDetailsUpdate
-app.put('/v1/admin/auth/details', (req: Request, res: Response) => {
-  const token = req.body.token as string;
-  const email = req.body.email as string;
-  const nameFirst = req.body.nameFirst as string;
-  const nameLast = req.body.nameLast as string;
+app.put('/v1/admin/user/details', (req: Request, res: Response) => {
+  const { token, email, nameFirst, nameLast } = req.body;
+  const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
 
-  const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
-
-  // check error.
-  if ('error' in result) {
-    if (result.error === 'Token does not refer to valid logged in user session') {
-      return res.status(401).json(result);
-    } else {
-      return res.status(400).json(result);
-    }
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
   }
 
-  return res.json(result);
+  return res.json(response);
+});
+
+// adminUserPasswordUpdate
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  const { token, oldPassword, newPassword } = req.body;
+  const response = adminUserPasswordUpdate(token, oldPassword, newPassword);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  return res.json(response);
 });
 
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
-  const result = adminQuizCreate(token, name, description);
-
-  // check error.
-  if ('error' in result) {
-    if (result.error === 'Token does not refer to valid logged in user session') {
-      return res.status(401).json(result);
-    } else {
-      return res.status(400).json(result);
-    }
-  } 
-
-  return res.json(result);
-});
-
-
-
-
-// adminAuthRegister
-app.get('/v1/admin/auth/register', (req: Request, res: Response) => {
-  const body = req.body;
-  const { email, password, nameFirst, nameLast } = body;
-
-  const response = adminAuthRegister(email, password, nameFirst, nameLast);
-  if ('error' in response) {
-    return res.status(400).json(response);
-  }
-  res.json(response)
-});
-
-
-// adminAuthLogin
-app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  const response = adminAuthLogin(email, password);
-  if ('error' in response) {
-    return res.status(400).json(response);
-  }
-  res.json(response);
-});
-
-
-// adminAuthLogout
-app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
-  const token = req.body.token;
-
-  const response = adminAuthLogout(token);
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
-  res.json(response);
-});
-
-
-// adminUserDetailsUpdate
-app.put('/v1/admin/auth/details', (req: Request, res: Response) => {
-  const token = req.body.token as string;
-  const email = req.body.email as string;
-  const nameFirst = req.body.nameFirst as string;
-  const nameLast = req.body.nameLast as string;
-
-  const result = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
-
-  // check error.
-  if ('error' in result) {
-    if (result.error === 'Token does not refer to valid logged in user session') {
-      return res.status(401).json(result);
-    } else {
-      return res.status(400).json(result);
-    }
-  }
-
-  return res.json(result);
-});
-
-
-// adminQuizCreate
-app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  const token = req.query.token as string;
-  const name = req.body.name as string;
-  const description = req.body.description as string;
-  
   const result = adminQuizCreate(token, name, description);
 
   // check error.
