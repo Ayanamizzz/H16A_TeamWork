@@ -1,0 +1,25 @@
+[33m0640b1c[m[33m ([m[1;36mHEAD -> [m[1;32msrc/adminQuizDescription.js[m[33m, [m[1;31morigin/adminQuizDescription.js[m[33m)[m HEAD@{0}: checkout: moving from master to src/adminQuizDescription.js
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{1}: checkout: moving from src/adminQuizInfo.js to master
+[33ma445114[m[33m ([m[1;31morigin/src/adminQuizInfo.js[m[33m, [m[1;32msrc/adminQuizInfo.js[m[33m)[m HEAD@{2}: commit: change non-english comment from the testcase
+[33mc4544cc[m HEAD@{3}: checkout: moving from master to src/adminQuizInfo.js
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{4}: checkout: moving from src/adminQuizInfo.js to master
+[33mc4544cc[m HEAD@{5}: checkout: moving from src/adminQuizDescription.js to src/adminQuizInfo.js
+[33m0640b1c[m[33m ([m[1;36mHEAD -> [m[1;32msrc/adminQuizDescription.js[m[33m, [m[1;31morigin/adminQuizDescription.js[m[33m)[m HEAD@{6}: commit: add documentation information aboyt return error message
+[33m994e2dd[m HEAD@{7}: Branch: renamed refs/heads/adminQuizDescription.js to refs/heads/src/adminQuizDescription.js
+[33m994e2dd[m HEAD@{9}: commit: changed the datastore for universal formation
+[33mf439803[m HEAD@{10}: commit: adminQuizDescription function is completed , and passed all the test, waiting for merge
+[33mfb2adc4[m HEAD@{11}: commit: the testing case for adminQuizDescription is completed, fixing more variable typing issue and linting issues
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{12}: checkout: moving from master to adminQuizDescription.js
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{13}: checkout: moving from src/adminQuizNameUpdate.js to master
+[33m33a9ca8[m[33m ([m[1;31morigin/src/adminQuizNameUpdate.js[m[33m, [m[1;32msrc/adminQuizNameUpdate.js[m[33m)[m HEAD@{14}: commit: the function of adminQuizNameUpdate is completed, all the test are passed
+[33mddeb8ab[m HEAD@{15}: commit: add and remove the clear function
+[33m992b44d[m HEAD@{16}: commit: adding the universial datastore formation
+[33m3fa431a[m HEAD@{17}: commit: fixing linting issue of error cases
+[33m8ebe52a[m HEAD@{18}: checkout: moving from master to src/adminQuizNameUpdate.js
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{19}: checkout: moving from src/adminQuizInfo.js to master
+[33mc4544cc[m HEAD@{20}: commit: delete other people's what I forgot to detele
+[33mb6c5750[m HEAD@{21}: checkout: moving from src/adminQuizNameUpdate to src/adminQuizInfo.js
+[33m8ebe52a[m HEAD@{22}: commit: remove this file
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{23}: checkout: moving from master to src/adminQuizNameUpdate
+[33me131789[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{24}: checkout: moving from src/adminQuizInfo.js to master
+[33mb6c5750[m HEAD@{25}: commit: function adminQuizInfo is completed and passed all test

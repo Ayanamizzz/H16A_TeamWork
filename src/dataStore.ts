@@ -11,12 +11,11 @@ export interface User {
 }
 
 export interface Quiz {
-  quizId: number; 
-  name: string; 
+  quizId: number;
+  name: string;
   description: string;
   timeCreated: number;
   timeLastEdited: number;
-  authUserId: number;
   ownerId: number
 
 }
@@ -34,12 +33,11 @@ export interface Data {
 }
 
 let data: Data = {
-  users:[],
+  users: [],
   quizzes: [],
   quizzesTrash: [],
   sessions: [],
 };
-  
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
