@@ -6,28 +6,28 @@ const url = config.url;
 
 describe('PUT /v1/admin/user/password tests', () => {
   beforeEach(() => {
-    request('DELETE', `${url}:${port}` + '/v1/clear', {});
+    request('DELETE', `${url}:${port}`+ '/v1/clear', {});
   });
 
   test('PUT /v1/admin/user/password success', () => {
     const user = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
-      json: {
-        email: 'z5437798@gmail.com',
-        password: 'Wind4vvee',
-        nameFirst: 'Ma',
-        nameLast: 'Jin'
+        json: {
+          email: 'z5437798@gmail.com',
+          password: 'Wind4vvee',
+          nameFirst: 'Ma',
+          nameLast: 'Jin'
+        }
       }
-    }
     );
 
     const token = JSON.parse(user.body.toString()).token;
     const res = request('PUT', `${url}:${port}` + '/v1/admin/user/password', {
-      json: {
-        token: token,
-        oldPassword: 'Wind4vvee',
-        newPassword: 'LoveLive742'
-      },
-    }
+        json: {
+          token: token,
+          oldPassword: 'Wind4vvee',
+          newPassword: 'LoveLive742'
+        },
+      }
     );
 
     const data = JSON.parse(res.body.toString());
@@ -42,12 +42,12 @@ describe('PUT /v1/admin/user/password tests', () => {
 
     test('Token is empty or invalid', () => {
       const res = request('PUT', `${url}:${port}` + '/v1/admin/user/password', {
-        json: {
-          token: '1',
-          oldPassword: 'Wind4eevv',
-          newPassword: 'Wind4eevv',
-        },
-      }
+          json: {
+            token: '1',
+            oldPassword: 'Wind4eevv',
+            newPassword: 'Wind4eevv',
+          },
+        }
       );
       const data = JSON.parse(res.body.toString());
 
@@ -55,7 +55,6 @@ describe('PUT /v1/admin/user/password tests', () => {
       expect(res.statusCode).toStrictEqual(401);
     });
 
-    /*
     test('Old password is not the correct old password error', () => {
       const user = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
           json: {
@@ -204,7 +203,7 @@ describe('PUT /v1/admin/user/password tests', () => {
       const data = JSON.parse(res.body.toString());
       expect(data).toStrictEqual({ });
     });
-    */
+
     test.each([
       { invalidPassword: 'invalidpassword' },
       { invalidPassword: '12345678' },
@@ -252,40 +251,40 @@ describe('adminUserPasswordUpdate functionality', () => {
   });
   test('adminUserPasswordUpdate functionality', () => {
     const user = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
-      json: {
-        email: 'harrypotter@gmail.com',
-        password: 'passw0rd',
-        nameFirst: 'Harry',
-        nameLast: 'Potter'
+        json: {
+          email: 'harrypotter@gmail.com',
+          password: 'passw0rd',
+          nameFirst: 'Harry',
+          nameLast: 'Potter'
+        }
       }
-    }
     );
 
     const token = JSON.parse(user.body.toString()).token;
     request('PUT', `${url}:${port}` + '/v1/admin/user/password', {
-      json: {
-        token: token,
-        oldPassword: 'passw0rd',
-        newPassword: 'newPassw0rd'
-      },
-    }
+        json: {
+          token: token,
+          oldPassword: 'passw0rd',
+          newPassword: 'newPassw0rd'
+        },
+      }
     );
 
     request('PUT', `${url}:${port}` + '/v1/admin/user/password', {
-      json: {
-        token: token,
-        oldPassword: 'newPassw0rd',
-        newPassword: 'letmein123'
-      },
-    }
+        json: {
+          token: token,
+          oldPassword: 'newPassw0rd',
+          newPassword: 'letmein123'
+        },
+      }
     );
 
-    const res = request('POST', `${url}:${port}` + '/v1/admin/auth/login', {
-      json: {
-        email: 'harrypotter@gmail.com',
-        password: 'letmein123'
-      },
-    }
+    const res = request('POST',`${url}:${port}` + '/v1/admin/auth/login', {
+        json: {
+          email: 'harrypotter@gmail.com',
+          password: 'letmein123'
+        },
+      }
     );
 
     const data = JSON.parse(res.body.toString());
@@ -293,3 +292,4 @@ describe('adminUserPasswordUpdate functionality', () => {
     expect(data).toStrictEqual({ token: expect.any(String) });
   });
 });
+

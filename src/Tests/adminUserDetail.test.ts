@@ -3,12 +3,29 @@ import config from '../config.json';
 
 const port = config.port;
 const url = config.url;
-// const ERROR = { error: expect.any(String) };
+const ERROR = { error: expect.any(String) };
 
 describe('adminUserDetails', () => {
   beforeEach(() => {
     // Clear the data store before each test if necessary
     request('DELETE', `${url}:${port}/v1/clear`, {});
+  });
+
+  // Test each token Input.
+  test.each([
+    { token: 10 },
+    { token: 12 },
+    { token: 'me' },
+    { token: '!2das@@3' },
+  ])("invalid user ID : '$invalidID'", ({ token }) => {
+    const response = request('GET', `${url}:${port}/v1/admin/user/details`, {
+      json: {
+        Token: token,
+      },
+    });
+    //expect(response.statusCode).toStrictEqual(401);
+    const data = JSON.parse(response.body.toString());
+    expect(data).toStrictEqual(ERROR);
   });
 
   test('Success: Returns user details for valid authentication', () => {
@@ -21,6 +38,7 @@ describe('adminUserDetails', () => {
         nameLast: 'Weasley',
       },
     });
+
 
     let userData = JSON.parse(response.body.toString());
     // Ensure that the data returns a user Id.
@@ -41,6 +59,7 @@ describe('adminUserDetails', () => {
     expect(userData).toStrictEqual({
       token: expect.any(String),
     });
+
 
     // Now, retrieve user details based on the logged-in user's ID.
     response = request('GET', `${url}:${port}/v1/admin/user/details`, {

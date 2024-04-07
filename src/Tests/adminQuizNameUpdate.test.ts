@@ -4,6 +4,7 @@ import config from '../config.json';
 const port = config.port;
 const url = config.url;
 
+
 describe('Success Cases', () => {
   test('success', () => {
     request('DELETE', `${url}:${port}/v1/admin/other/clear`, {});
@@ -20,27 +21,28 @@ describe('Success Cases', () => {
     const token = body1.token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
-      json: {
-        token: token,
-        name: 'quiz1',
-        description: 'A description'
+      json: { 
+        token: token, 
+        name: 'quiz1', 
+        description: 'A description' 
       },
     });
     const body2 = JSON.parse(res2.body.toString());
     const quizId = body2.quizId;
 
-    const res3 = request('PUT', `${url}:${port}/v1/admin/quiz/${quizId}/name`, {
-      json: {
-        token: token,
-        quizId: quizId,
-        name: 'quiz2'
+    const res3 = request('PUT', `${url}:${port}/v1/admin/quiz/{quizId}/name`, {
+      json: { 
+        token: token, 
+        quizId: quizId, 
+        name: 'quiz2' 
       },
     });
-    const body3 = JSON.parse(res3.body.toString());
-    expect(res3.statusCode).toStrictEqual(200);
 
+    expect(res3.statusCode).toStrictEqual(200);
+    const body3 = JSON.parse(res3.body.toString());
     expect(body3).toStrictEqual({});
   });
+  
 });
 
 // describe('Error Cases', () => {
@@ -58,7 +60,7 @@ describe('Success Cases', () => {
 //       },
 //     });
 //     const token = JSON.parse(authRegisterRes.body.toString()).token;
-
+    
 //     const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
 //       json: { token, name: 'Original Quiz Name', description: 'A description' },
 //     });
@@ -113,7 +115,7 @@ describe('Success Cases', () => {
 //       },
 //     });
 //     const token = JSON.parse(authRegisterRes.body.toString()).token;
-
+    
 //     const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
 //       json: { token, name: 'Original Quiz Name', description: 'A description' },
 //     });
@@ -136,7 +138,7 @@ describe('Success Cases', () => {
 //       },
 //     });
 //     const token = JSON.parse(authRegisterRes.body.toString()).token;
-
+    
 //     const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
 //       json: { token, name: 'Original Quiz Name', description: 'A description' },
 //     });
@@ -159,7 +161,7 @@ describe('Success Cases', () => {
 //       },
 //     });
 //     const token = JSON.parse(authRegisterRes.body.toString()).token;
-
+    
 //     const quizCreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
 //       json: { token, name: 'Original Quiz Name', description: 'A description' },
 //     });
@@ -182,7 +184,7 @@ describe('Success Cases', () => {
 //       },
 //     });
 //     const token = JSON.parse(authRegisterRes.body.toString()).token;
-
+    
 //     const quiz1CreateRes = request('POST', `${url}:${port}/v1/admin/quiz`, {
 //       json: { token, name: 'Unique Name', description: 'Description for the first quiz' },
 //     });
@@ -199,3 +201,4 @@ describe('Success Cases', () => {
 //     expect(JSON.parse(updateRes.body.toString()).error).toStrictEqual(expect.any(String));
 //   });
 // });
+

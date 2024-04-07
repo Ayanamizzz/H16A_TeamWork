@@ -15,7 +15,7 @@ import {
   adminUserDetailsUpdate,
   adminUserPasswordUpdate,
   adminAuthLogout
-} from './auth';
+} from './auth'
 
 import {
   adminQuizList,
@@ -25,7 +25,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate,
   adminQuiztrash,
-  // adminQuizRestore,
+  //adminQuizRestore,
 } from './quiz';
 import { clear } from './other';
 
@@ -74,6 +74,7 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   return res.json(response);
 });
 
+
 // adminAuthLogin
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -84,6 +85,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
 
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
@@ -100,12 +102,11 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   // const token = parseInt(req.query.token as string, 10);
   const token = req.query.token as string;
-
   const response = adminUserDetails(token);
 
   if ('error' in response) {
     return res.status(400).json(response);
-  }
+  };
 
   return res.json(response);
 });
@@ -139,6 +140,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   return res.json(response);
 });
 
+
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
@@ -151,10 +153,11 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
     } else {
       return res.status(400).json(result);
     }
-  }
+  } 
 
   return res.json(result);
 });
+
 
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
@@ -164,12 +167,13 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   // check error.
   if ('error' in result && result.error === 'Token does not refer to valid logged in user session') {
     return res.status(401).json(result);
-  }
+  } 
   if ('error' in result) {
     return res.status(400).json(result);
   }
   return res.json(result);
 });
+
 
 // adminQuizRemove
 app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
@@ -181,13 +185,15 @@ app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
   // check error.
   if ('error' in result && result.error === 'Token does not refer to valid logged in user session') {
     return res.status(401).json(result);
-  }
+  } 
   if ('error' in result) {
     return res.status(403).json(result);
-  }
+  } 
 
   return res.json(result);
 });
+
+
 
 // adminQuizInfo
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
@@ -210,6 +216,9 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   return res.json(response);
 });
 
+
+
+
 // adminNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -228,6 +237,8 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 
   return res.json(response);
 });
+ 
+
 
 // adminQuizDescription
 app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
@@ -250,6 +261,7 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   return res.json({});
 });
 
+
 // adminQuizTrash
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.query.token as string;
@@ -266,6 +278,7 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
 
 // adminQuizRestore
 app.post('/v1/admin/quiz/restore', (req: Request, res: Response) => {
@@ -284,6 +297,7 @@ app.post('/v1/admin/quiz/restore', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
