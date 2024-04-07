@@ -417,3 +417,4 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 //     setData(data);
 //     return {};
 // }
+

@@ -61,3 +61,4 @@ export function getUser(token: string): User {
         }
     }
 }
+

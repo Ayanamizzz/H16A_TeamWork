@@ -1,41 +1,37 @@
-// Description:
-// Reset the state of the application back to the start.
-import { getData, setData } from "../dataStore";
+import request from 'sync-request-curl';
+import config from '../config.json';
 
-/**
- * 
- * @returns {Object} empty object
- * 
- */
+const port = config.port;
+const url = config.url;
+// const ERROR = { error: expect.any(String) };
 
-export function clear(): {} {
-    const data = getData();
-    data.users = [];
-    data.quizzes = [];
-    data.quizzesTrash = [];
-    data.sessions = [];
+describe('test clear', () => {
+  beforeEach(() => {
+    // Clear the data store before each test if necessary
+    request('DELETE', `${url}:${port}/v1/clear`, {});
+  });
 
-    setData(data);
-    return {};
-}
-  
+  test('Success: test clear', () => {
+    // Create a new user.
+    let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+      json: {
+        email: 'HGindaHouse@hogwarts.com',
+        password: 'Hocrux2387',
+        nameFirst: 'Ginny',
+        nameLast: 'Weasley',
+      },
+    });
+    response = request('DELETE', `${url}:${port}/v1/clear`, {});
+    expect(response.statusCode).toStrictEqual(200);
+    // Log in as the new user.
 
-// Description
-// Given token as string and returns the following userId.
+    response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'HGindaHouse@hogwarts.com',
+        password: 'Hocrux2387',
+      },
+    });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+});
 
-/*
- * @params {number} token / Id of user after registration
- * @returns {number | null} userId / Id of user after registration | null / null
- * 
-*/
-
-export function getUserId(token: string): number | null {
-    const data = getData();
-    const user = data.users.find(user => user.token.includes(token));
-    // Return userId if token is included, otherwise return null
-    if (user) {
-        return user.userId
-    } else {
-        return null;
-    }
-}

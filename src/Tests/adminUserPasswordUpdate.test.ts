@@ -292,3 +292,4 @@ describe('adminUserPasswordUpdate functionality', () => {
     expect(data).toStrictEqual({ token: expect.any(String) });
   });
 });
+

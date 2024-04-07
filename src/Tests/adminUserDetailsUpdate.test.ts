@@ -542,6 +542,3 @@ describe('PUT /v1/admin/user/details functionality', () => {
 });
 
 
-
-
-
