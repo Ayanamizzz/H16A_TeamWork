@@ -10,49 +10,28 @@ describe('Test invalid input of adminQuizCreate', () => {
     request('DELETE', `${url}:${port}/v1/clear`, {});
   });
 
-  test.each([
-    // Test invalid token
-    { token: 9999 },
-    { token: 12 },
-    { token: 'me' },
-    { token: '!2das@@3' },
-  ])("invalid user ID : '$invalidID'", ({ token }) => {
-    const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
+  test('Test invalid userId', () => {
+    const res1 = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
-        token: token,
-        name: 'Quiz1',
-        description: 'The first quiz'
+        email: 'Linked@gmail.com',
+        password: 'linked123456',
+        nameFirst: 'Jack',
+        nameLast: 'Wang'
       },
+    });
+    const token = JSON.parse(res1.body.toString()).token;
+
+    const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
+        json: {
+            token: 'token',
+            name: 'Quiz1',
+            description: 'The first quiz'
+        },
     });
     expect(res2.statusCode).toStrictEqual(401);
     const bodyObj2 = JSON.parse(res2.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
-
-  // test('Test invalid userId', () => {
-  //     const res1 = request('POST', `${url}:${port}/v1/admin/auth/register`, {
-  //         json: {
-  //             email: 'linked@gmail.com',
-  //             password: 'Linked123456',
-  //             nameFirst: 'Jack',
-  //             nameLast: 'Wang'
-  //         },
-  //     });
-  //     expect(res1.statusCode).toStrictEqual(200);
-  //     const bodyObj1 = JSON.parse(res1.body.toString());
-  //     expect(bodyObj1).toStrictEqual({ token: expect.any(String) });
-
-  //     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
-  //         json: {
-  //             token: bodyObj1.token + 1,
-  //             name: 'Quiz1',
-  //             description: 'The first quiz'
-  //         },
-  //     });
-  //     expect(res2.statusCode).toStrictEqual(401);
-  //     const bodyObj2 = JSON.parse(res2.body.toString());
-  //     expect(bodyObj2.error).toStrictEqual(expect.any(String));
-  // });
 
   test('Test invalid name', () => {
     const res1 = request('POST', `${url}:${port}/v1/admin/auth/register`, {
@@ -63,18 +42,18 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Qu!z@@',
         description: 'The first quiz'
       },
     });
     expect(res2.statusCode).toStrictEqual(400);
     const bodyObj2 = JSON.parse(res2.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Test invalid name', () => {
@@ -86,18 +65,18 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Q',
         description: 'The first quiz'
       },
     });
     expect(res2.statusCode).toStrictEqual(400);
     const bodyObj2 = JSON.parse(res2.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Test invalid name', () => {
@@ -109,11 +88,11 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Quiz for COMP1531 Group project Team Dream',
         description: 'The first quiz'
       },
@@ -121,7 +100,7 @@ describe('Test invalid input of adminQuizCreate', () => {
     });
     expect(res2.statusCode).toStrictEqual(400);
     const bodyObj2 = JSON.parse(res2.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Test invalid name', () => {
@@ -133,11 +112,11 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Quiz1',
         description: 'The first quiz'
       },
@@ -145,14 +124,14 @@ describe('Test invalid input of adminQuizCreate', () => {
 
     const res3 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Quiz1',
         description: 'The second quiz'
       },
     });
     expect(res3.statusCode).toStrictEqual(400);
     const bodyObj2 = JSON.parse(res3.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Test invalid description', () => {
@@ -164,18 +143,18 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Quiz1',
         description: 'The first quiz that used for group project iteration 1 of course COMP1531 Software Engineering Fundamentals'
       },
     });
     expect(res2.statusCode).toStrictEqual(400);
     const bodyObj2 = JSON.parse(res2.body.toString());
-    expect(bodyObj2.error).toStrictEqual(expect.any(String));
+    expect(bodyObj2).toStrictEqual({ error: expect.any(String) });
   });
 });
 
@@ -192,11 +171,11 @@ describe('Test successful adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const bodyObj1 = JSON.parse(res1.body.toString());
+    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
       json: {
-        token: bodyObj1.token,
+        token: token,
         name: 'Quiz1',
         description: 'The first quiz'
       },

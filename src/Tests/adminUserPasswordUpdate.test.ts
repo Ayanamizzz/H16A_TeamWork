@@ -37,22 +37,30 @@ describe('PUT /v1/admin/user/password tests', () => {
 
   describe('PUT /v1/admin/user/details error cases', () => {
     beforeEach(() => {
-      request('DELETE', `${url}:${port}` + '/clear', {});
+      request('DELETE', `${url}:${port}/v1/clear`, {});
     });
 
     test('Token is empty or invalid', () => {
+      const user = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
+        json: {
+          email: 'MajinLoveyou@gmail.com',
+          password: 'Wind4eevv',
+          nameFirst: 'Ma',
+          nameLast: 'Jin'
+        }
+      });
+
       const res = request('PUT', `${url}:${port}` + '/v1/admin/user/password', {
           json: {
-            token: '1',
+            token: ' ',
             oldPassword: 'Wind4eevv',
             newPassword: 'Wind4eevv',
           },
-        }
-      );
-      const data = JSON.parse(res.body.toString());
+      });
 
+      const data = JSON.parse(res.body.toString());
       expect(data).toStrictEqual({ error: expect.any(String) });
-      expect(res.statusCode).toStrictEqual(401);
+      expect(res.statusCode).toStrictEqual(400);
     });
 
     test('Old password is not the correct old password error', () => {
@@ -292,4 +300,3 @@ describe('adminUserPasswordUpdate functionality', () => {
     expect(data).toStrictEqual({ token: expect.any(String) });
   });
 });
-

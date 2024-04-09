@@ -148,7 +148,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 
   // check error.
   if ('error' in result) {
-    if (result.error.includes('401')) {
+    if (result.error === 'Token does not refer to valid logged in user session') {
       return res.status(401).json(result);
     } else {
       return res.status(400).json(result);
@@ -165,12 +165,14 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const result = adminQuizList(token);
 
   // check error.
-  if ('error' in result && result.error === 'Token does not refer to valid logged in user session') {
-    return res.status(401).json(result);
-  } 
   if ('error' in result) {
-    return res.status(400).json(result);
-  }
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      return res.status(401).json(result);
+    } else {
+      return res.status(400).json(result);
+    }
+  } 
+  
   return res.json(result);
 });
 
@@ -183,11 +185,12 @@ app.delete('/v1/admin/quiz/{quizId}', (req: Request, res: Response) => {
   const result = adminQuizRemove(token, quizId);
 
   // check error.
-  if ('error' in result && result.error === 'Token does not refer to valid logged in user session') {
-    return res.status(401).json(result);
-  } 
   if ('error' in result) {
-    return res.status(403).json(result);
+    if (result.error === 'Token does not refer to valid logged in user session') {
+      return res.status(401).json(result);
+    } else {
+      return res.status(403).json(result);
+    }
   } 
 
   return res.json(result);
@@ -216,9 +219,6 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   return res.json(response);
 });
 
-
-
-
 // adminNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -237,6 +237,28 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 
   return res.json(response);
 });
+
+ 
+// // adminNameUpdate
+// app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+//   const quizId = parseInt(req.params.quizid);
+//   const token = req.body.token as string;
+//   const name = req.body.name as string;
+
+//   const response = adminQuizNameUpdate(token, quizId, name);
+
+//   if ('error' in response) {
+//     if (response.error === 'Token does not refer to valid logged in user session') {
+//       return res.status(401).json(response);
+//     } else if (response.error.includes('Name')) {
+//       return res.status(400).json(response);
+//     } else if (response.error.includes('Quiz')) {
+//       return res.status(403).json(response);
+//     }
+//   }
+
+//   return res.json(response);
+// });
  
 
 

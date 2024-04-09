@@ -274,7 +274,6 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
       return { error: 'Code 401 - AuthUserId is not a valid user' };
     }
   
-
     if (Now_user.password !== oldPassword) {
       return { error: 'Code 400 - Old Password is not the correct old password' };
     }

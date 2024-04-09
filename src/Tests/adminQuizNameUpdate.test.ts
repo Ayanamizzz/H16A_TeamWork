@@ -45,6 +45,43 @@ describe('Success Cases', () => {
   
 });
 
+// describe('Success Cases', () => {
+//   test('success', () => {
+//     request('DELETE', `${url}:${port}/v1/admin/other/clear`, {});
+
+//     const res1 = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+//       json: {
+//         email: 'validemail@example.com',
+//         password: 'validPassword123',
+//         nameFirst: 'John',
+//         nameLast: 'Doe',
+//       },
+//     });
+//     const token = JSON.parse(res1.body.toString()).token;
+
+//     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
+//       json: { 
+//         token: token, 
+//         name: 'quiz1', 
+//         description: 'A description' 
+//       },
+//     });
+//     const quizId = JSON.parse(res2.body.toString()).quizId;
+
+//     const res3 = request('PUT', `${url}:${port}/v1/admin/quiz/{quizId}/name`, {
+//       json: { 
+//         token: token, 
+//         quizId: quizId, 
+//         name: 'quiz2' 
+//       },
+//     });
+
+//     expect(res3.statusCode).toStrictEqual(200);
+//     const body3 = JSON.parse(res3.body.toString());
+//     expect(body3).toStrictEqual({});
+//   });
+// });
+
 // describe('Error Cases', () => {
 //   beforeEach(() => {
 //     request('DELETE', `${url}:${port}/v1/admin/other/clear`, {});

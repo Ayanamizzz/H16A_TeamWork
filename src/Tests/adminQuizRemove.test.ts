@@ -20,31 +20,31 @@ describe('Test invalid input of adminQuizRemove', () => {
                 nameLast: 'Wang'    
             },
         });
-        const bodyObj1 = JSON.parse(res1.body.toString());
+        const token = JSON.parse(res1.body.toString()).token;
 
         const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
             json: {
-            token: bodyObj1.token,
+            token: token,
             name: "Quiz1",
             description: "The first quiz"
             },
         });
-        const bodyObj2 = JSON.parse(res2.body.toString());
+        const quizId = JSON.parse(res2.body.toString()).quizId;
  
         const res3 = request(
             'DELETE',
                 `${url}:${port}/v1/admin/quiz/{quizId}`,
                 {
                     json: {                    
-                    quizId: bodyObj2.quizId,
-                    token: bodyObj1.token + 1
+                    quizId: quizId,
+                    token: token + 1,
                     },
 
                 }
         );
         expect(res3.statusCode).toStrictEqual(401);
         const bodyObj3 = JSON.parse(res3.body.toString());
-        expect(bodyObj3.error).toStrictEqual(expect.any(String));
+        expect(bodyObj3).toStrictEqual({ error: expect.any(String) });
     });
 
     test('Test invalid quizId', () => {
@@ -80,7 +80,7 @@ describe('Test invalid input of adminQuizRemove', () => {
         );
         expect(res3.statusCode).toStrictEqual(403);
         const bodyObj3 = JSON.parse(res3.body.toString());
-        expect(bodyObj3.error).toStrictEqual(expect.any(String));
+        expect(bodyObj3).toStrictEqual({ error: expect.any(String) });
     });
 
     test('Test invalid quizId', () => {
