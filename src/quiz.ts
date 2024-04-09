@@ -15,30 +15,22 @@ export function adminQuizList(token: string): {quizzes: {quizId: number, name: s
     const data = getData();
     
     // Check userId by token.
-    const user = getUser(token);
-    if (!user) {
+    const newUser = getUser(token);
+    if (newUser === null) {
         return { error: 'Token does not refer to valid logged in user session' };
-    }
+    } 
 
-    // // Check userId by token.
-    // const user = getUser(token);
-    // if (!user) {
-    //     // Token is empty.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // } 
-
-    // const userId = getUserId(token);
-    // if (!userId) {
-    //     // Token is invalid.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // }
+    const tokenId = getUserId(token);
+    if (tokenId === null) {
+        return { error: 'Token does not refer to valid logged in user session' };
+    } 
 
     // Create an empty array to contains the list of quizzes that sare owned 
     // by the currently logged in user.
     const quizzes = [];
 
     for (const quiz of data.quizzes) {
-        if (quiz.ownerId === user.userId) {
+        if (quiz.ownerId === tokenId) {
             // found the quiz that user owns:
             // push the Id and name of this quiz to quizzes(array).
             quizzes.push({
@@ -70,23 +62,15 @@ export function adminQuizCreate(token: string, name: string, description: string
     const data = getData();
 
     // Check userId by token.
-    const user = getUser(token);
-    if (!user) {
-        return { error: 'code 401 - Token does not refer to valid logged in user session' };
-    }
+    const newUser = getUser(token);
+    if (newUser === null) {
+        return { error: 'Token does not refer to valid logged in user session' };
+    } 
 
-    // Check userId by token.
-    // const user = getUser(token);
-    // if (!user) {
-    //     // Token is empty.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // } 
-
-    // const userId = getUserId(token);
-    // if (!userId) {
-    //     // Token is invalid.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // }
+    const tokenId = getUserId(token);
+    if (tokenId === null) {
+        return { error: 'Token does not refer to valid logged in user session' };
+    } 
 
     // Check name and description.
     const nameFormat = /^[a-zA-Z0-9\s]*$/;
@@ -115,7 +99,7 @@ export function adminQuizCreate(token: string, name: string, description: string
         description: description,
         timeCreated: Date.now(),
         timeLastEdited: Date.now(),
-        ownerId: user.userId,
+        ownerId: tokenId,
     });
 
     setData(data);
@@ -140,36 +124,33 @@ export function adminQuizRemove(token: string, quizId: number): {} | ErrorRespon
     const data = getData();
 
     // Check userId by token.
-    const user = getUser(token);
-    if (!user) {
-        return { error: 'code 401 - Token does not refer to valid logged in user session' };
-    }
+    const newUser = getUser(token);
+    if (newUser === null) {
+        return { error: 'Token does not refer to valid logged in user session' };
+    } 
 
-    // Check userId by token.
-    // const user = getUser(token);
-    // if (!user) {
-    //     // Token is empty.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // } 
-
-    // const userId = getUserId(token);
-    // if (!userId) {
-    //     // Token is invalid.
-    //     return { error: 'Token does not refer to valid logged in user session' };
-    // }
+    const tokenId = getUserId(token);
+    if (tokenId === null) {
+        return { error: 'Token does not refer to valid logged in user session' };
+    } 
 
     // Check quizId.
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-    if (!quiz) {
+    if (quiz === null) {
         return { error: 'Quiz ID does not refer to a valid quiz' };
-    } else if (quiz.ownerId !== user.userId) {
+    } else if (quiz.ownerId !== tokenId) {
         return { error: 'Quiz ID does not refer to a quiz that this user owns' };
     }
 
     // Remove quiz that user owns.
-    if (quiz.ownerId.Include(user.userId)) {
-        quiz = null;
+    for (const quiz of data.quizzes) {
+        if (quiz.quizId === quizId && quiz.ownerId === tokenId) {
+            quiz = null;
+        }
     }
+    // if (quiz.ownerId.Include(tokenId)) {
+    //     quiz = null;
+    // }
 
     setData(data);
     return {};
@@ -297,6 +278,51 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 }
 
 
+// export function adminQuizNameUpdate(token: string, quizId: number, name: string): {} | ErrorResponse {
+//     const data = getData();
+
+//     // Check userId by token.
+//     const newUser = getUser(token);
+//     if (newUser === null) {
+//         return { error: 'Token does not refer to valid logged in user session' };
+//     } 
+
+//     const tokenId = getUserId(token);
+//     if (tokenId === null) {
+//         return { error: 'Token does not refer to valid logged in user session' };
+//     } 
+
+//     // Check quizId.
+//     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+//     if (!quiz) {
+//         return { error: 'Quiz ID does not refer to a valid quiz' };
+//     } else if (quiz.ownerId !== userId) {
+//         return { error: 'Quiz ID does not refer to a quiz that this user owns' };
+//     }
+
+//     // Check name.
+//     const nameFormat = /^[a-zA-Z0-9\s]*$/;
+//     if (nameFormat.test(name) !== true) {
+//         return { error: 'Name contains invalid characters' };
+//     } else if (name.length < 3) {
+//         return { error: 'Name is less than 3 characters long' };
+//     } else if (name.length > 30) {
+//         return { error: 'Name is more than 30 characters long' };
+//     }
+
+//     for (const quiz of data.quizzes) {
+//         if (name === quiz.name) {
+//             return { error: 'Name is already used by the current logged in user for another quiz' };    
+//         }
+//     }
+
+//     // Update name of quiz.
+//     quiz.name = name;
+//     setData(data);
+//     return {};
+// }
+
+
 // Description
 // Updates the description of a specific quiz.
 
@@ -344,6 +370,7 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
 }
 
 
+
 // Description
 // View the quizzes in trash.
 
@@ -353,16 +380,16 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * @returns { }
  */
 
-// export function adminQuiztrash(token: string): { trash: {name: string, quizId: number}[] } | {error: string} {
-//     const user = getUser(token);
+export function adminQuiztrash(token: string): { trash: {name: string, quizId: number}[] } | {error: string} {
+    const user = getUser(token);
 
-//     if (!user) {
-//         return { error: 'Error Code 401 - Invalid token'};
-//     }
+    if (!user) {
+        return { error: 'Error Code 401 - Invalid token'};
+    }
 
-//     const data = getData();
-//     const trash: {name: string, quizId: number}[] = [];
-//     for (const quiz of data.quizzes) {
+    const data = getData();
+    const trash: {name: string, quizId: number}[] = [];
+    for (const quiz of data.quizzes) {
         
         trash.push({
             quizId: quiz.quizId,
@@ -386,9 +413,9 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * 
  */ 
 
-// export function adminQuizRestore(quizId: number, token: string): object | {error: string} {
-//     const data = getData();
-//     const user = getUser(token);
+export function adminQuizRestore(quizId: number, token: string): object | {error: string} {
+    const data = getData();
+    const user = getUser(token);
     
     if (!user) {
         return { error: 'Code 401 - Token is empty or invalid'}
@@ -410,11 +437,12 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
         return { error: 'Code 403 - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz'}
     }
 
-//     trashQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
-//     data.quizzes.push(trashQuiz);
-//     // use splice remove test from trash and add it to the list.
-//     data.quizzesTrash.splice(trashQuizIndex, 1);
-//     setData(data);
-//     return {};
-// }
+    trashQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
+    data.quizzes.push(trashQuiz);
+    // use splice remove test from trash and add it to the list.
+    data.quizzesTrash.splice(trashQuizIndex, 1);
+    setData(data);
+    return {};
+}
+
 
