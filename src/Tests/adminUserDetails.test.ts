@@ -23,7 +23,7 @@ describe('adminUserDetails', () => {
         Token: token,
       },
     });
-    //expect(response.statusCode).toStrictEqual(401);
+    // expect(response.statusCode).toStrictEqual(401);
     const data = JSON.parse(response.body.toString());
     expect(data).toStrictEqual(ERROR);
   });
@@ -38,7 +38,6 @@ describe('adminUserDetails', () => {
         nameLast: 'Weasley',
       },
     });
-
 
     let userData = JSON.parse(response.body.toString());
     // Ensure that the data returns a user Id.
@@ -59,7 +58,6 @@ describe('adminUserDetails', () => {
     expect(userData).toStrictEqual({
       token: expect.any(String),
     });
-
 
     // Now, retrieve user details based on the logged-in user's ID.
     response = request('GET', `${url}:${port}/v1/admin/user/details`, {
@@ -83,4 +81,3 @@ describe('adminUserDetails', () => {
     });
   });
 });
-

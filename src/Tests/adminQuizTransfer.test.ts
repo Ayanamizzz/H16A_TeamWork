@@ -160,7 +160,7 @@ describe('POST /v1/admin/quiz/{quizid}/transfer', () => {
     });
 
     const bodyObj22 = JSON.parse(res22.body.toString());
- 
+
     expect(res22.statusCode).toStrictEqual(200);
     expect(bodyObj22).toStrictEqual({ quizId: expect.any(Number) });
 

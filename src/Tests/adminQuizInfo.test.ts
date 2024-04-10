@@ -117,8 +117,6 @@ describe('Test Success Case for adminQuizInfo', () => {
       },
     });
 
-    const returnData = JSON.parse(quizCreateRes.body.toString());
-   
     expect(quizCreateRes.statusCode).toStrictEqual(200);
     const quizId = JSON.parse(quizCreateRes.body as string).quizId;
 
@@ -126,7 +124,7 @@ describe('Test Success Case for adminQuizInfo', () => {
       qs: { token },
     });
     const quizInfo = JSON.parse(quizInfoRes.body as string);
- 
+
     expect(quizInfo).toMatchObject({
       quizId: quizId,
       name: 'Quiz 1',
