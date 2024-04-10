@@ -320,6 +320,99 @@ app.post('/v1/admin/quiz/restore', (req: Request, res: Response) => {
   res.json(response);
 });
 
+//adminQuestionCreate
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const token = req.headers.token;
+  // 1. 401 Errors
+  const { questionBody } = req.body;
+  if (!('token' in req.headers) || typeof token !== 'string') {
+    throw HTTPError(401, 'Token is not a valid structure');
+  }
+
+  // 2. 403 Errors
+  const sessionId = token;
+  const targetToken = Data.tokens.find((token: token) => sessionId === token.sessionId);
+  if (targetToken === undefined) {
+    throw HTTPError(403, 'Provided token is a valid structure, but is not for a currently logged in session');
+  }
+
+  // 3. 400 Errors or Successful work on data
+  const newQuestion = adminQuestionCreate(targetToken.UserId, parseInt(req.params.quizid), questionBody);
+  if ('error' in newQuestion) {
+    throw HTTPError(400, newQuestion.error);
+  }
+
+  // No errors
+  res.status(200);
+  return res.json(newQuestion);
+});
+
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  // 1. 401 Errors
+  const { token, userEmail } = req.body;
+  if (!('token' in req.body) || typeof token !== 'string') {
+    res.status(401);
+    return res.json({ error: 'Token is empty or invalid' });
+  }
+
+  // 2. 403 Errors
+  const data = getData();
+  const sessionId = token;
+  const targetSession = data.sessions.find(session => sessionId === session.sessionId);
+  if (targetSession === undefined) {
+    res.status(403);
+    return res.json({ error: 'Any session for this quiz is not in END state' });
+  }
+
+  // 3. 400 Errors or Successful work on data
+  const quizTransfer = adminQuizTransfer(targetToken.userId, parseInt(req.params.quizid), userEmail);
+  if ('error' in quizTransfer) {
+    res.status(400);
+    return res.json(quizTransfer);
+  }
+
+  // No errors
+  res.status(200);
+  return res.json({});
+});
+
+//adminQuestionUpdate
+app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const { questionBody } = req.body;
+  const token = req.headers.token as string;
+
+  // HTTP 401: Unauthorized
+  if (!token || typeof token !== 'string') {
+    throw HTTPError(401, 'Token is not a valid structure');
+  }
+
+  const data = getData();
+  const sessionId = token;
+  const targetToken = data.tokens.find((token: token) => token.sessionId === sessionId);
+
+  // HTTP 403: Forbidden
+  if (targetToken === null) {
+    throw HTTPError(403, 'Provided token is a valid structure, but is not for a currently logged in session');
+  }
+
+  try {
+    adminQuestionUpdate(targetToken.userId, quizId, questionId, questionBody);
+    
+    // HTTP 200: OK
+    res.status(200).json({});
+  } catch (error) {
+    // HTTP 400: Bad Request
+    if (error instanceof Error && error.message) {
+      throw HTTPError(400, error.message);
+    } else {
+      throw HTTPError(400, 'An error occurred while updating the question');
+    }
+  }
+});
+
+
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
