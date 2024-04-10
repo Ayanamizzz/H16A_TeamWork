@@ -27,36 +27,36 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
     // Query all user's email whether it is query email
     for (const user of data.users) {
         if (email === user.email) {
-            return { error: 'Email address is used by another user.'}
+            return { error: 'Code 400 - Email address is used by another user.'}
         }
     }
     // Call the isEmail function of the website to determine whether it is an email address
     if (!validator.isEmail(email)) {
-        return { error: ' Code 400 - Email does not satisfy.'}
+        return { error: 'Code 400 - Email does not satisfy.'}
     };
 
     // Name must be at least two characters long， Maximum 20 characters
     const isValidName = /^[a-zA-Z\s'-]+$/;
     if (isValidName.test(nameFirst) === false) {
-        return { error: 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+        return { error: ' Code 400 - nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
     }
 
     if (isValidName.test(nameLast) === false) {
-        return { error: 'nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+        return { error: ' Code 400 - nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
     }
 
     // Check namefirst or namefirst is less than 2 characters or more than 20 characters.
     if (nameFirst.length < 2 || nameFirst.length > 20) {
-        return { error: 'NameFirst is less than 2 characters or more than 20 characters' };
+        return { error: ' Code 400 - NameFirst is less than 2 characters or more than 20 characters' };
     }
 
     if (nameLast.length < 2 || nameLast.length > 20) {
-        return { error: 'NameLast is less than 2 characters or more than 20 characters' };
+        return { error: ' Code 400 - NameLast is less than 2 characters or more than 20 characters' };
     }
 
     
     if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
-        return { error: 'Password is less than 8 characters or does not contain at least one number and at least one letter' };
+        return { error: ' Code 400 - Password is less than 8 characters or does not contain at least one number and at least one letter' };
     }
     
     let userId = 0;

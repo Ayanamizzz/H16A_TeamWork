@@ -1,12 +1,12 @@
 import { getData, setData } from "./dataStore";
-import { User } from './dataStore.js';
+import { User, ErrorResponse} from './dataStore.js';
 import { getUser, getUserId } from './other'
 
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
 
 /**
- * @params {number} token - Id of user after registration
+ * @param {string} token - Id of user after registration
  * @returns {quizzes} An array of object for quiz list
  * 
 */
@@ -380,25 +380,24 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * @returns { }
  */
 
-export function adminQuiztrash(token: string): { trash: {name: string, quizId: number}[] } | {error: string} {
+export function adminQuiztrash(token: string): object | {error: string} {
     const user = getUser(token);
-
+    const data = getData();
     if (!user) {
         return { error: 'Error Code 401 - Invalid token'};
     }
-
-    const data = getData();
-    const trash: {name: string, quizId: number}[] = [];
-    for (const quiz of data.quizzes) {
-        
-        trash.push({
-            quizId: quiz.quizId,
-            name: quiz.name
-        });
+    const trash = [];
+    for (const quiz of data.quizzesTrash) {
+        if (quiz.ownerId === user.userId) {
+            trash.push({
+                quizId: quiz.quizId,
+                name: quiz.name
+            });
+        }
     }
     
     setData(data);
-    return { trash };
+    return { quizzes:trash };
 }
 
 
@@ -433,7 +432,7 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
         return { error: 'Code 400 - Quiz name of the restored quiz is already used by another active quiz'}
     }
 
-    if (trashQuiz.authUserId !== user.userId) {
+    if (trashQuiz.ownerId !== user.userId) {
         return { error: 'Code 403 - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz'}
     }
 
@@ -441,8 +440,107 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
     data.quizzes.push(trashQuiz);
     // use splice remove test from trash and add it to the list.
     data.quizzesTrash.splice(trashQuizIndex, 1);
+
+    
     setData(data);
     return {};
 }
 
 
+
+
+// Description
+// Permanently delete specific quizzes currently sitting in the trash.
+
+/**
+ * 
+ * @param { string } token - The token of the current logged in admin user
+ * @param { string } quizIds - A string representing a JSONified array of quiz id numbers
+ * @returns { {} } An object from trash
+ * 
+ */ 
+
+export function adminQuizEmptyTrash(token: string, quizIds: string[]): {} | ErrorResponse {
+    const data = getData();
+
+    // Check userId by token.
+    const newUser = getUser(token);
+    if (newUser === null) {
+        return { error: '401 - Token does not refer to valid logged in user session' };
+    } 
+
+    for (const quizId of quizIds) {
+        // use quizId find each quiz from trash.
+        const quizInTrash = data.quizzesTrash.find((quiz) => quizId === quiz.quizId);
+        if (quizInTrash === null) {
+            // current quiz is not in trash.
+            const quizNotInTrash = data.quizzes.find((quiz) => quizId === quiz.quizId);
+            if (quizNotInTrash !== null) {
+                return { 
+                    error: '400 - One or more of the Quiz IDs is not currently in the trash'
+                }
+            }
+        }
+
+        // quiz in the trash, check user owns.
+        if (quiz.ownerId !== newUser.userId) {
+            return {
+                error: '403 - One or more of the Quiz IDs refers to a quiz that this current user does not own'
+            }
+        }
+
+        // delete quiz from trash.
+        const quizIndex = data.quizzesTrash.findIndex((quiz) => quizId === quiz.quizId);
+        if (quizIndex !== -1) {
+          data.quizzesTrash.splice(quizIndex, 1);
+        }
+    }
+
+    setData(data);
+    return {};
+}
+
+
+// Description
+// Delete a particular question from a quiz.
+
+/**
+ * 
+ * @param { number } quizId - Id of a quiz
+ * @param { number } questionid - Id of a question
+ * @param { string } token - Token of the current logged in admin user
+ * @returns { {} } An object from trash
+ * 
+ */ 
+
+export function adminQuizQuestionDelete(quizId: number, questionId: number, token: string): {} | ErrorResponse {
+    const data = getData();
+
+    // Check userId by token.
+    const newUser = getUser(token);
+    if (newUser === null) {
+        return { error: '401 - Token does not refer to valid logged in user session' };
+    } 
+
+    const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+    if (quiz === null) {
+        // valid token is provided.
+        return { error: '403 - The quiz ID is invalid' };
+    } else if (quiz.ownerId !== newUser.userId) {        
+        // valid token is provided.
+        return { error: '403 - The user does not own the quiz' };
+    }
+
+    // Find the question to remove
+    const questionIndex = quiz.session.questions.findIndex((question) => question.questionId === questionId);
+    if (questionIndex === -1) {
+        return { error: '400 - Question Id does not refer to a valid question within this quiz'};
+    }
+
+    // Any session for this quiz is not in END state.
+    // 
+
+    quiz.session.questions.splice(questionIndex, 1);
+    setData(data);
+    return {};
+}

@@ -16,8 +16,7 @@ export interface Quiz {
   description: string;
   timeCreated: number;
   timeLastEdited: number;
-  ownerId: number
-
+  ownerId: number;
 }
 
 export interface Session {
