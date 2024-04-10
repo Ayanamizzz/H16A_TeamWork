@@ -10,14 +10,31 @@ export interface User {
   token: Array<string>;
 }
 
+export interface Answer {
+    answerId: number;
+    answer: string;
+    colour: string;
+    correct: boolean
+}
+
+export interface Question {
+    questionId: number;
+    question: string;
+    duration:number;
+    points: number;
+    answers: Array<Answer>
+}
+
 export interface Quiz {
   quizId: number;
   name: string;
   description: string;
   timeCreated: number;
   timeLastEdited: number;
-  ownerId: number
-
+  ownerId: number;
+  questions:Array<Question>;
+  numQuestions:number;
+  duration:number;
 }
 
 export interface Session {

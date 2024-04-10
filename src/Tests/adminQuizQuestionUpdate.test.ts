@@ -10,7 +10,10 @@ describe('PUT /v1/admin/quiz/{quizid}/question/{questionid}', () => {
   let quizId: number;
   let questionId: number;
 
-  beforeAll(() => {
+  beforeEach(() => {
+    // Clear the data store before each test if necessary
+    request('DELETE', `${url}:${port}/v1/clear`, {});
+
     // Create a new user and log in
     let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
@@ -51,11 +54,6 @@ describe('PUT /v1/admin/quiz/{quizid}/question/{questionid}', () => {
     });
     const questionData = JSON.parse(response.body.toString());
     questionId = questionData.questionId;
-  });
-
-  beforeEach(() => {
-    // Clear the data store before each test if necessary
-    request('DELETE', `${url}:${port}/v1/clear`, {});
   });
 
   test('Success: Returns empty object on successful update', () => {
@@ -412,6 +410,5 @@ describe('PUT /v1/admin/quiz/{quizid}/question/{questionid}', () => {
     expect(response.statusCode).toStrictEqual(403);
     const data = JSON.parse(response.body.toString());
     expect(data).toStrictEqual(ERROR);
-  });
+  });/**/
 });
-
