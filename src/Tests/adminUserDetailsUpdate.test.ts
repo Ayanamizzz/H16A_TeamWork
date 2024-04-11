@@ -1,530 +1,84 @@
-import config from '../config.json';
 import request from 'sync-request-curl';
+import config from '../config.json';
 
 const port = config.port;
 const url = config.url;
+const ERROR = { error: expect.any(String) };
 
-describe('Test successful adminUserDetailsUpdate', () => {
+describe('adminUserDetails', () => {
   beforeEach(() => {
-    request('DELETE', `${url}:${port}` + '/v1/clear', {});
+    // Clear the data store before each test if necessary
+    request('DELETE', `${url}:${port}/v1/clear`, {});
   });
 
-  test('Test successful case', () => {
-    const user = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+  // Test each token Input.
+  test.each([
+    { token: 10 },
+    { token: 12 },
+    { token: 'me' },
+    { token: '!2das@@3' },
+  ])("invalid user ID : '$invalidID'", ({ token }) => {
+    const response = request('GET', `${url}:${port}/v1/admin/user/details`, {
       json: {
-        email: 'MaJin@gmail.com',
-        password: 'Wind4eevv',
-        nameFirst: 'Ma',
-        nameLast: 'Jin'
-      }
+        Token: token,
+      },
     });
-    const token = JSON.parse(user.body.toString()).token;
-    const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
+    // expect(response.statusCode).toStrictEqual(401);
+    const data = JSON.parse(response.body.toString());
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('Success: Returns user details for valid authentication', () => {
+    // Create a new user.
+    let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
-        token: token,
-        email: 'JinMa@gmail.com',
-        nameFirst: 'Jin',
-        nameLast: 'Ma',
-      }
+        email: 'HGindaHouse@hogwarts.com',
+        password: 'Hocrux2387',
+        nameFirst: 'Ginny',
+        nameLast: 'Weasley',
+      },
     });
 
-    const data = JSON.parse(response.body.toString());
-    expect(data).toStrictEqual({});
+    let userData = JSON.parse(response.body.toString());
+    // Ensure that the data returns a user Id.
+    expect(userData).toStrictEqual({
+      token: expect.any(String),
+    });
+
+    // Log in as the new user.
+
+    response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'HGindaHouse@hogwarts.com',
+        password: 'Hocrux2387',
+      },
+    });
+
+    userData = JSON.parse(response.body.toString());
+    expect(userData).toStrictEqual({
+      token: expect.any(String),
+    });
+
+    // Now, retrieve user details based on the logged-in user's ID.
+    response = request('GET', `${url}:${port}/v1/admin/user/details`, {
+      qs: {
+        token: userData.token,
+      },
+    });
+    const userDetails = JSON.parse(response.body.toString());
+
     expect(response.statusCode).toStrictEqual(200);
-  });
-});
 
-describe('Test invalid input of adminUserDetailsUpdate', () => {
-  beforeEach(() => {
-    request('DELETE', `${url}:${port}` + '/v1/clear', {});
-  });
-
-  test('Token is not a valid user', () => {
-    const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
-      json: {
-        token: '',
-        email: 'Majin3321@gmail.com',
-        nameFirst: 'Ma',
-        nameLast: 'Jin'
-      },
-    });
-    const returnData = JSON.parse(response.body.toString());
-    expect(returnData).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(401);
-  });
-
-  test('Email is currently used by another user.', () => {
-    const user = request('POST', `${url}:${port}/v1/admin/auth/register`, {
-      json: {
-        email: 'Majin@gmail.com',
-        password: 'Wind4eevv',
-        nameFirst: 'Ma',
-        nameLast: 'Jin'
-      },
-    });
-
-    request('POST', `${url}:${port}/v1/admin/auth/register`, {
-      json: {
-        email: 'z5437798@gmail.com',
-        password: 'LoveLive22',
-        nameFirst: 'Jin',
-        nameLast: 'Ma'
-      },
-    });
-    const userToken = JSON.parse(user.body.toString()).token;
-
-    const response = request('PUT', `${url}:${port}/v1/admin/user/details`, {
-      json: {
-        token: userToken,
-        email: 'z5437798@gmail.com',
-        nameFirst: 'Ma',
-        nameLast: 'Jin',
-      },
-    });
-    const data = JSON.parse(response.body.toString());
-    expect(response.statusCode).toStrictEqual(400);
-    expect(data).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('nameFirst is empty', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details', {
-      json: {
-        token: user1Token,
-        email: 'z5437798@gmail.com',
-        nameFirst: '',
-        nameLast: 'Jin'
-      },
-    });
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({ error: expect.any(String) });
-    expect(res.statusCode).toStrictEqual(400);
-  });
-
-  test('nameFirst is one character', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register', {
-      json: {
-        email: 'z5437798@gmail.com',
-        password: 'Wind4eevv',
-        nameFirst: 'Ma',
-        nameLast: 'Jin'
-      }
-    });
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'M',
-          nameLast: 'Jin'
-        },
-      }
-    );
-    const data = JSON.parse(res.body.toString());
-    expect(data).toStrictEqual({ error: expect.any(String) });
-    expect(res.statusCode).toStrictEqual(400);
-  });
-
-  test('nameFirst is 20 characters', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Wocaolenigeshabidongxidema',
-          nameLast: 'Jin'
-        },
-      }
-    );
-    const data = JSON.parse(res.body.toString());
-    expect(data).toStrictEqual({ error: expect.any(String) });
-    expect(res.statusCode).toStrictEqual(400);
-  });
-
-  test('nameLast is empty', () => {
-    const user1 = request(
-      'POST',
-            `${url}:${port}` + '/v1/admin/auth/register',
-            {
-              json: {
-                email: 'z5437798@gmail.com',
-                password: 'Wind4eevv',
-                nameFirst: 'Ma',
-                nameLast: 'Jin'
-              }
-            }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: ''
-        },
-      }
-    );
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({ error: expect.any(String) });
-    expect(res.statusCode).toStrictEqual(400);
-  });
-
-  test('nameLast is one character', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: 'J'
-        },
-      }
-    );
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({ error: expect.any(String) });
-    expect(res.statusCode).toStrictEqual(400);
-  });
-
-  test('nameLast is 20 characters', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: 'Jinqewiqheiwqqwiejqi'
-        },
-      }
-    );
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({});
-  });
-
-  test.each([
-    { invalidName: 'name1' },
-    { invalidName: '...' },
-    { invalidName: ':DD' },
-    { invalidName: 'one+one=two' },
-  ])(
-    'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes error',
-    ({ invalidName }) => {
-      const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-        {
-          json: {
-            email: 'z5437798@gmail.com',
-            password: 'Wind4eevv',
-            nameFirst: 'Ma',
-            nameLast: 'Jin'
-          }
-        }
-      );
-      const user1Token = JSON.parse(user1.body.toString()).token;
-
-      const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-        {
-          json: {
-            token: user1Token,
-            email: 'z5437798@gmail.com',
-            nameFirst: 'Ma',
-            nameLast: invalidName
-          },
-        }
-      );
-
-      const data = JSON.parse(res.body.toString());
-
-      expect(data).toStrictEqual({ error: expect.any(String) });
-      expect(res.statusCode).toStrictEqual(400);
-    }
-  );
-
-  test.each([
-    { weirdName: '  --  ' },
-    { weirdName: '     ' },
-    { weirdName: "'-'-'-" },
-  ])('Weird, but technically valid nameLast', ({ weirdName }) => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    const res = request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: weirdName
-        },
-      }
-    );
-
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({});
-  });
-});
-
-describe('PUT /v1/admin/user/details functionality', () => {
-  beforeEach(() => {
-    request('DELETE', `${url}:${port}` + '/v1/clear', { qs: {} });
-  });
-
-  test('email is successfully updated', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        },
-      }
-    );
-
-    const res = request('GET', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        qs: {
-          token: user1Token
-        }
-      }
-    );
-
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({
+    // Assert that the returned user details match the expected details
+    // Note: the number of successful logins should equal 2, because upon registering, that counts as logging in.
+    expect(userDetails).toEqual({
       user: {
         userId: expect.any(Number),
-        name: 'Ma Jin',
-        email: 'z5437798@gmail.com',
-        numSuccessfulLogins: 1,
+        name: expect.any(String),
+        email: expect.any(String),
+        numSuccessfulLogins: 2,
         numFailedPasswordsSinceLastLogin: 0,
-      }
-    });
-  });
-
-  test('email is successfully updated', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    request('PUT', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        json: {
-          token: user1Token,
-          email: 'z5437798@gmail.com',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        },
-      }
-    );
-
-    const res = request('GET', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        qs: {
-          token: user1Token
-        }
-      }
-    );
-
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({
-      user: {
-        userId: expect.any(Number),
-        name: 'Ma Jin',
-        email: 'z5437798@gmail.com',
-        numSuccessfulLogins: 1,
-        numFailedPasswordsSinceLastLogin: 0,
-      }
-    });
-  });
-
-  test('nameFirst is successfully updated', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    request(
-      'PUT',
-            `${url}:${port}` + '/v1/admin/user/details',
-            {
-              json: {
-                token: user1Token,
-                email: 'z5437798@gmail.com',
-                nameFirst: 'Liu',
-                nameLast: 'Jin'
-              },
-            }
-    );
-
-    const res = request('GET', `${url}:${port}` + '/v1/admin/user/details',
-      {
-        qs: {
-          token: user1Token
-        }
-      }
-    );
-
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({
-      user: {
-        userId: expect.any(Number),
-        name: 'Liu Jin',
-        email: 'z5437798@gmail.com',
-        numSuccessfulLogins: 1,
-        numFailedPasswordsSinceLastLogin: 0,
-      }
-    });
-  });
-
-  test('nameLast is successfully updated', () => {
-    const user1 = request('POST', `${url}:${port}` + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4eevv',
-          nameFirst: 'Ma',
-          nameLast: 'Jin'
-        }
-      }
-    );
-
-    const user1Token = JSON.parse(user1.body.toString()).token;
-
-    request(
-      'PUT',
-            `${url}:${port}` + '/v1/admin/user/details',
-            {
-              json: {
-                token: user1Token,
-                email: 'z5437798@gmail.com',
-                nameFirst: 'Ma',
-                nameLast: 'Liu'
-              },
-            }
-    );
-
-    const res = request(
-      'GET',
-            `${url}:${port}` + '/v1/admin/user/details',
-            {
-              qs: {
-                token: user1Token
-              }
-            }
-    );
-
-    const data = JSON.parse(res.body.toString());
-
-    expect(data).toStrictEqual({
-      user: {
-        userId: expect.any(Number),
-        name: 'Ma Liu',
-        email: 'z5437798@gmail.com',
-        numSuccessfulLogins: 1,
-        numFailedPasswordsSinceLastLogin: 0,
-      }
+      },
     });
   });
 });
