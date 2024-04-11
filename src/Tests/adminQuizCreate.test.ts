@@ -11,7 +11,7 @@ describe('Test invalid input of adminQuizCreate', () => {
   });
 
   test('Test invalid userId', () => {
-    const res1 = request('POST', `${url}:${port}/v1/admin/auth/register`, {
+    request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
         email: 'Linked@gmail.com',
         password: 'linked123456',
@@ -19,14 +19,13 @@ describe('Test invalid input of adminQuizCreate', () => {
         nameLast: 'Wang'
       },
     });
-    const token = JSON.parse(res1.body.toString()).token;
 
     const res2 = request('POST', `${url}:${port}/v1/admin/quiz`, {
-        json: {
-            token: 'token',
-            name: 'Quiz1',
-            description: 'The first quiz'
-        },
+      json: {
+        token: 'token',
+        name: 'Quiz1',
+        description: 'The first quiz'
+      },
     });
     expect(res2.statusCode).toStrictEqual(401);
     const bodyObj2 = JSON.parse(res2.body.toString());
