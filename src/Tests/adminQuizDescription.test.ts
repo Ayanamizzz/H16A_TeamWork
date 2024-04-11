@@ -66,8 +66,8 @@ describe('PUT /v1/admin/quiz/{quizid}/description', () => {
         json: {
           email: 'validemail@example.com',
           password: 'password4515',
-          firstName: 'Jackie',
-          lastName: 'Random',
+          nameFirst: 'Jackie',
+          nameLast: 'Random',
         },
       });
       const token = JSON.parse(authRegisterRes.body as string).token;
@@ -85,8 +85,8 @@ describe('PUT /v1/admin/quiz/{quizid}/description', () => {
         json: {
           email: 'validemail@example.com',
           password: 'password1231231',
-          firstName: 'John',
-          lastName: 'Doe',
+          nameFirst: 'John',
+          nameLast: 'Doe',
         },
       });
       const token = JSON.parse(authRegisterRes.body as string).token;

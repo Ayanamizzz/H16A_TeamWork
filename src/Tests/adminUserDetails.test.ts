@@ -23,7 +23,7 @@ describe('adminUserDetails', () => {
         Token: token,
       },
     });
-    //expect(response.statusCode).toStrictEqual(401);
+    // expect(response.statusCode).toStrictEqual(401);
     const data = JSON.parse(response.body.toString());
     expect(data).toStrictEqual(ERROR);
   });
@@ -38,7 +38,6 @@ describe('adminUserDetails', () => {
         nameLast: 'Weasley',
       },
     });
-
 
     let userData = JSON.parse(response.body.toString());
     // Ensure that the data returns a user Id.
@@ -60,15 +59,15 @@ describe('adminUserDetails', () => {
       token: expect.any(String),
     });
 
-
     // Now, retrieve user details based on the logged-in user's ID.
     response = request('GET', `${url}:${port}/v1/admin/user/details`, {
       qs: {
         token: userData.token,
       },
     });
-    expect(response.statusCode).toStrictEqual(200);
     const userDetails = JSON.parse(response.body.toString());
+
+    expect(response.statusCode).toStrictEqual(200);
 
     // Assert that the returned user details match the expected details
     // Note: the number of successful logins should equal 2, because upon registering, that counts as logging in.
@@ -83,4 +82,3 @@ describe('adminUserDetails', () => {
     });
   });
 });
-

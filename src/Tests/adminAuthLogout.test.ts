@@ -5,7 +5,6 @@ const port = config.port;
 const url = config.url;
 const web = `${url}:${port}`;
 
-
 describe('adminAuthLogout', () => {
   beforeEach(() => {
     request('DELETE', web + '/v1/clear', {});
