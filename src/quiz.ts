@@ -860,4 +860,3 @@ export function adminQuestionDelete(token:string, quizId:number, questionId:numb
   quiz.questions.splice(questionIndex, 1);
   return {};
 }
-
