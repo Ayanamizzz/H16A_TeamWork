@@ -472,13 +472,14 @@ export function adminQuizTrash(token: string): { quizzes: {name: string, quizId:
 }
 
 export function adminQuizEmptyTrash(token: string, quizIds:string): unknown | {error: string} {
+  const data = getData();
+
   const user = getUser(token);
   if (user === null) {
     return { error: 'Error Code 401 - Invalid token' };
   }
-  const data = getData();
-  const quizIdJson = JSON.parse(quizIds);
 
+  const quizIdJson = JSON.parse(quizIds);
   for (const quizId of quizIdJson) {
     // use quizId find each quiz from trash.
     const quizInTrash = data.quizzesTrash.find((quiz) => quizId === quiz.quizId);
@@ -895,7 +896,6 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
  */
 export function adminQuestionDelete(token:string, quizId:number, questionId:number) {
   // Get data
-
   const data = getData();
   // Get the user id from the provided token
   const user = getUser(token);
