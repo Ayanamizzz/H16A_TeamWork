@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
 import config from '../config.json';
-import { Quiz, User, getData } from '../dataStore';
+import { Quiz } from '../dataStore';
 const port = config.port;
 const url = config.url;
 
@@ -36,8 +36,6 @@ export function register(email: string, password: string, nameFirst: string, nam
   return JSON.parse(res.body.toString());
 }
 
-
-
 export function quizCreate(
   token: string,
   name: string,
@@ -53,14 +51,13 @@ export function quizCreate(
   return JSON.parse(response.body.toString());
 }
 
-
 /**
  * delete quiz in http call
  * @param {number} quizId - QuizId Number.
  * @returns {} - Returns empty object.
  */
 
-export function deleteQuiz(token: string, quizId: number):{} {
+export function deleteQuiz(token: string, quizId: number): object {
   const response = request('DELETE', `${url}:${port}/v1/admin/quiz/${quizId}`, {
     qs: {
       token: token,
@@ -68,7 +65,6 @@ export function deleteQuiz(token: string, quizId: number):{} {
   });
   return JSON.parse(response.body.toString());
 }
-
 
 export function QuizList(token: string) {
   const quizzesRaw = request('GET', `${url}:${port}/v1/admin/quiz/list`, {

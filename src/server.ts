@@ -30,7 +30,6 @@ import {
   adminQuizTrash, // get all trash quizs
   adminQuizEmptyTrash, // emtpy all in trash
 
-
   adminQuizTransfer,
   adminQuestionCreate,
   adminQuestionUpdate,
@@ -38,7 +37,6 @@ import {
   adminQuizQuestionMove,
   adminQuizQuestionDuplicate,
   adminQuestionDelete
-
 
 } from './quiz';
 import { clear } from './other';
@@ -100,7 +98,6 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   res.json(response);
 });
 
-
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const token = req.body.token;
@@ -111,7 +108,6 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   }
   res.json(response);
 });
-
 
 // adminUserDetails Request
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
@@ -140,7 +136,6 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
 
   return res.json(response);
 });
-
 
 // adminUserPasswordUpdate
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
@@ -265,8 +260,6 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   res.json(response);
 });
 
-
-
 // adminQuizRestore
 app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -387,8 +380,7 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   return res.json({});
 });
 
-
-//adminQuizTransfer
+// adminQuizTransfer
 app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   // 1. 401 Errors
   const quizId = parseInt(req.params.quizid);
@@ -470,7 +462,6 @@ app.put('/v1/admin/quiz/:quizId/question/:questionId/move', (req: Request, res: 
 
   return res.json({});
 });
-
 
 // adminQuestionCreate
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {

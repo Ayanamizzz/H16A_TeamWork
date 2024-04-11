@@ -33,7 +33,6 @@ function updateColoursAndTimeEditied (quizId: number, questionId: number) {
   setData(data);
 }
 
-
 /**
  * Moves a quiz specified by its ID to the trash, allowing for potential recovery.
  * This action also updates the quiz's `timeLastEdited` property to the current time.
@@ -63,8 +62,6 @@ export function adminQuizRemove(token: string, quizId:number): unknown | {error:
   setData(data);
   return { };
 }
-
-
 
 /**
  *
@@ -125,7 +122,6 @@ export function adminQuizCreate(token: string, name: string, description: string
   };
 }
 
-
 /**
  * Get all of the relevant information about a specific quiz.
  *
@@ -185,7 +181,6 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
 
   }; */
 }
-
 
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
@@ -412,7 +407,6 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
   return {};
 }
 
-
 /**
    *
    * @param { number } quizId - the quizId of the current logged in admin user.
@@ -514,222 +508,9 @@ export function adminQuizEmptyTrash(token: string, quizIds:string): unknown | {e
   return {};
 }
 
-export function adminQuestionCreate (token: string, quizId: number, questionBody: Question) {
-  const data = getData();
-  const user = getUser(token);
-  if (user === null) {
-    return { error: 'Token is empty or invalid' };
-  }
-  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  if (!quiz || quiz.ownerId !== user.userId) {
-    return {
-      error: 'either the quiz ID is invalid, or the user does not own the quiz'
-    };
-  }
-  // Question string check
-  if (
-    questionBody.question.length > 50 || questionBody.question.length < 5) {
-    return {
-      error: 'Question string is less than 5 characters in length or is greater than 50 characters in length'
-    };
-  }
-
-  // Question number of answer check
-  if (questionBody.answers.length < 2 || questionBody.answers.length > 6) {
-    return {
-      error: 'The question has more than 6 answers or less than 2 answers'
-    };
-  }
-  // Duration is positive
-  if (questionBody.duration <= 0) {
-    return {
-      error: 'The question duration is not a positive number'
-    };
-  }
-  // The sum of the question durations in the quiz exceeds 3 minutes
-  const totalDuration = quiz.questions.reduce((acc, question) => acc + question.duration, 0);
-  if (totalDuration + questionBody.duration > 180) {
-    return {
-      error: 'The sum of the question durations in the quiz exceeds 3 minutes'
-    };
-  }
-
-  // The points awarded for the question are less than 1 or greater than 10
-  if (questionBody.points < 1 || questionBody.points > 10) {
-    return {
-      error: 'The points awarded for the question are less than 1 or greater than 10'
-    };
-  }
-  // The length of any answer is shorter than 1 character long, or longer than 30 characters long
-  for (const answer of questionBody.answers) {
-    if (answer.answer.length < 1 || answer.answer.length > 30) {
-      return {
-        error: 'The length of any answer is shorter than 1 character long, or longer than 30 characters long'
-      };
-    }
-  }
-  // Any answer strings are duplicates of one another (within the same question)
-  const duplicates = (answer: Answer[]) => {
-    const seen = new Set();
-    for (const option of answer) {
-      if (seen.has(option.answer)) {
-        return true;
-      }
-      seen.add(option.answer);
-    }
-    return false;
-  };
-  if (duplicates(questionBody.answers)) {
-    return {
-      error: 'This answer strings are duplicates of one another'
-    };
-  }
-  // There are no correct answers
-  const checkAnswer = (answers: Answer[]) => {
-    for (const answer of answers) {
-      if (answer.correct === true) {
-        return true;
-      }
-    }
-    return false;
-  };
-  if (!checkAnswer(questionBody.answers)) {
-    return {
-      error: 'There are no correct answers'
-    };
-  }
-
-  // Make a new update to data
-  const questionId = newQuestionsId(quiz);
-  const newQuestion: Question = {
-    questionId: questionId,
-    question: questionBody.question,
-    duration: questionBody.duration,
-    points: questionBody.points,
-    answers: questionBody.answers,
-  };
-
-  quiz.questions.push(newQuestion);
-  setData(data);
-
-  // Update quiz timeLastEdited + colours
-  updateColoursAndTimeEditied(quizId, questionId);
-  return {
-    questionId: questionId
-  };
-}
-
-/**
- *
- * @param authUserId - authorized user id to perform the update
- * @param quizId - quiz that contains the question needing to be updated
- * @param questionId - question that needs to be updated
- * @param questionBody - new content for the question
- */
-
-export function adminQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: Question) {
-  const data = getData();
-
-  const user = getUser(token);
-
-  if (user === null) {
-    // Token is empty.
-    return { error: 'Token is empty or invalid' };
-  }
-  const userId = user.userId;
-  const quizToUpdate = data.quizzes.find((quiz: Quiz) => quiz.quizId === quizId);
-  if (!quizToUpdate || userId !== quizToUpdate.ownerId) {
-    return {
-      error: 'either the quiz ID is invalid, or the user does not own the quiz'
-    };
-  }
-
-  const questionToUpdate = quizToUpdate.questions.find((question: Question) => question.questionId === questionId);
-  if (questionToUpdate === undefined) {
-    return {
-      error: 'Question Id does not refer to a valid question within this quiz'
-    };
-  }
-
-  // Validate questionBody fields
-  if (questionBody.question.length < 5 || questionBody.question.length > 50) {
-    return {
-      error: 'Question string is less than 5 characters in length or greater than 50 characters in length'
-    };
-  }
-
-  if (questionBody.answers.length < 2 || questionBody.answers.length > 6) {
-    return {
-      error: 'The question has more than 6 answers or less than 2 answers'
-    };
-  }
-
-  if (questionBody.duration <= 0) {
-    return {
-      error: 'The question duration is not a positive number'
-    };
-  }
-
-  if (questionBody.points < 1 || questionBody.points > 10) {
-    return {
-      error: 'The points awarded for the question are less than 1 or greater than 10'
-    };
-  }
-
-  if (questionBody.answers.some((answer: Answer) => answer.answer.length < 1 || answer.answer.length > 30)) {
-    return {
-      error: 'The length of any answer is shorter than 1 character long, or longer than 30 characters long'
-    };
-  }
-
-  const answerStrings = questionBody.answers.map((answer: Answer) => answer.answer);
-  if (new Set(answerStrings).size !== answerStrings.length) {
-    return {
-      error: 'Any answer strings are duplicates of one another (within the same question)'
-    };
-  }
-
-  if (!questionBody.answers.some((answer: Answer) => answer.correct)) {
-    return {
-      error: 'There are no correct answers'
-    };
-  }
-
-  // Calculate the total duration of all questions
-  let totalDuration = questionBody.duration;
-  for (const question of quizToUpdate.questions) {
-    if (question.questionId !== questionId) { // Exclude the current question
-      totalDuration += question.duration;
-    }
-  }
-  // Include updated duration
-  totalDuration += questionBody.duration;
-
-  if (totalDuration > 180) {
-    return {
-      error: 'If the question were to be updated, the sum of the question durations in the quiz exceeds 3 minutes'
-    };
-  }
-
-  // Update question
-  questionToUpdate.question = questionBody.question;
-  questionToUpdate.duration = questionBody.duration;
-  questionToUpdate.points = questionBody.points;
-  questionToUpdate.answers = questionBody.answers;
-
-  // Write data back to data
-  setData(data);
-
-  // Update quiz timeLastEdited + colours
-  updateColoursAndTimeEditied(quizId, questionId);
-}
-
-
-
-
 /**
  * Create a new stub question for a particular quiz.
- * 
+ *
  * When this route is called, and a question is created, the timeLastEdited is set as the same as the created time,
  * and the colours of all answers of that question are randomly generated.
  *
@@ -750,7 +531,8 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
  * @param {Question} questionBody - The details of the question to create.
  * @returns {Object} - An object containing the ID of the newly created question, or an error object if the question could not be created.
  */
-export function adminQuestionCreate (token: string, quizId: number, questionBody: Question) {
+
+export function adminQuestionCreate(token: string, quizId: number, questionBody: Question) {
   const data = getData();
   const user = getUser(token);
   if (user === null) {
@@ -883,7 +665,6 @@ export function adminQuestionCreate (token: string, quizId: number, questionBody
 
 export function adminQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: Question) {
   const data = getData();
-
   const user = getUser(token);
 
   if (user === null) {
@@ -979,9 +760,6 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
 
   return {};
 }
-
-
-
 
 /**
  * Move the position of a question within a quiz.
@@ -1147,4 +925,3 @@ export function adminQuestionDelete(token:string, quizId:number, questionId:numb
   quiz.questions.splice(questionIndex, 1);
   return {};
 }
-

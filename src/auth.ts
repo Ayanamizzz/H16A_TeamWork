@@ -180,7 +180,6 @@ export function adminUserDetails(token: string): { user: userInDetail } | { erro
   };
 }
 
-
 // Description
 // Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
 
@@ -328,4 +327,3 @@ export function adminAuthLogout(token: string): object | {error: string} {
     return {};
   }
 }
-
