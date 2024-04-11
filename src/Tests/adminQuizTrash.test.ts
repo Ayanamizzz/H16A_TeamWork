@@ -1,91 +1,69 @@
 import request from 'sync-request-curl';
 import config from '../config.json';
+import {
+  register,
+  deleteQuiz,
+  quizCreate,
+} from './api';
+
+function getQuizTrashTesting(token: string) {
+  return request('GET', SERVER_URL + '/v1/admin/quiz/trash', {
+    qs: {
+      token: token,
+    },
+  });
+}
 
 const port = config.port;
 const url = config.url;
 const SERVER_URL = `${url}:${port}`;
+const ERROR = { error: expect.any(String) };
 
-
-describe('adminQuizTrash', () => {
-  beforeEach(() => {
-    request('DELETE', SERVER_URL + '/v1/clear', {});
-  });
-  
-  test('Error: Token is empty or invalid.', () => {
-    const trash_Response = request('GET', SERVER_URL + '/v1/admin/quiz/trash', {
-      qs: { token: '' },
-    });
-
-    const trash = JSON.parse(trash_Response.body.toString());
-    expect(trash).toStrictEqual({ error: expect.any(String) });
-    expect(trash_Response.statusCode).toStrictEqual(401);
-  });
-
-  test('Error: Token is empty or invalid.', () => {
-    const restoreResponse = request('PUT', SERVER_URL + '/v1/admin/quiz/restore', {
-      qs: { token: '' },
-      json: { quizId: 123 }
-    });
-
-    const restoreResult = JSON.parse(restoreResponse.body.toString());
-
-    expect(restoreResult).toStrictEqual({ error: expect.any(String) });
-    expect(restoreResponse.statusCode).toStrictEqual(401);
-  });
-
-});
-
-describe('successful to use adminQuizTrash', () => {
+describe('adminQuizTrashView', () => {
   beforeEach(() => {
     request('DELETE', SERVER_URL + '/v1/clear', {});
   });
 
-  test('quiz in trash function successfully', () => {
-    const register_Response = request('POST', SERVER_URL + '/v1/admin/auth/register', {
-        json: {
-          email: 'z5437798@gmail.com',
-          password: 'Wind4ever',
-          nameFirst: 'Ma',
-          nameLast: 'Jin',
-        },
-      }
+  // Test with empty or invalid token.
+  test('Error: Token is empty or invalid.', () => {
+    const trashResponse = getQuizTrashTesting('Invalid token');
+    const trashData = JSON.parse(trashResponse.body.toString());
+    expect(trashResponse.statusCode).toStrictEqual(401);
+    expect(trashData).toStrictEqual(ERROR);
+  });
+
+  test('200 Success: View quizzes in trash successfully', () => {
+    // Create a new user.
+    const user = register(
+      'z5437798@gmail.com',
+      'Wind4ever',
+      'Ma',
+      'Jin'
     );
-
-    const user = JSON.parse(register_Response.body.toString());
-    expect(user).toStrictEqual({ token: expect.any(String) });
-
-    const Quiz_Response = request('POST', SERVER_URL + '/v1/admin/quiz', {
-      json: {
-        token: user.token,
-        name: 'New Quiz',
-        description: 'This is the description',
-      },
+    expect(user).toStrictEqual({
+      token: expect.any(String),
     });
+    // Create the quiz.
+    const quiz = quizCreate(user.token, 'New Quiz', 'This is the description');
+    expect(quiz).toStrictEqual({ quizId: expect.any(Number) });
 
-    const newQuiz = JSON.parse(Quiz_Response.body.toString());
-    expect(newQuiz).toStrictEqual({ quizId: expect.any(Number) });
+    // Delete the quiz.
+    const deleteResponse = deleteQuiz(user.token, quiz.quizId);
+    expect(deleteResponse).toStrictEqual({});
+    // Call the empty trash function
+    const deletedData = getQuizTrashTesting(user.token);
+    expect(deletedData.statusCode).toStrictEqual(200);
+    const trashData = JSON.parse(deletedData.body.toString());
+    const quizId = quiz.quizId;
 
-    const quizId = newQuiz.quizId;
-    const remove_Quiz_Response = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizId}`, {
-        qs: { token: user.token },
-      }
-    );
-    const clear = JSON.parse(remove_Quiz_Response.body.toString());
-    expect(clear).toStrictEqual({});
-
-    const trash_Response = request('GET', SERVER_URL + `/v1/admin/quiz/trash`, {
-      qs: { token: user.token },
-    });
-
-    const trash = JSON.parse(trash_Response.body.toString());
-    expect(trash).toStrictEqual({
+    // Check that the quiz is in the trash.
+    expect(trashData).toStrictEqual({
       quizzes: [
         {
-          quizId: newQuiz.quizId,
-          name: 'newQuiz'
-        }
-      ]
+          quizId: quizId,
+          name: 'New Quiz',
+        },
+      ],
     });
-    expect(trash_Response.statusCode).toStrictEqual(200);
   });
-})
+});
