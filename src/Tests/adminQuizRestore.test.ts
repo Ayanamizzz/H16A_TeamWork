@@ -37,10 +37,10 @@ describe('adminQuizRestore - Success Case', () => {
   test('Status 200 - Restore Quiz Success: ', () => {
     // Create a new user.
     const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+      'z5437798@gmail.com',
+      'Majin123',
+      'Ma',
+      'Jin'
     );
     expect(user).toEqual({ token: expect.any(String) });
 
