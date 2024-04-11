@@ -321,6 +321,50 @@ app.post('/v1/admin/quiz/restore', (req: Request, res: Response) => {
 });
 
 
+// adminQuizEmptyTrash
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const quizIds = req.query.quizIds as string[];
+
+  const response = adminTrashEmpty(token, quizIds);
+  if ('error' in response) {
+    if (response.error.includes('401')) {
+      return res.status(401).json(response);
+    } else if (response.error.includes('403')) {
+      return res.status(403).json(response);
+    } else {
+      return res.status(400).json(response);
+    }
+  }
+
+  return res.json(response);
+});
+
+
+// adminQuizQuestionDelete
+app.delete('/v1/admin/quiz/{quizid}/question/{questionid}', (req: Request, res: Response) => {
+  const quizid = parseInt(req.params.quizid);
+  const questionid = parseInt(req.params.questionid);
+  const token = req.query.token as string;
+
+  const response = adminQuestionDelete(quizid, questionid, token);
+
+  if ('error' in response) {
+    if (response.error.includes('401')) {
+      return res.status(401).json(response);
+    } else if (response.error.includes('403')) {
+      return res.status(403).json(response);
+    } else {
+      return res.status(400).json(response);
+    }
+  }
+
+  return res.json(response);
+});
+
+
+
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

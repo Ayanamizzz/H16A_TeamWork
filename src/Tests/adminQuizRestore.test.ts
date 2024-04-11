@@ -12,7 +12,6 @@ import {
   deleteQuiz,
   QuizList,
   QuizzesFromTrash,
-
 } from './api';
 
 /**

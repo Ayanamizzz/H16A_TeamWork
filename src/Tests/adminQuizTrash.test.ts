@@ -35,10 +35,10 @@ describe('adminQuizTrashView', () => {
   test('200 Success: View quizzes in trash successfully', () => {
     // Create a new user.
     const user = register(
-      'HGindaHouse@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+      'z5437798@gmail.com',
+      'Wind4ever',
+      'Ma',
+      'Jin'
     );
     expect(user).toStrictEqual({
       token: expect.any(String),

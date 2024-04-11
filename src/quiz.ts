@@ -380,24 +380,25 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
  * @returns { }
  */
 
-export function adminQuiztrash(token: string): object | {error: string} {
+export function adminQuiztrash(token: string): { trash: {name: string, quizId: number}[] } | {error: string} {
     const user = getUser(token);
-    const data = getData();
+
     if (!user) {
         return { error: 'Error Code 401 - Invalid token'};
     }
-    const trash = [];
-    for (const quiz of data.quizzesTrash) {
-        if (quiz.ownerId === user.userId) {
-            trash.push({
-                quizId: quiz.quizId,
-                name: quiz.name
-            });
-        }
+
+    const data = getData();
+    const trash: {name: string, quizId: number}[] = [];
+    for (const quiz of data.quizzes) {
+        
+        trash.push({
+            quizId: quiz.quizId,
+            name: quiz.name
+        });
     }
     
     setData(data);
-    return { quizzes:trash };
+    return { trash };
 }
 
 
@@ -432,7 +433,7 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
         return { error: 'Code 400 - Quiz name of the restored quiz is already used by another active quiz'}
     }
 
-    if (trashQuiz.ownerId !== user.userId) {
+    if (trashQuiz.authUserId !== user.userId) {
         return { error: 'Code 403 - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz'}
     }
 
@@ -440,13 +441,9 @@ export function adminQuizRestore(quizId: number, token: string): object | {error
     data.quizzes.push(trashQuiz);
     // use splice remove test from trash and add it to the list.
     data.quizzesTrash.splice(trashQuizIndex, 1);
-
-    
     setData(data);
     return {};
 }
-
-
 
 
 // Description
