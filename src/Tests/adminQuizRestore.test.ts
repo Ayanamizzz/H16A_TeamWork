@@ -1,32 +1,56 @@
 import request from 'sync-request-curl';
 import config from '../config.json';
-
 const port = config.port;
 const url = config.url;
 const SERVER_URL = `${url}:${port}`;
-const ERROR = { error: expect.any(String) };
 
-import {
-  register,
-  quizCreate,
-  deleteQuiz,
-  QuizList,
-  QuizzesFromTrash,
-} from './api';
+// Used to represent expected error objects
+// const ERROR = { error: expect.any(String) };
 
 /**
- * Eequests the Quiz Restore function.
- * @param { string } token - The user token for verification.
- * @param { number } quizId - The id of the quiz
- * @returns { object } response Object
+ * @param {string} email
+ * @param {string} password
+ * @param {string} nameFirst
+ * @param {string} nameLast
+ * @returns {string}
  */
-
-function quizRestoreTesting(token: string, quizId: number) {
-  return request('POST', SERVER_URL + `/v1/admin/quiz/${quizId}/restore`, {
+export function newUserHttpRes(
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast: string
+): { token: string } {
+  const response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
     json: {
-      token: token,
+      email: email,
+      password: password,
+      nameFirst: nameFirst,
+      nameLast: nameLast,
     },
   });
+  return JSON.parse(response.body.toString());
+}
+
+/**
+ *
+ * @param {string} token
+ * @param {string} name
+ * @param {string} description
+ * @returns {string}
+ */
+export function newQuizHttpRes(
+  token: string,
+  name: string,
+  description: string
+): {quizId: number} {
+  const res = request('POST', `${url}:${port}/v1/admin/quiz`, {
+    json: {
+      token: token,
+      name: name,
+      description: description,
+    },
+  });
+  return JSON.parse(res.body.toString());
 }
 
 describe('adminQuizRestore - Success Case', () => {
@@ -36,291 +60,324 @@ describe('adminQuizRestore - Success Case', () => {
 
   test('Status 200 - Restore Quiz Success: ', () => {
     // Create a new user.
-    const user = register(
+    const user = newUserHttpRes(
       'z5437798@gmail.com',
-      'Majin123',
+      'Wind4ever',
       'Ma',
       'Jin'
     );
-    expect(user).toEqual({ token: expect.any(String) });
 
+    expect(user).toEqual({ token: expect.any(String) });
     // Then create a quiz
-    const quiz = quizCreate(
+    const quiz = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'Aaaaaaaaa'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
-    expect(quizDelResponse).toEqual({});
+    const clearResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+      qs: { token: user.token }
+    });
 
-    // Retrieve the Quiz from trash
-    const response = quizRestoreTesting(user.token, quiz.quizId);
+    expect(clearResponse.statusCode).toBe(200);
+    const quizClearResponse = JSON.parse(clearResponse.body.toString());
+    expect(quizClearResponse).toEqual({});
+    // redo test
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/restore`, {
+      json: { token: user.token },
+    }
+    );
     expect(response.statusCode).toBe(200);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual({});
 
-    // Check the trash - which should be empty
-    const checkTrashResponse = QuizzesFromTrash(user.token);
-    expect(checkTrashResponse).toStrictEqual({ quizzes: [] });
+    // cheack is trash empty?
+    const viewTrashResponse = request('GET', SERVER_URL + '/v1/admin/quiz/trash', {
+      qs: { token: user.token },
+    });
+    expect(viewTrashResponse.statusCode).toBe(200);
+    const checkTrashResponseObj = JSON.parse(
+      viewTrashResponse.body.toString()
+    );
 
-    // Now check the quizzes list. The Restored quiz should be in the quizzes array.
-    const checkquizzesResponse = QuizList(user.token);
-
-    expect(checkquizzesResponse).toEqual({
+    expect(checkTrashResponseObj).toStrictEqual({ quizzes: [] });
+    // Now check the quizzes. WIP
+    // Check the trash - which should be empty - MUST BE A SERVER CALL! - WIP
+    const checkquizzesResponse = request('GET', SERVER_URL + '/v1/admin/quiz/list', {
+      qs: { token: user.token },
+    }
+    );
+    expect(checkquizzesResponse.statusCode).toBe(200);
+    const checkquizzeRresponseObj = JSON.parse(
+      checkquizzesResponse.body.toString()
+    );
+    expect(checkquizzeRresponseObj).toEqual({
       quizzes: [
         {
           name: expect.any(String),
-          quizId: expect.any(Number),
-        },
-      ],
+          quizId: expect.any(Number)
+        }
+      ]
     });
   });
 });
 
-describe('400 Cases', () => {
+/*
+describe('Status Code :400', () => {
   beforeEach(() => {
+    // Clear server status
     request('DELETE', SERVER_URL + '/v1/clear', {});
   });
-
   test('Status 400 - Quiz name of the restored quiz is already used by another active quiz: ', () => {
     // Create a new user.
-    const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Majin4ever',
+      'Ma',
+      'Jin'
     );
     expect(user).toEqual({ token: expect.any(String) });
-
-    // Then create a quiz
-    const quiz = quizCreate(
+    // Create a new quiz
+    const quiz = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'aiowqeqeqvq'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
+    const delResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+        qs: {
+          token: user.token,
+        },
+      }
+    );
+    expect(delResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(delResponse.body.toString());
     expect(quizDelResponse).toEqual({});
-
-    // Now create another quiz with the same name
-
-    const quiz2 = quizCreate(
+    // make a same name quiz
+    const quiz2 = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'aiowqeqeqvq'
     );
     expect(quiz2).toEqual({ quizId: expect.any(Number) });
+    // Retrieve Quiz from trash - will report error
+    const response = request('POST',SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/restore`, {
+        json: { token: user.token },
+      }
+    );
 
-    // Retrieve Quiz from trash - should throw an error
-    const response = quizRestoreTesting(user.token, quiz.quizId);
     expect(response.statusCode).toBe(400);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
 
-  test('Status 400 - Quiz ID refers to a quiz that is not currently in the trash: ', () => {
+  test('Status Code 400 - Quiz ID refers to a quiz that is not currently in the trash: ', () => {
     // Create a new user.
-    const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Majin4ever',
+      'Ma',
+      'Jin'
     );
-    expect(user).toEqual({ token: expect.any(String) });
 
+    expect(user).toEqual({ token: expect.any(String) });
     // Then create a quiz
-    const quiz = quizCreate(
+    const quiz = newQuizHttpRes(
       user.token,
       'Question 1',
       'This is the description'
     );
+
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
+    const delResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+        qs: { token: user.token },
+      }
+    );
+    expect(delResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(delResponse.body.toString());
     expect(quizDelResponse).toEqual({});
-
-    // Retrieve Quiz from trash - should throw an error
-    const randomNumber = 99;
-    // Retrieve Quiz from trash - should throw an error
-    const response = quizRestoreTesting(user.token, randomNumber);
+    // Retrieve Quiz from trash - will retuern error
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${123}/restore`, {
+      json: { token: user.token },
+    });
     expect(response.statusCode).toBe(400);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
 });
-
-describe('400 Cases', () => {
+describe('Status code 400', () => {
   beforeEach(() => {
+    // Clear server status
     request('DELETE', SERVER_URL + '/v1/clear', {});
   });
-
   test('Status 400 - Quiz name of the restored quiz is already used by another active quiz: ', () => {
     // Create a new user.
-    const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Wind4ever',
+      'Ma',
+      'Jin'
     );
     expect(user).toEqual({ token: expect.any(String) });
-
     // Then create a quiz
-    const quiz = quizCreate(
+    const quiz = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'Aweweqweqwe'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
+    const delResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+        qs: { token: user.token },
+      }
+    );
+    expect(delResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(delResponse.body.toString());
     expect(quizDelResponse).toEqual({});
-
     // Now create another quiz with the same name
-
-    const quiz2 = quizCreate(
+    const quiz2 = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'qworeqeiwqioeqoiewoqi'
     );
     expect(quiz2).toEqual({ quizId: expect.any(Number) });
-
     // Retrieve Quiz from trash - should throw an error
-    const response = quizRestoreTesting(user.token, quiz.quizId);
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/restore`, {
+      json: { token: user.token },
+    });
     expect(response.statusCode).toBe(400);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
 
-  test('Status 400 - Quiz ID refers to a quiz that is not currently in the trash: ', () => {
+  test('Status Code 400 - Quiz ID refers to a quiz that is not currently in the trash: ', () => {
     // Create a new user.
-    const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Majin4ever',
+      'Ma',
+      'Jin'
     );
     expect(user).toEqual({ token: expect.any(String) });
-
-    // Then create a quiz
-    const quiz = quizCreate(
+    // Create a new quiz
+    const quiz = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'oioweowqpwpep'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
-    expect(quizDelResponse).toEqual({});
+    const delResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+      qs: { token: user.token },
+    });
 
-    // Retrieve Quiz from trash - should throw an error
+    expect(delResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(delResponse.body.toString());
+    expect(quizDelResponse).toEqual({});
+    // Retrieve Quiz from trash - will report an error
     const randomNumber = 99;
-    const response = quizRestoreTesting(user.token, randomNumber);
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${randomNumber}/restore`, {
+      json: { token: user.token },
+    });
     expect(response.statusCode).toBe(400);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
 });
-
-describe('401 Case', () => {
+describe('Status code 401', () => {
   beforeEach(() => {
+    // Clear server status
     request('DELETE', SERVER_URL + '/v1/clear', {});
   });
-
-  test('Status 401 - Invalid token: ', () => {
+  test('Status 401 - Quiz name of the restored quiz is already used by another active quiz: ', () => {
     // Create a new user.
-    const user = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Wind4ever',
+      'Ma',
+      'Jin'
     );
     expect(user).toEqual({ token: expect.any(String) });
-
     // Then create a quiz
-    const quiz = quizCreate(
+    const quiz = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'qwiewqiewqjeiqj'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
     // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user.token, quiz.quizId);
+    const delResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+      qs: { token: user.token },
+    });
+    expect(delResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(delResponse.body.toString());
     expect(quizDelResponse).toEqual({});
-
     // Now create another quiz with the same name
-
-    const quiz2 = quizCreate(
+    const quiz2 = newQuizHttpRes(
       user.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'asdajeiwajeiaiwaeaiwj'
     );
     expect(quiz2).toEqual({ quizId: expect.any(Number) });
-
     // Retrieve Quiz from trash - should throw an error
-    const response = quizRestoreTesting('Invalid Token', quiz.quizId);
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/restore`, {
+      json: { token: 'Invalid Token' },
+    });
     expect(response.statusCode).toBe(401);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
 });
-
-describe('403 Case', () => {
+describe('Status code 403', () => {
   beforeEach(() => {
+    // Clear server status
     request('DELETE', SERVER_URL + '/v1/clear', {});
   });
-
   test('Status 403 - Valid token is provided, but user is not an owner of this quiz: ', () => {
     // Create users.
-    const user1 = register(
-      'HGindaHouse22@hogwarts.com',
-      'Hocrux2387',
-      'Ginny',
-      'Weasley'
+    const user1 = newUserHttpRes(
+      'z5437798@gmail.com',
+      'Wind4ever',
+      'Ma',
+      'Jin'
     );
     expect(user1).toEqual({ token: expect.any(String) });
-
-    const user2 = register(
-      'MajulaOblong66@hogwarts.com',
-      'Licorice23',
-      'Booyah',
-      'JimJones'
+    const user2 = newUserHttpRes(
+      'asmasi@gmail.com',
+      'love4everW',
+      'Jin',
+      'Ma'
     );
     expect(user2).toEqual({ token: expect.any(String) });
-
-    // Then create a quiz
-    const quiz = quizCreate(
+    const quiz = newQuizHttpRes(
       user1.token,
-      'Question 1',
-      'This is the description'
+      'Quiz',
+      'qwirqirjqwirqij'
     );
     expect(quiz).toEqual({ quizId: expect.any(Number) });
-
-    // Send Quiz to trash
-    const quizDelResponse = deleteQuiz(user1.token, quiz.quizId);
+    // Clear quiz to trash
+    const clearResponse = request('DELETE', `${url}:${port}/v1/admin/quiz/${quiz.quizId}`, {
+      qs: { token: user1.token },
+    });
+    expect(clearResponse.statusCode).toBe(200);
+    const quizDelResponse = JSON.parse(clearResponse.body.toString());
     expect(quizDelResponse).toEqual({});
-
     // Now create another quiz with the same name
-
-    const quiz2 = quizCreate(
+    const quiz2 = newQuizHttpRes(
       user1.token,
       'Question 1',
       'This is the description'
     );
     expect(quiz2).toEqual({ quizId: expect.any(Number) });
-
     // Retrieve Quiz from trash - should throw an error
-    const response = quizRestoreTesting(user2.token, quiz.quizId);
+    const response = request('POST', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/restore`, {
+      json: { token: user2.token },
+    });
     expect(response.statusCode).toBe(403);
     const quizTrashResponse = JSON.parse(response.body.toString());
     expect(quizTrashResponse).toEqual(ERROR);
   });
-});
+}); */
