@@ -1,5 +1,5 @@
 {
-  "scripts": {
+    "scripts": {
       "test": "jest",
       "ts-node": "ts-node",
       "ts-node-dev": "ts-node-dev",
@@ -11,8 +11,8 @@
       "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
       "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
       "posttest": "npm run cleanup-sync-request || true"
-  },
-  "dependencies": {
+    },
+    "dependencies": {
       "cors": "^2.8.5",
       "express": "^4.18.0",
       "http-errors": "^2.0.0",
@@ -23,8 +23,8 @@
       "ts-node": "^10.7.0",
       "typescript": "^4.6.3",
       "validator": "^13.11.0"
-  },
-  "devDependencies": {
+    },
+    "devDependencies": {
       "@types/cors": "^2.8.12",
       "@types/express": "^4.17.13",
       "@types/http-errors": "^2.0.1",
@@ -46,10 +46,11 @@
       "ts-jest": "^28.0.2",
       "ts-node-dev": "^2.0.0",
       "yaml": "^2.2.2"
-  },
-  "nyc": {
+    },
+    "nyc": {
       "exclude": [
-          "echo.*"
+        "echo.*"
       ]
+    }
   }
-}
+  

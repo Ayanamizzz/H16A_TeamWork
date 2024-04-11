@@ -19,3 +19,7 @@ tests:
     - cat $SERVER_LOG
 
 
+linting:
+  stage: checks
+  script:
+    - npm run lint
