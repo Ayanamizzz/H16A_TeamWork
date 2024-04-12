@@ -1,5 +1,3 @@
-image: comp1531/automarking:latest
-
 stages:
   - checks
 
@@ -14,9 +12,14 @@ tests:
   script:
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
-    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || exit 1
     - timeout -s SIGINT 180s npm run test || (cat $SERVER_LOG && exit 1)
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
 
+
+linting:
+  stage: checks
+  script:
+    - npm run lint
