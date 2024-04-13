@@ -133,16 +133,17 @@ export function adminQuizCreate(token: string, name: string, description: string
  *
  * @param {string} token - The token of the user requesting the quiz information.
  * @param {number} quizId - The ID of the quiz to retrieve information for.
- * @returns {QuizInfoResponseV1 | ErrorResponse} - An object containing quiz information if successful, or an error object if not.
+ * @returns {QuizInfoResponseV1 | { error: string }} - An object containing quiz information if successful, or an error object if not.
  */
 
-export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | ErrorResponse {
+export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | { error: string } {
   const data = getData();
 
   // Check userId by token.
   const user = getUser(token);
+  
+  // Token is empty.
   if (!user) {
-    // Token is empty.
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
   }
 
@@ -157,31 +158,9 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
     throw HTTPError(403, 'Quiz ID does not refer to a quiz that this user owns');
   }
 
-  // Return quiz info.
+
   return quiz;
-  /*
-    quizId: quiz.quizId,
-    name: quiz.name,
-    timeCreated: quiz.timeCreated,
-    timeLastEdited: quiz.timeLastEdited,
-    description: quiz.description,
-
-        numQuestions: quiz.questions.length,
-        questions: quiz.questions.map(question => ({
-        questionId: question.questionId,
-        question: question.question,
-        duration: question.duration,
-        points: question.points,
-        answers: question.answers.map(answer => ({
-            answerId: answer.answerId,
-            answer: answer.answer,
-            colour: answer.colour,
-            correct: answer.correct,
-        })),
-        })),
-        duration: quiz.duration,
-
-  }; */
+  
 }
 
 // Description
@@ -194,7 +173,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
  *
 */
 
-export function adminQuizList(token: string): {quizzes: {quizId: number, name: string}[]} | ErrorResponse {
+export function adminQuizList(token: string): {quizzes: {quizId: number, name: string}[]} | { error: string } {
   const data = getData();
 
   // Check userId by token.
@@ -202,13 +181,6 @@ export function adminQuizList(token: string): {quizzes: {quizId: number, name: s
   if (user === null) {
     return { error: 'Token does not refer to valid logged in user session' };
   }
-
-  // // Check userId by token.
-  // const user = getUser(token);
-  // if (user === null) {
-  //     // Token is empty.
-  //     return { error: 'Token does not refer to valid logged in user session' };
-  // }
 
   // Create an empty array to contains the list of quizzes that sare owned
   // by the currently logged in user.
