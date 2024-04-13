@@ -2,12 +2,11 @@ import { User, getData, setData, Answer, Quiz, Question } from './dataStore';
 import { getUser } from './other';
 import { HTTPError } from 'http-errors';
 
-
 /**
  * Lists all user's quizzes.
- * 
+ *
  * @param {string} token - the token of the current logged in admin user
- * @returns {quizzes: {quizId: number, name: string}[]} 
+ * @returns {quizzes: {quizId: number, name: string}[] }
  *
  */
 
@@ -36,14 +35,13 @@ export function adminQuizList(token: string): {quizzes: { quizId: number, name: 
   return { quizzes: quizzes };
 }
 
-
 /**
  * Create a new quiz.
- * 
+ *
  * @param {string} token - the token of the current logged in admin user
  * @param {string} name - the name of new quiz
  * @param {string} description - the description of new quiz
- * @returns {{ quizId: number }} - An object contains the new quizId after creating a quiz
+ * @returns {{ quizId: number }} - an object contains the new quizId after creating a quiz
  *
  */
 
@@ -92,17 +90,16 @@ export function adminQuizCreate(token: string, name: string, description: string
   };
 }
 
-
 /**
  * Send a quiz to trash.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {string} token - the token of the current logged in admin user
- * @returns {{}} - An object contains the new quizId after creating a quiz
+ * @returns {unknown}
  *
  */
 
-export function adminQuizRemove(token: string, quizId:number): {} | { error: string } {
+export function adminQuizRemove(token: string, quizId:number): unknown | { error: string } {
   const user = getUser(token);
 
   if (user === null) {
@@ -117,16 +114,16 @@ export function adminQuizRemove(token: string, quizId:number): {} | { error: str
   if (data.quizzes[quizIndex].ownerId !== user.userId) {
     throw HTTPError(403, 'either the quiz ID is invalid, or the user does not own the quiz');
   }
+
   const [removedQuiz] = data.quizzes.splice(quizIndex, 1);
   data.quizzesTrash.push(removedQuiz);
   setData(data);
   return { };
 }
 
-
 /**
  * Get info about current quiz.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {string} token - the token of the current logged in admin user
  * @returns {QuizInfoResponseV1}
@@ -150,18 +147,17 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
   return quiz;
 }
 
-
 /**
  * Get info about current quiz.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {string} token - the token of the current logged in admin user
  * @param {string} name - the new name for the quiz.
- * @returns {{}}
+ * @returns {unknown}
  *
  */
 
-export function adminQuizNameUpdate(token: string, quizId: number, name: string): {} | { error: string } {
+export function adminQuizNameUpdate(token: string, quizId: number, name: string): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -193,18 +189,17 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   return {};
 }
 
-
 /**
  * Update quiz description.
  *
  * @param {string} token - the token of the current logged in admin user
  * @param {number} quizId - the id of the quiz
  * @param {string} description - the new description for the quiz
- * @returns {{}}
- * 
+ * @returns {unknown}
+ *
  */
 
-export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): {} | { error: string } {
+export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -227,13 +222,12 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   return {};
 }
 
-
 /**
  * View the quizzes in trash.
  *
  * @param {string} token - the token of the current logged in admin user
- * @returns {{}}
- * 
+ * @returns {{ quizzes: {name: string, quizId: number}[] }}
+ *
  */
 
 export function adminQuizTrash(token: string): { quizzes: {name: string, quizId: number}[] } | { error: string } {
@@ -258,13 +252,12 @@ export function adminQuizTrash(token: string): { quizzes: {name: string, quizId:
   return { quizzes };
 }
 
-
 /**
  * Restore a quiz from trash.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {string} token - the token of the current logged in admin user
- * @returns {{}}
+ * @returns {unknown}
  *
  */
 
@@ -300,17 +293,16 @@ export function adminQuizRestore(quizId: number, token: string): unknown| {error
   return {};
 }
 
-
 /**
  * Empty the trash.
- * 
+ *
  * @param {string} token - the token of the current logged in admin user
  * @param {string} quizIds - a string representing a JSONified array of quiz id numbers
- * @returns {{}}
+ * @returns {unknown}
  *
  */
 
-export function adminQuizEmptyTrash(token: string, quizIds: string): {} | { error: string } {
+export function adminQuizEmptyTrash(token: string, quizIds: string): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -345,18 +337,17 @@ export function adminQuizEmptyTrash(token: string, quizIds: string): {} | { erro
   return {};
 }
 
-
 /**
  * Transfer the quiz to another owner.
  *
  * @param {number} quizId - the id of the quiz
  * @param {string} token - the token of the current logged in admin user
  * @param {string} userEmail - the email of the user transfer the quiz to.
- * @returns {{}}
- * 
+ * @returns {unknown}
+ *
  */
 
-export function adminQuizTransfer(quizId: number, token: string, userEmail: string): {} | { error: string } {
+export function adminQuizTransfer(quizId: number, token: string, userEmail: string): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -381,14 +372,10 @@ export function adminQuizTransfer(quizId: number, token: string, userEmail: stri
     throw HTTPError(400, 'Quiz ID refers to a quiz that has a name that is already used by the target user.');
   }
 
-  // need: check 'Any session for this quiz is not in END state'
-  //
-
   quiz.ownerId = newOwner.userId;
   setData(data);
   return {};
 }
-
 
 // Helper functions
 /**
@@ -411,7 +398,6 @@ function quizNameIsTaken (authUserID: number, name: string): boolean {
   return false;
 }
 
-
 /**
  * Create quiz question.
  *
@@ -419,7 +405,7 @@ function quizNameIsTaken (authUserID: number, name: string): boolean {
  * @param {number} quizId - The ID of the quiz to create the question for.
  * @param {Question} questionBody - The details of the question to create.
  * @returns {{ questionId: number }}
- * 
+ *
  */
 
 export function adminQuestionCreate(token: string, quizId: number, questionBody: Question): { questionId: number } | { error: string } {
@@ -509,7 +495,6 @@ export function adminQuestionCreate(token: string, quizId: number, questionBody:
   return { questionId: questionId };
 }
 
-
 // Helper functions
 /**
  * Given basic details about a new quiz, create one for the logged in user.
@@ -527,7 +512,6 @@ function newQuestionsId(quiz: Quiz): number {
 
   return newId;
 }
-
 
 // Helper functions
 /**
@@ -555,19 +539,18 @@ function updateColoursAndTimeEditied (quizId: number, questionId: number) {
   setData(data);
 }
 
-
 /**
  * Update quiz question.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {number} questionId - the id of the question to update.
  * @param {string} token - the token of the current logged in admin user
  * @param {Question} questionBody - The new details for the question.
- * @returns {{}}
- * 
+ * @returns {unknown}
+ *
  */
 
-export function adminQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: Question): {} | { error: string } {
+export function adminQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: Question): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -606,7 +589,7 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
   // Calculate the total duration of all questions
   let totalDuration = questionBody.duration;
   for (const question of quizToUpdate.questions) {
-    if (question.questionId !== questionId) { 
+    if (question.questionId !== questionId) {
       // Exclude the current question
       totalDuration += question.duration;
     }
@@ -630,18 +613,17 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
   return {};
 }
 
-
 /**
  * Delete a quiz question.
  *
  * @param {number} quizId - the id of the quiz
  * @param {number} questionId - the id of the question to update.
  * @param {string} token - the token of the current logged in admin user
- * @returns {{}}
- * 
+ * @returns {unknown}
+ *
  */
 
-export function adminQuestionDelete(quizId: number, questionId: number, token: string): {} {
+export function adminQuestionDelete(quizId: number, questionId: number, token: string): unknown | { error: string } {
   const data = getData();
 
   const user = getUser(token);
@@ -667,8 +649,6 @@ export function adminQuestionDelete(quizId: number, questionId: number, token: s
   return {};
 }
 
-
-
 /**
  * Move a quiz question.
  *
@@ -677,10 +657,10 @@ export function adminQuestionDelete(quizId: number, questionId: number, token: s
  * @param {string} token - the token of the current logged in admin user
  * @param {number} newPosition - the new index position of the question within the quiz.
  *
- * @returns {{}}
+ * @returns {unknown}
  */
 
-export function adminQuizQuestionMove(quizId: number, questionId: number, token: string, newPosition: number): {} | { error: string } {
+export function adminQuizQuestionMove(quizId: number, questionId: number, token: string, newPosition: number): unknown | { error: string } {
   const data = getData();
   const user = getUser(token);
   if (user === null) {
@@ -708,7 +688,7 @@ export function adminQuizQuestionMove(quizId: number, questionId: number, token:
   }
 
   // Check if the new position is the same as the current position
-  if (newPosition === questionIndex) {  
+  if (newPosition === questionIndex) {
     throw HTTPError(400, 'NewPosition is the position of the current question.');
   }
 
@@ -723,15 +703,14 @@ export function adminQuizQuestionMove(quizId: number, questionId: number, token:
   return {};
 }
 
-
 /**
  * Duplicate a quiz question.
- * 
+ *
  * @param {number} quizId - the id of the quiz
  * @param {number} questionId - the id of the question to update.
  * @param {string} token - the token of the current logged in admin user
  * @returns {{ newQuestionId: number }}
- * 
+ *
  */
 
 export function adminQuizQuestionDuplicate(quizId: number, questionId: number, token: string): { newQuestionId: number } | { error: string } {
@@ -767,4 +746,3 @@ export function adminQuizQuestionDuplicate(quizId: number, questionId: number, t
   setData(data);
   return { newQuestionId: newQuestionId };
 }
-
