@@ -133,15 +133,15 @@ export function adminQuizCreate(token: string, name: string, description: string
  *
  * @param {string} token - The token of the user requesting the quiz information.
  * @param {number} quizId - The ID of the quiz to retrieve information for.
- * @returns {QuizInfoResponseV1 | { error: string }} - An object containing quiz information if successful, or an error object if not.
+ * @returns {object | { error: string }} - An object containing quiz information if successful, or an error object if not.
  */
 
-export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | { error: string } {
+export function adminQuizInfo(token: string, quizId: number): object | { error: string } {
   const data = getData();
 
   // Check userId by token.
   const user = getUser(token);
-  
+
   // Token is empty.
   if (!user) {
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
@@ -149,7 +149,6 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
 
   const userId = user.userId;
 
-  // Check quizId.
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz) {
     throw HTTPError(400, 'Quiz ID does not refer to a valid quiz');
@@ -157,7 +156,6 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
   if (quiz.ownerId !== userId) {
     throw HTTPError(403, 'Quiz ID does not refer to a quiz that this user owns');
   }
-
 
   return quiz;
   
@@ -697,14 +695,12 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
 }
 
 /**
- * Move the position of a question within a quiz.
  *
- * @param {number} quizId - The unique identifier of the quiz where the question belongs.
- * @param {number} questionId - The unique identifier of the question to be moved.
- * @param {string} token - The authentication token of the user for verifying user identity.
- * @param {number} newPosition - The new index position of the question within the quiz.
- *
- * @returns {object} - An empty object `{}` if the question is successfully moved; an object containing the error message `{ error: string }` if an error occurs.
+ * @param token - an authorized user token
+ * @param quizId - the quiz's Id
+ * @param questionId - the question's Id
+ * @param newPosition - the new position that the question will be moved to
+ * @returns { } an empty object
  */
 
 export function adminQuizQuestionMove(
@@ -712,42 +708,36 @@ export function adminQuizQuestionMove(
   questionId: number,
   token: string,
   newPosition: number
-): { error?: string } { // Note the adjusted return type indicating that 'error' is optional
-  // Retrieve the data from the data store
+): object | { error: string } { 
 
   const data = getData();
   const user = getUser(token);
   if (user === null) {
-    // Token is empty.
     throw HTTPError(401, 'Token is empty');
   }
 
   const userId = user.userId;
-  // Attempt to locate the specified quiz
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
-  // Ensure the quiz exists
+
   if (!validQuiz) {
     throw HTTPError(403, 'QuizId does not refer to a valid quiz.');
   }
 
-  // Verify that the user is the owner of the quiz
   if (validQuiz.ownerId !== userId) {
     throw HTTPError(403, 'The user does not own the quiz.');
   }
 
   // Find the index of the question to be moved within the quiz
   const questionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
-  // Ensure the question exists in the quiz
+
   if (questionIndex === -1) {
     throw HTTPError(400, 'QuestionId does not refer to a valid question within this quiz.');
   }
 
-  // Validate the new position is within acceptable bounds
   if (newPosition < 0 || newPosition >= validQuiz.questions.length) {
     throw HTTPError(400, 'NewPosition is out of range.');
   }
 
-  // Check if the new position is the same as the current position
   if (newPosition === questionIndex) {  
     throw HTTPError(400, 'NewPosition is the same as the current position.');
   }
@@ -757,100 +747,79 @@ export function adminQuizQuestionMove(
   // And insert it at the new position
   validQuiz.questions.splice(newPosition, 0, questionToUpdate);
 
-  // Update the last edited time of the quiz
   validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
-  // Persist the updated data back into the data store
-  setData(data);
 
-  // Return an empty object to signify success
+  setData(data);
   return {};
 }
 
 /**
- * @param {string} token - The authentication token of the user.
- * @param {number} quizId - The ID of the quiz.
- * @param {number} questionId - The ID of the question to be duplicated.
- * @returns {Object} Either an error message or the ID of the new duplicated question.
+ *
+ * @param token - an authorized user token
+ * @param quizId - the quiz's ID
+ * @param questionId - the question's ID
+ * @returns {number} - newQuestionId
  */
 
 // quizQuestionDuplicate
 export function adminQuizQuestionDuplicate(token: string, quizId: number, questionId: number): { error: string } | { newQuestionId: number } {
-  // Get the data from the data store
   const data = getData();
-
-  // Get the user id from the provided token
   const user = getUser(token);
 
-  // Check UserId
   if (user == null) {
-    // Token is empty.
     throw HTTPError(401, 'Code 401 Token does not refer to valid logged in user session');
   }
 
-  // Find the quiz object based on the provided quizId
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
-  // Check if the quiz exists
+
   if (!validQuiz) {
     throw HTTPError(403, 'QuizId not refer to a valid quiz.');
   }
 
-  // Check if the quiz is owned by the current user
   if (validQuiz.ownerId !== user.userId) {
     throw HTTPError(403, 'The user does not own the quiz.');
   }
 
-  // Find the index of the question in the quiz
   const questionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
-  // Check if the question exists in the quiz
+
   if (questionIndex === -1) {
     throw HTTPError(400, 'QuestionId does not refer to a valid question within this quiz.');
   }
 
-  // Create a new ID for the duplicated question
   const newQuestionId = newQuestionsId(validQuiz);
   // Duplicate the question
   const duplicatedQuestion = { ...validQuiz.questions[questionIndex], questionId: newQuestionId };
-  // Insert the duplicated question into the quiz
   validQuiz.questions.splice(questionIndex + 1, 0, duplicatedQuestion);
 
   validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
-  // Update the data
+
   setData(data);
-  // Return the ID of the new question
   return { newQuestionId };
 }
 
 /**
- * Delete a specified question in a specified quiz
- *
+ * Delete a particular question from a quiz
  * @param {number} quizId The ID of the quiz
  * @param {number} questionId The ID of the question to be deleted
- * @param {boolean} throwHTTPError Whether to throw HTTP errors or return them in the response
- * @returns {ErrorResponse | Record<string, never>} An error or empty object on success
+ * @param {string} token - The authentication token of the user for verifying user identity.
+ * @returns 
  */
 export function adminQuestionDelete(token:string, quizId:number, questionId:number) {
-  // Get data
   const data = getData();
-  // Get the user id from the provided token
   const user = getUser(token);
 
-  // Check UserId
   if (user == null) {
-    // Token is empty.
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
   }
 
-  // Find the specified quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
 
-  // Check UserId
   if (!quiz || quiz.ownerId !== user.userId) {
     throw HTTPError(403, 'Valid token is provided, but either the quiz ID is invalid, or the user does not own the quizn');
   }
 
   // Find the index of the specified question in the quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
-  // If the specified question is not found, return an error
   if (questionIndex === -1) {
     throw HTTPError(400, 'Code 400 Question Id does not refer to a valid question within this quiz');
   }
