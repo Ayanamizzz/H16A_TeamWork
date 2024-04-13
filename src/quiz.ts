@@ -34,6 +34,36 @@ function updateColoursAndTimeEditied (quizId: number, questionId: number) {
 }
 
 /**
+ * Moves a quiz specified by its ID to the trash, allowing for potential recovery.
+ * This action also updates the quiz's `timeLastEdited` property to the current time.
+ * Authentication is required, and the operation is only permitted if the requesting user owns the quiz.
+ *
+ * @param {string} token - User's authentication token.
+ * @param {number} quizId - ID of the quiz to be trashed.
+ * @returns {unknown | {error: string}} - An empty object on success, or an error object if the operation fails.
+ */
+export function adminQuizRemove(token: string, quizId:number): unknown | {error: string} {
+  const user = getUser(token);
+
+  if (user === null) {
+    return { error: 'Error Code 401 - Invalid token' };
+  }
+  const data = getData();
+  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+  if (quizIndex === -1) {
+    return { error: 'Error Code 403 -  either the quiz ID is invalid, or the user does not own the quiz' };
+  }
+
+  if (data.quizzes[quizIndex].ownerId !== user.userId) {
+    return { error: 'Error Code 403 -  either the quiz ID is invalid, or the user does not own the quiz' };
+  }
+  const [removedQuiz] = data.quizzes.splice(quizIndex, 1);
+  data.quizzesTrash.push(removedQuiz);
+  setData(data);
+  return { };
+}
+
+/**
  *
  * @param {string} token - Id of user after registration
  * @param {string} name - New quiz's name
@@ -92,15 +122,17 @@ export function adminQuizCreate(token: string, name: string, description: string
   };
 }
 
-// Description
-// Get all of the relevant information about the current quiz.
-
 /**
+ * Get all of the relevant information about a specific quiz.
  *
- * @param {string} token - Id of user after registration
- * @param {number} quizId - Id of quiz after creation
- * @returns {QuizInfoResponseV1} - An object containing quiz information
+ * Errors:
+ *   - Token does not refer to a valid logged in user session
+ *   - Quiz ID does not refer to a valid quiz
+ *   - Quiz ID does not refer to a quiz that this user owns
  *
+ * @param {string} token - The token of the user requesting the quiz information.
+ * @param {number} quizId - The ID of the quiz to retrieve information for.
+ * @returns {QuizInfoResponseV1 | ErrorResponse} - An object containing quiz information if successful, or an error object if not.
  */
 
 export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | ErrorResponse {
@@ -152,10 +184,11 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
 
 // Description
 // Provide a list of all quizzes that are owned by the currently logged in user.
-
 /**
+
  * @params {number} token - Id of user after registration
  * @returns {quizzes} An array of object for quiz list
+
  *
 */
 
@@ -195,16 +228,22 @@ export function adminQuizList(token: string): {quizzes: {quizId: number, name: s
   };
 }
 
-// Description
-// Update the name of the specified quiz.
-
 /**
+ * Update the name of a specific quiz.
  *
- * @param {string} token - Id of user after registration
- * @param {number} quizId - Id of quiz after creation
- * @param {string} name - The new name need to update
- * @returns {{}} - An empty object
+ * Errors:
+ *   - Token does not refer to a valid logged in user session
+ *   - Quiz ID does not refer to a valid quiz
+ *   - Quiz ID does not refer to a quiz that this user owns
+ *   - Name contains invalid characters
+ *   - Name is less than 3 characters long
+ *   - Name is more than 30 characters long
+ *   - Name is already used by the current logged in user for another quiz
  *
+ * @param {string} token - The token of the user updating the quiz name.
+ * @param {number} quizId - The ID of the quiz to update the name for.
+ * @param {string} name - The new name for the quiz.
+ * @returns {Object} - An empty object if successful, or an error object if not.
  */
 
 export function adminQuizNameUpdate(token: string, quizId: number, name: string):object {
@@ -249,16 +288,20 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   return {};
 }
 
-// Description
-// Updates the description of a specific quiz.
-
 /**
-   * @param {string} token - Id of user after registration
-   * @param {number} quizId - Id of quiz after creation
-   * @param {string} description - The new description for the quiz.
-   * @returns {{}} - An empty object
-   *
-   */
+ * Update the description of a specific quiz.
+ *
+ * Errors:
+ *   - Token does not refer to a valid logged in user session
+ *   - Quiz ID does not refer to a valid quiz
+ *   - Quiz ID does not refer to a quiz that this user owns
+ *   - Description is more than 100 characters in length
+ *
+ * @param {string} token - The token of the user updating the quiz description.
+ * @param {number} quizId - The ID of the quiz to update the description for.
+ * @param {string} description - The new description for the quiz.
+ * @returns {Object} - An empty object if successful, or an error object if not.
+ */
 
 export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): object {
   const data = getData();
@@ -311,17 +354,20 @@ function quizNameIsTaken (authUserID: number, name: string): boolean {
   return false;
 }
 
-//*
-// Description
-// Transfer ownership of a quiz to another user.
-
 /**
+ * Transfer ownership of a quiz to another user.
  *
- * @param {string} token - Id of user after registration
- * @param {number} quizId - Id of quiz after creation
- * @param {string} userEmail - Email of the user to transfer the quiz to
- * @returns {} - An empty object if successful, or an error object if not
+ * Errors:
+ *   - Token is empty or invalid
+ *   - Valid token is provided, but either the quiz ID is invalid, or the user does not own the quiz
+ *   - userEmail is not a real user
+ *   - userEmail is the current logged in user
+ *   - Quiz Id refers to a quiz that has a name that is already used by the target user
  *
+ * @param {string} token - The token of the user transferring the quiz.
+ * @param {number} quizId - The ID of the quiz to transfer.
+ * @param {string} userEmail - The email of the user to transfer the quiz to.
+ * @returns {Object} - An empty object if successful, or an error object if not.
  */
 
 export function adminQuizTransfer(token: string, quizId: number, userEmail: string) {
@@ -359,27 +405,6 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
 
   setData(data);
   return {};
-}
-
-export function adminQuizRemove(token: string, quizId:number): unknown | {error: string} {
-  const user = getUser(token);
-
-  if (user === null) {
-    return { error: 'Error Code 401 - Invalid token' };
-  }
-  const data = getData();
-  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  if (quizIndex === -1) {
-    return { error: 'Error Code 403 -  either the quiz ID is invalid, or the user does not own the quiz' };
-  }
-
-  if (data.quizzes[quizIndex].ownerId !== user.userId) {
-    return { error: 'Error Code 403 -  either the quiz ID is invalid, or the user does not own the quiz' };
-  }
-  const [removedQuiz] = data.quizzes.splice(quizIndex, 1);
-  data.quizzesTrash.push(removedQuiz);
-  setData(data);
-  return { };
 }
 
 /**
@@ -447,13 +472,14 @@ export function adminQuizTrash(token: string): { quizzes: {name: string, quizId:
 }
 
 export function adminQuizEmptyTrash(token: string, quizIds:string): unknown | {error: string} {
+  const data = getData();
+
   const user = getUser(token);
   if (user === null) {
     return { error: 'Error Code 401 - Invalid token' };
   }
-  const data = getData();
-  const quizIdJson = JSON.parse(quizIds);
 
+  const quizIdJson = JSON.parse(quizIds);
   for (const quizId of quizIdJson) {
     // use quizId find each quiz from trash.
     const quizInTrash = data.quizzesTrash.find((quiz) => quizId === quiz.quizId);
@@ -483,7 +509,31 @@ export function adminQuizEmptyTrash(token: string, quizIds:string): unknown | {e
   return {};
 }
 
-export function adminQuestionCreate (token: string, quizId: number, questionBody: Question) {
+/**
+ * Create a new stub question for a particular quiz.
+ *
+ * When this route is called, and a question is created, the timeLastEdited is set as the same as the created time,
+ * and the colours of all answers of that question are randomly generated.
+ *
+ * Errors:
+ *   - Token is empty or invalid
+ *   - Quiz ID is invalid or the user does not own the quiz
+ *   - Question string is less than 5 characters in length or is greater than 50 characters in length
+ *   - The question has more than 6 answers or less than 2 answers
+ *   - The question duration is not a positive number
+ *   - The sum of the question durations in the quiz exceeds 3 minutes
+ *   - The points awarded for the question are less than 1 or greater than 10
+ *   - The length of any answer is shorter than 1 character long, or longer than 30 characters long
+ *   - Any answer strings are duplicates of one another (within the same question)
+ *   - There are no correct answers
+ *
+ * @param {string} token - The token of the user creating the question.
+ * @param {number} quizId - The ID of the quiz to create the question for.
+ * @param {Question} questionBody - The details of the question to create.
+ * @returns {Object} - An object containing the ID of the newly created question, or an error object if the question could not be created.
+ */
+
+export function adminQuestionCreate(token: string, quizId: number, questionBody: Question) {
   const data = getData();
   const user = getUser(token);
   if (user === null) {
@@ -589,16 +639,33 @@ export function adminQuestionCreate (token: string, quizId: number, questionBody
 }
 
 /**
+ * Update a question within a quiz.
  *
- * @param authUserId - authorized user id to perform the update
- * @param quizId - quiz that contains the question needing to be updated
- * @param questionId - question that needs to be updated
- * @param questionBody - new content for the question
+ * When this route is called, the last edited time is updated, and the colours of all answers
+ * of that question are randomly generated.
+ *
+ * Errors:
+ *   - Token is empty or invalid
+ *   - Quiz ID is invalid or the user does not own the quiz
+ *   - Question ID does not refer to a valid question within this quiz
+ *   - Question string is less than 5 characters in length or greater than 50 characters in length
+ *   - The question has more than 6 answers or less than 2 answers
+ *   - The question duration is not a positive number
+ *   - The points awarded for the question are less than 1 or greater than 10
+ *   - The length of any answer is shorter than 1 character long, or longer than 30 characters long
+ *   - Any answer strings are duplicates of one another (within the same question)
+ *   - There are no correct answers
+ *   - If the question were to be updated, the sum of the question durations in the quiz exceeds 3 minutes
+ *
+ * @param {string} token - The token of the user updating the question.
+ * @param {number} quizId - The ID of the quiz containing the question to update.
+ * @param {number} questionId - The ID of the question to update.
+ * @param {Question} questionBody - The new details for the question.
+ * @returns {Object} - An empty object if successful, or an error object if not.
  */
 
 export function adminQuestionUpdate(token: string, quizId: number, questionId: number, questionBody: Question) {
   const data = getData();
-
   const user = getUser(token);
 
   if (user === null) {
@@ -706,7 +773,6 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
  * @returns {object} - An empty object `{}` if the question is successfully moved; an object containing the error message `{ error: string }` if an error occurs.
  */
 
-//  adminQuizQuestionMove
 export function adminQuizQuestionMove(
   quizId: number,
   questionId: number,
@@ -830,7 +896,6 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
  */
 export function adminQuestionDelete(token:string, quizId:number, questionId:number) {
   // Get data
-
   const data = getData();
   // Get the user id from the provided token
   const user = getUser(token);

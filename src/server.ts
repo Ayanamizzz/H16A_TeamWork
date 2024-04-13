@@ -3,6 +3,7 @@ import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
+import errorHandler from 'middleware-http-errors';
 import YAML from 'yaml';
 import sui from 'swagger-ui-express';
 import fs from 'fs';
@@ -12,6 +13,7 @@ import {
   adminAuthRegister,
   adminAuthLogin,
   adminUserDetails,
+
   adminUserDetailsUpdate,
   adminUserPasswordUpdate,
   adminAuthLogout
@@ -32,6 +34,7 @@ import {
   adminQuizTransfer,
   adminQuestionCreate,
   adminQuestionUpdate,
+
   adminQuizQuestionMove,
   adminQuizQuestionDuplicate,
   adminQuestionDelete
@@ -258,6 +261,44 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizRestore
+app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.body.token as string;
+  console.log('adminQuizRestore', token);
+
+  const response = adminQuizRestore(quizId, token);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response && response.error.includes('403')) {
+    return res.status(403).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizTrash
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  console.log('token', token);
+  const response = adminQuizTrash(token);
+  console.log('response', response);
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response && response.error.includes('403')) {
+    return res.status(403).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
 // adminQuizTrash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   console.log('post /v1/admin/quiz/trash/empty');
@@ -340,6 +381,7 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   return res.json({});
 });
 
+// adminQuizTransfer
 app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   // 1. 401 Errors
   const quizId = parseInt(req.params.quizid);
@@ -418,7 +460,30 @@ app.put('/v1/admin/quiz/:quizId/question/:questionId/move', (req: Request, res: 
   if ('error' in response) {
     return res.status(response.code).json({ error: response.error });
   }
-  res.json(response);
+
+  return res.json({});
+});
+
+// adminQuestionCreate
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const { token, questionBody } = req.body;
+
+  const quizId = parseInt(req.params.quizid);
+  const questionBodyJson: Question = questionBody as Question;
+  const response = adminQuestionCreate(token, quizId, questionBodyJson);
+
+  if ('error' in response) {
+    switch (response.error) {
+      case 'Token is empty or invalid':
+        return res.status(401).json({ error: response.error });
+      case 'either the quiz ID is invalid, or the user does not own the quiz':
+        return res.status(403).json({ error: response.error });
+      default:
+        return res.status(400).json({ error: response.error });
+    }
+  }
+  res.status(200);
+  return res.json(response);
 });
 
 // quizQuestionDuplicate
@@ -437,7 +502,31 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request,
   if ('error' in response && response.error.includes('400')) {
     return res.status(400).json(response);
   }
-  res.json(response);
+  res.status(200);
+  return res.json(response);
+});
+
+// adminQuestionUpdate
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const { token, questionBody } = req.body;
+
+  const questionBodyJson: Question = questionBody as Question;
+  const response = adminQuestionUpdate(token, quizId, questionId, questionBodyJson);
+
+  if ('error' in response) {
+    switch (response.error) {
+      case 'Token is empty or invalid':
+        return res.status(401).json({ error: response.error });
+      case 'either the quiz ID is invalid, or the user does not own the quiz':
+        return res.status(403).json({ error: response.error });
+      default:
+        return res.status(400).json({ error: response.error });
+    }
+  }
+  res.status(200);
+  return res.json(response);
 });
 
 app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
@@ -477,6 +566,9 @@ app.use((req: Request, res: Response) => {
   `;
   res.json({ error });
 });
+
+// For handling errors
+app.use(errorHandler());
 
 // start server
 const server = app.listen(PORT, HOST, () => {

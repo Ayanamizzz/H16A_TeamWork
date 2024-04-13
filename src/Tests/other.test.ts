@@ -34,4 +34,3 @@ describe('test clear', () => {
     expect(response.statusCode).toStrictEqual(400);
   });
 });
-
