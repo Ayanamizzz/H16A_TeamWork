@@ -5,6 +5,7 @@ const port = config.port;
 const url = config.url;
 const web = `${url}:${port}`;
 
+
 describe('adminAuthLogout', () => {
   beforeEach(() => {
     request('DELETE', web + '/v1/clear', {});
@@ -21,7 +22,7 @@ describe('adminAuthLogout', () => {
         nameLast: 'Jin',
       },
     });
-
+    
     const data = JSON.parse(response.body.toString());
     const token = data.token;
 

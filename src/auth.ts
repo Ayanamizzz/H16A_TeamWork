@@ -4,6 +4,7 @@ import validator from 'validator';
 import { getData, setData } from './dataStore';
 import { nanoid } from 'nanoid';
 import { getUser } from './other';
+import HTTPError from 'http-errors';
 
 interface userInDetail {
     userId: number;
@@ -317,13 +318,14 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 export function adminAuthLogout(token: string): object | {error: string} {
   const data = getData();
   const user = data.users.find((user) => user.token.includes(token));
-  // const user = data.users.find((user) => user.token === token);
   if (!user) {
-    return { error: 'Code 401 - Token is invalid or already logged out' };
-  } else {
-    // user.token = null;
-    user.token.filter((user) => user === token);
-    setData(data);
-    return {};
-  }
+    throw HTTPError(401, 'Token is invalid or already logged out');
+  } 
+
+  const i = user.token.indexOf(token);
+  user.token.splice(i, 1);
+
+  setData(data);
+  return {};
+  
 }
