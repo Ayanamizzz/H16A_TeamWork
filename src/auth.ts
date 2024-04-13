@@ -1,5 +1,3 @@
-// Extract function from dataStore.js to obtain data
-// from npmjs.com/package/validator to obtain isEmail
 import validator from 'validator';
 import { getData, setData } from './dataStore';
 import { nanoid } from 'nanoid';
@@ -7,19 +5,26 @@ import { getUser } from './other';
 import HTTPError from 'http-errors';
 
 interface userInDetail {
-    userId: number;
-    name: string;
-    email: string;
-    numSuccessfulLogins: number;
-    numFailedPasswordsSinceLastLogin: number;
+  userId: number;
+  name: string;
+  email: string;
+  numSuccessfulLogins: number;
+  numFailedPasswordsSinceLastLogin: number;
 }
 
-// Description:
-// Register a user with an email, password, and names, then returns their
-// authUserId value.
 
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): { token: string } | {error: string} {
-  // getdata to data. and i will use data to do the next step
+/**
+ * Register a new admin user.
+ * 
+ * @param {string} email - the email of the current logged in admin user
+ * @param {string} password - the password of the current logged in admin user
+ * @param {string} nameFirst - the fisrt name of the current logged in admin user
+ * @param {string} nameLast - the last name of the current logged in admin user
+ * @returns {{token: string}}
+ *
+ */
+
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): { token: string } | { error: string } {
   const data = getData();
 
   // Query all user's email whether it is query email
@@ -28,6 +33,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
       return { error: 'Email address is used by another user.' };
     }
   }
+
   // Call the isEmail function of the website to determine whether it is an email address
   if (!validator.isEmail(email)) {
     return { error: ' Code 400 - Email does not satisfy.' };
@@ -37,22 +43,16 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   const isValidName = /^[a-zA-Z\s'-]+$/;
   if (isValidName.test(nameFirst) === false) {
     return { error: 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
-  }
-
-  if (isValidName.test(nameLast) === false) {
+  } else if (isValidName.test(nameLast) === false) {
     return { error: 'nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
   }
 
   // Check namefirst or namefirst is less than 2 characters or more than 20 characters.
   if (nameFirst.length < 2 || nameFirst.length > 20) {
     return { error: 'NameFirst is less than 2 characters or more than 20 characters' };
-  }
-
-  if (nameLast.length < 2 || nameLast.length > 20) {
+  } else if (nameLast.length < 2 || nameLast.length > 20) {
     return { error: 'NameLast is less than 2 characters or more than 20 characters' };
-  }
-
-  if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
+  } else if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
     return { error: 'Password is less than 8 characters or does not contain at least one number and at least one letter' };
   }
 
@@ -98,21 +98,18 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   return { token: token };
 }
 
-// Description:
-// Given a registered user's email and password returns their authUserId value.
 
-/*
- * @params {string} email
- * @params {string} password
- * @returns {authuserId} Id of user
+/**
+ * Login an admin user.
+ * 
+ * @param {string} email - the email of the current logged in admin user
+ * @param {string} password - the password of the current logged in admin user
+ * @returns {{token: string}}
  *
- *
-*/
+ */
 
 export function adminAuthLogin(email: string, password: string): { token: string } | { error: string} {
-  // Access data Extract data from the database
   const data = getData();
-  // Determine whether the mailbox is duplicated
 
   for (const user of data.users) {
     if (user.email === email) {
@@ -131,15 +128,17 @@ export function adminAuthLogin(email: string, password: string): { token: string
           }
           return true;
         };
+
         let token: string;
         do {
           token = nanoid(10);
         } while (!isnotSameToken(token));
+
         user.token.push(token);
         setData(data);
-        return {
-          token: token,
-        };
+
+        return { token: token };
+  
       } else {
         user.numFailedPasswordsSinceLastLogin++;
         setData(data);
@@ -153,89 +152,100 @@ export function adminAuthLogin(email: string, password: string): { token: string
   return { error: 'Email address does not exist' };
 }
 
-// Description:
-// Given an admin user's authUserId, return details about the user. "name" is the first and last name concatenated with a single space between them.
+
+/** 
+ * Logs out an admin user who has an active quiz session.
+ * 
+ * @param {string} token - the token of the current logged in admin user
+ * @returns {} 
+ */
+
+export function adminAuthLogout(token: string): object | { error: string } {
+  const data = getData();
+
+  const user = data.users.find((user) => user.token.includes(token));
+  if (!user) { 
+    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+  } 
+	
+  const i = user.token.indexOf(token);
+  user.token.splice(i, 1);
+
+  setData(data);
+  return {};
+}
+
 
 /**
+ * Get the details of this admin user(non-password).
  *
- * @param {string} token
- * @returns {{user}}}
+ * @param {string} token - the token of the current logged in admin user
+ * @returns {{user}} - user details
  */
 
 export function adminUserDetails(token: string): { user: userInDetail } | { error: string } {
   const currentUser = getUser(token);
 
   if (currentUser == null) {
-    throw HTTPError(401, 'Token is empty or invalid.');
+    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
   return {
     user:
-        {
-          userId: currentUser.userId,
-          name: currentUser.nameFirst + ' ' + currentUser.nameLast,
-          email: currentUser.email,
-          numSuccessfulLogins: currentUser.numSuccessfulLogins,
-          numFailedPasswordsSinceLastLogin: currentUser.numFailedPasswordsSinceLastLogin,
-        }
+      {
+        userId: currentUser.userId,
+        name: currentUser.nameFirst + ' ' + currentUser.nameLast,
+        email: currentUser.email,
+        numSuccessfulLogins: currentUser.numSuccessfulLogins,
+        numFailedPasswordsSinceLastLogin: currentUser.numFailedPasswordsSinceLastLogin,
+      }
   };
 }
 
-// Description
-// Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
 
-/*
- * @params {string} email
- * @params {string} password
- * @params {string} nameFirst
- * $params {string} nameLast
- * @returns {{ userId: number}} An Object contains the new userId after registration
+/**
+ * Update the details of this admin user(non-password).
+ * 
+ * @param {string} token - the token of the current logged in admin user
+ * @param {string} email - the email of the current logged in admin user
+ * @param {string} nameFirst - the first name of the current logged in admin user
+ * @param {string} nameLast - the last name of the current logged in admin user
+ * @returns {}
  *
-*/
+ */
 
-export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): { error: string } | unknown {
+export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): {} | { error: string } {
   const data = getData();
 
-  // Check userId by token:
   const currentUser = getUser(token);
   if (currentUser == null) {
-    // Token is empty.
-    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
+    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
-  // Query all user's email whether it is query email
   for (const user of data.users) {
     if (user.email === email && user.userId !== currentUser.userId) {
-      throw HTTPError(400, 'Email is currently used by another user');
+      throw HTTPError(400, 'Email is currently used by another user.');
     }
   }
 
-  // Call the isEmail function of the website to determine whether it is an email address
   if (!validator.isEmail(email)) {
-    throw HTTPError(400, 'Email does not satisfy');
+    throw HTTPError(400, 'Email does not satisfy.');
   }
 
-  // Name must be at least two characters long， Maximum 20 characters
   const isValidName = /^[a-zA-Z\s'-]+$/;
   if (!isValidName.test(nameFirst)) {
-    throw HTTPError(400, 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes');
+    throw HTTPError(400, 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
+  } else if (!isValidName.test(nameLast)) {
+    throw HTTPError(400, 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
   }
 
-  if (!isValidName.test(nameLast)) {
-    throw HTTPError(400, 'nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes');
-  }
-
-  // Check namefirst or namefirst is less than 2 characters or more than 20 characters.
   if (nameFirst.length < 2 || nameFirst.length > 20) {
-    throw HTTPError(400,  'NameFirst is less than 2 characters or more than 20 characters');
+    throw HTTPError(400, 'NameFirst is less than 2 characters or more than 20 characters.');
+  } else if (nameLast.length < 2 || nameLast.length > 20) {
+    throw HTTPError(400, 'NameLast is less than 2 characters or more than 20 characters.');
   }
 
-  if (nameLast.length < 2 || nameLast.length > 20) {
-    throw HTTPError(400, 'NameLast is less than 2 characters or more than 20 characters');
-  }
-
-  // Find the user depends on the given authUserId, then update the details.
-  // nedd to fix
+  // find the user depends on the given authUserId, then update the details.
   const user = getUser(token);
   user.email = email;
   user.nameFirst = nameFirst;
@@ -245,85 +255,49 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
   return {};
 }
 
-// Description
-// Given details relating to a password change, update the password of a logged in user.
 
-/*
- * @params {string} email
- * @params {string} password
- * @params {string} nameFirst
- * $params {string} nameLast
- * @returns {{ userId: number}} An Object contains the new userId after registration
+/**
+ * Update the password of this admin user.
+ * 
+ * @param {string} token - the token of the current logged in admin user
+ * @param {string} oldPassword - the oldPassword of the current logged in admin user
+ * @param {string} newPassword - the newPassword of the current logged in admin user
+ * @returns {}
  *
-*/
+ */
 
-export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): object | {error: string} {
-  // Get dataStore
+export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): {} | { error: string } {
   const data = getData();
-  // AuthUserId is not a valid user:
-  // Set tracker check valid authUserId.
+
   const currentUser = getUser(token);
-
   if (currentUser === null) {
-    // AuthUserId is not a valid user.
-    throw HTTPError(401, 'Token is empty or invalid');
-  }
-
+    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+  } 
+  
   if (currentUser.password !== oldPassword) {
-    throw HTTPError(400, 'Old Password is not the correct old password');
+    throw HTTPError(400, 'Old Password is not the correct old password.');
+  } else if (oldPassword === newPassword) {
+    throw HTTPError(400, 'Old Password and New Password match exactly.');
   }
 
-  // Check old Password and New Password match exactly:
-  if (oldPassword === newPassword) {
-    throw HTTPError(400, 'Old Password and New Password match exactly');
-  }
-
-  // Check new Password has already been used before by this user:
   for (const password of currentUser.oldPasswords) {
     if (password === newPassword) {
-      throw HTTPError(400, 'New Password has already been used before by this user');
+      throw HTTPError(400, 'New Password has already been used before by this user.');
     }
   }
 
-  // Check new Password is less than 8 characters:
   if (newPassword.length < 8) {
     throw HTTPError(400, 'New Password is less than 8 characters.');
   }
 
-  // Check whether newPassword contains at least one number and at least one letter:
   const hasLetter = /[A-Za-z]/.test(newPassword);
   const hasNumber = /\d/.test(newPassword);
   if (!hasLetter && !hasNumber) {
-    throw HTTPError(400, 'New Password does not contain at least one number and at least one letter');
+    throw HTTPError(400, 'New Password does not contain at least one number and at least one letter.');
   }
 
   currentUser.password = newPassword;
   currentUser.oldPasswords.push(oldPassword);
   setData(data);
-
   return {};
-}
-
-// Description
-// Logs out an admin user who has an active quiz session.
-
-/*
-*
-* @param { string } token - the token of the current logged in admin user
-* @returns { }
-*/
-
-export function adminAuthLogout(token: string): object | {error: string} {
-  const data = getData();
-  const user = data.users.find((user) => user.token.includes(token));
-  if (!user) {
-    throw HTTPError(401, 'Token is empty or invalid');
-  } 
-
-  const i = user.token.indexOf(token);
-  user.token.splice(i, 1);
-
-  setData(data);
-  return {};
-  
 }
