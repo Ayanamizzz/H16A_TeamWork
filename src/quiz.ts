@@ -414,7 +414,7 @@ export function adminQuizRestore(quizId: number, token: string): unknown| {error
 
   trashQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
   data.quizzes.push(trashQuiz);
-  //     // use splice remove test from trash and add it to the list.
+  // use splice remove test from trash and add it to the list.
   data.quizzesTrash.splice(trashQuizIndex, 1);
   setData(data);
 

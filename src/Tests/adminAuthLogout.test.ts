@@ -22,7 +22,7 @@ describe('adminAuthLogout', () => {
         nameLast: 'Jin',
       },
     });
-
+    
     const data = JSON.parse(response.body.toString());
     const token = data.token;
 

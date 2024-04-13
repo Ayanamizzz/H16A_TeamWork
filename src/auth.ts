@@ -317,7 +317,6 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 export function adminAuthLogout(token: string): object | {error: string} {
   const data = getData();
   const user = data.users.find((user) => user.token.includes(token));
-  // const user = data.users.find((user) => user.token === token);
   if (!user) {
     return { error: 'Code 401 - Token is invalid or already logged out' };
   } else {
