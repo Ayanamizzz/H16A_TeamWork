@@ -3,7 +3,7 @@ import config from '../config.json';
 
 const port = config.port;
 const url = config.url;
-// const ERROR = { error: expect.any(String) };
+
 
 describe('test clear', () => {
   beforeEach(() => {
@@ -15,10 +15,10 @@ describe('test clear', () => {
     // Create a new user.
     let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
-        email: 'HGindaHouse@hogwarts.com',
-        password: 'Hocrux2387',
-        nameFirst: 'Ginny',
-        nameLast: 'Weasley',
+        email: 'z5437798@gmail.com',
+        password: 'Wind4ever',
+        nameFirst: 'Ma',
+        nameLast: 'Jin',
       },
     });
     response = request('DELETE', `${url}:${port}/v1/clear`, {});
@@ -27,8 +27,8 @@ describe('test clear', () => {
 
     response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
       json: {
-        email: 'HGindaHouse@hogwarts.com',
-        password: 'Hocrux2387',
+        email: 'z5437798@gmail.com',
+        password: 'Wind4ever',
       },
     });
     expect(response.statusCode).toStrictEqual(400);

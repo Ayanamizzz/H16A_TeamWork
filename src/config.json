@@ -1,9 +1,5 @@
 {
     "url": "http://127.0.0.1",
-<<<<<<< HEAD
-    "port": "3709",
-=======
-    "port": "3333",
->>>>>>> 82144ba9da9ddab99c07260e69cddcd46aa491e7
+    "port": "3720",
     "expandDocs": false
 }
