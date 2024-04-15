@@ -138,10 +138,18 @@ export function adminQuizCreate(token: string, name: string, description: string
  * @returns {QuizInfoResponseV1 | { error: string }} - An object containing quiz information if successful, or an error object if not.
  */
 
-export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | { error: string } {
-  const data = getData();
+export function adminQuizInfo(token: string, quizId: number): {
+  quizId: number;
+  name: string;
+  timeCreated: number;
+  timeLastEdited: number;
+  description: string;
+  numQuestions: number;
+  questions: Array<Question>;
+  duration: number;
+  thumbnailUrl?: string,
 
-  // Check userId by token.
+} | { error: string } {
   const user = getUser(token);
   
   // Token is empty.
@@ -149,19 +157,42 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
   }
 
-  const userId = user.userId;
-
   // Check quizId.
-  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  if (!quiz) {
+  const quiz = getQuiz(quizId);
+  if (quiz === null) {
     throw HTTPError(400, 'Quiz ID does not refer to a valid quiz');
   } 
-  if (quiz.ownerId !== userId) {
+  if (quiz.ownerId !== user.userId) {
     throw HTTPError(403, 'Quiz ID does not refer to a quiz that this user owns');
   }
 
 
-  return quiz;
+  // If thumbnail exists, return object with thumbnail
+  if (quiz.thumbnailUrl !== undefined) {
+    return {
+      quizId: quizId,
+      name: quiz.name,
+      timeCreated: quiz.timeCreated,
+      timeLastEdited: quiz.timeLastEdited,
+      description: quiz.description,
+      numQuestions: quiz.numQuestions,
+      questions: quiz.questions,
+      duration: quiz.duration,
+      thumbnailUrl: quiz.thumbnailUrl,
+    };
+  }
+
+  // Return info without thumbnail
+  return {
+    quizId: quizId,
+    name: quiz.name,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    duration: quiz.duration
+  };
   
 }
 
@@ -504,15 +535,15 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
  * @returns {Object} - An object containing the ID of the newly created question, or an error object if the question could not be created.
  */
 
-export function adminQuestionCreate(
-  token: string,
-  quizId: number,
-  question: string,
-  duration: number,
-  points: number,
-  answers: Array<Answer>,
-  thumbnailUrl: string
-): { questionId: number } | { error: string } {
+// token: string,
+// quizId: number,
+// question: string,
+// duration: number,
+// points: number,
+// answers: Array<Answer>,
+// thumbnailUrl: string
+
+export function adminQuestionCreate(token: string, quizId: number, questionBody: Question): { questionId: number } | { error: string } {
   const data = getData();
   const user = getUser(token);
   if (user === null) {
