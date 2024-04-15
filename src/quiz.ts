@@ -1,5 +1,5 @@
-import { User, getData, setData, Answer, Quiz, Question } from './dataStore';
-import { getUser } from './other';
+import { User, getData, setData, Answer, Quiz, Question, QuizState } from './dataStore';
+import { getUser, getQuiz, CreateaSessionId, getQuizSession, getQuizState, updateSessionState } from './other';
 import HTTPError from 'http-errors';
 
 // Description
@@ -114,7 +114,9 @@ export function adminQuizCreate(token: string, name: string, description: string
     ownerId: tokenId,
     questions: [],
     numQuestions: 0,
-    duration: 0
+    duration: 0,
+    sessions: [],
+    thumbnailUrl: thumbnailUrl,
   });
 
   setData(data);
@@ -133,15 +135,15 @@ export function adminQuizCreate(token: string, name: string, description: string
  *
  * @param {string} token - The token of the user requesting the quiz information.
  * @param {number} quizId - The ID of the quiz to retrieve information for.
- * @returns {object | { error: string }} - An object containing quiz information if successful, or an error object if not.
+ * @returns {QuizInfoResponseV1 | { error: string }} - An object containing quiz information if successful, or an error object if not.
  */
 
-export function adminQuizInfo(token: string, quizId: number): object | { error: string } {
+export function adminQuizInfo(token: string, quizId: number): QuizInfoResponseV1 | { error: string } {
   const data = getData();
 
   // Check userId by token.
   const user = getUser(token);
-
+  
   // Token is empty.
   if (!user) {
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
@@ -149,6 +151,7 @@ export function adminQuizInfo(token: string, quizId: number): object | { error: 
 
   const userId = user.userId;
 
+  // Check quizId.
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz) {
     throw HTTPError(400, 'Quiz ID does not refer to a valid quiz');
@@ -156,6 +159,7 @@ export function adminQuizInfo(token: string, quizId: number): object | { error: 
   if (quiz.ownerId !== userId) {
     throw HTTPError(403, 'Quiz ID does not refer to a quiz that this user owns');
   }
+
 
   return quiz;
   
@@ -695,12 +699,14 @@ export function adminQuestionUpdate(token: string, quizId: number, questionId: n
 }
 
 /**
+ * Move the position of a question within a quiz.
  *
- * @param token - an authorized user token
- * @param quizId - the quiz's Id
- * @param questionId - the question's Id
- * @param newPosition - the new position that the question will be moved to
- * @returns { } an empty object
+ * @param {number} quizId - The unique identifier of the quiz where the question belongs.
+ * @param {number} questionId - The unique identifier of the question to be moved.
+ * @param {string} token - The authentication token of the user for verifying user identity.
+ * @param {number} newPosition - The new index position of the question within the quiz.
+ *
+ * @returns {object} - An empty object `{}` if the question is successfully moved; an object containing the error message `{ error: string }` if an error occurs.
  */
 
 export function adminQuizQuestionMove(
@@ -708,36 +714,42 @@ export function adminQuizQuestionMove(
   questionId: number,
   token: string,
   newPosition: number
-): object | { error: string } { 
+): { error?: string } { // Note the adjusted return type indicating that 'error' is optional
+  // Retrieve the data from the data store
 
   const data = getData();
   const user = getUser(token);
   if (user === null) {
+    // Token is empty.
     throw HTTPError(401, 'Token is empty');
   }
 
   const userId = user.userId;
+  // Attempt to locate the specified quiz
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
-
+  // Ensure the quiz exists
   if (!validQuiz) {
     throw HTTPError(403, 'QuizId does not refer to a valid quiz.');
   }
 
+  // Verify that the user is the owner of the quiz
   if (validQuiz.ownerId !== userId) {
     throw HTTPError(403, 'The user does not own the quiz.');
   }
 
   // Find the index of the question to be moved within the quiz
   const questionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
-
+  // Ensure the question exists in the quiz
   if (questionIndex === -1) {
     throw HTTPError(400, 'QuestionId does not refer to a valid question within this quiz.');
   }
 
+  // Validate the new position is within acceptable bounds
   if (newPosition < 0 || newPosition >= validQuiz.questions.length) {
     throw HTTPError(400, 'NewPosition is out of range.');
   }
 
+  // Check if the new position is the same as the current position
   if (newPosition === questionIndex) {  
     throw HTTPError(400, 'NewPosition is the same as the current position.');
   }
@@ -747,84 +759,317 @@ export function adminQuizQuestionMove(
   // And insert it at the new position
   validQuiz.questions.splice(newPosition, 0, questionToUpdate);
 
+  // Update the last edited time of the quiz
   validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
-
+  // Persist the updated data back into the data store
   setData(data);
+
+  // Return an empty object to signify success
   return {};
 }
 
 /**
- *
- * @param token - an authorized user token
- * @param quizId - the quiz's ID
- * @param questionId - the question's ID
- * @returns {number} - newQuestionId
+ * @param {string} token - The authentication token of the user.
+ * @param {number} quizId - The ID of the quiz.
+ * @param {number} questionId - The ID of the question to be duplicated.
+ * @returns {Object} Either an error message or the ID of the new duplicated question.
  */
 
 // quizQuestionDuplicate
 export function adminQuizQuestionDuplicate(token: string, quizId: number, questionId: number): { error: string } | { newQuestionId: number } {
+  // Get the data from the data store
   const data = getData();
+
+  // Get the user id from the provided token
   const user = getUser(token);
 
+  // Check UserId
   if (user == null) {
+    // Token is empty.
     throw HTTPError(401, 'Code 401 Token does not refer to valid logged in user session');
   }
 
+  // Find the quiz object based on the provided quizId
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
-
+  // Check if the quiz exists
   if (!validQuiz) {
     throw HTTPError(403, 'QuizId not refer to a valid quiz.');
   }
 
+  // Check if the quiz is owned by the current user
   if (validQuiz.ownerId !== user.userId) {
     throw HTTPError(403, 'The user does not own the quiz.');
   }
 
+  // Find the index of the question in the quiz
   const questionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
-
+  // Check if the question exists in the quiz
   if (questionIndex === -1) {
     throw HTTPError(400, 'QuestionId does not refer to a valid question within this quiz.');
   }
 
+  // Create a new ID for the duplicated question
   const newQuestionId = newQuestionsId(validQuiz);
   // Duplicate the question
   const duplicatedQuestion = { ...validQuiz.questions[questionIndex], questionId: newQuestionId };
+  // Insert the duplicated question into the quiz
   validQuiz.questions.splice(questionIndex + 1, 0, duplicatedQuestion);
 
   validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
-
+  // Update the data
   setData(data);
+  // Return the ID of the new question
   return { newQuestionId };
 }
 
 /**
- * Delete a particular question from a quiz
+ * Delete a specified question in a specified quiz
+ *
  * @param {number} quizId The ID of the quiz
  * @param {number} questionId The ID of the question to be deleted
- * @param {string} token - The authentication token of the user for verifying user identity.
- * @returns 
+ * @param {boolean} throwHTTPError Whether to throw HTTP errors or return them in the response
+ * @returns {ErrorResponse | Record<string, never>} An error or empty object on success
  */
 export function adminQuestionDelete(token:string, quizId:number, questionId:number) {
+  // Get data
   const data = getData();
+  // Get the user id from the provided token
   const user = getUser(token);
 
+  // Check UserId
   if (user == null) {
+    // Token is empty.
     throw HTTPError(401, 'Token does not refer to valid logged in user session');
   }
 
+  // Find the specified quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
 
+  // Check UserId
   if (!quiz || quiz.ownerId !== user.userId) {
     throw HTTPError(403, 'Valid token is provided, but either the quiz ID is invalid, or the user does not own the quizn');
   }
 
   // Find the index of the specified question in the quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
+  // If the specified question is not found, return an error
   if (questionIndex === -1) {
     throw HTTPError(400, 'Code 400 Question Id does not refer to a valid question within this quiz');
   }
 
   // Remove the question at the specified index
   quiz.questions.splice(questionIndex, 1);
+  return {};
+}
+
+
+/**
+ *
+ * @param quizId - the quiz's ID
+ * @param token - an authorized user token
+ * @returns { sessionId: number } - The session id for the newly created session
+ */
+export function adminQuizSessionStart(
+  token: string,
+  quizId: number,
+  autoStartNum: number
+) {
+  const data = getData();
+  const user = getUser(token);
+
+  if (!user) {
+    throw HTTPError(401, 'Invalid token');
+  }
+
+  for (const trashQuiz of data.quizzesTrash) {
+    if (trashQuiz.quizId === quizId) {
+      throw HTTPError(400, 'Quiz is in the trash');
+    }
+  }
+
+  const quiz = getQuiz(quizId);
+
+  if (quiz.ownerId !== user.userId) {
+    throw HTTPError(403, 'User doesn\'t own this quiz');
+  }
+
+  if (autoStartNum > 50) {
+    throw HTTPError(400, 'autoStart num cannot be greater than 50');
+  }
+
+  // Check the number of active quizzes
+  let count = 0;
+  for (const session of quiz.sessions) {
+    if (session.state !== QuizState.END) {
+      count++;
+    }
+  }
+  if (count > 10) {
+    throw HTTPError(400, 'A quiz cannot have more than 10 active sessions');
+  }
+
+  if (quiz.questions.length === 0) {
+    throw HTTPError(400, 'The quiz has no questions in it');
+  }
+
+  const sessionId = CreateaSessionId();
+
+  // Get quiz copy data
+
+  let quizCopy = null;
+
+  // Thumbnail exists
+  if (quiz.thumbnailUrl !== undefined) {
+    quizCopy = {
+      quizId: quiz.quizId,
+      name: quiz.name,
+      description: quiz.description,
+      timeCreated: quiz.timeCreated,
+      timeLastEdited: quiz.timeLastEdited,
+      ownerId: quiz.ownerId,
+      numQuestions: quiz.numQuestions,
+      questions: quiz.questions,
+      duration: quiz.duration,
+      thumbnailUrl: quiz.thumbnailUrl
+    };
+  } else {
+    // Thumbnail doesn't exist
+    quizCopy = {
+      quizId: quiz.quizId,
+      name: quiz.name,
+      description: quiz.description,
+      timeCreated: quiz.timeCreated,
+      timeLastEdited: quiz.timeLastEdited,
+      ownerId: quiz.ownerId,
+      numQuestions: quiz.numQuestions,
+      questions: quiz.questions,
+      duration: quiz.duration,
+    };
+  }
+
+  quiz.sessions.push({
+    sessionId: sessionId,
+    autoStartNum: autoStartNum,
+    state: QuizState.LOBBY,
+    atQuestion: 0,
+    timeElapsed: 0,
+    timer: null,
+    players: [],
+    questionResults: [],
+    chat: [],
+    quiz: quizCopy,
+  });
+
+  const quizSession = getQuizSession(sessionId);
+  // Now add each questionId of the quiz into questionResults
+
+  for (const question of quizCopy.questions) {
+    quizSession.questionResults.push({
+      questionId: question.questionId,
+      playersCorrectListAndScore: [],
+      playersIncorrectList: [],
+      totalAnswerTime: 0,
+    });
+  }
+
+  return {
+    sessionId: sessionId
+  };
+}
+
+
+/**
+ * Retrieves active and inactive session ids (sorted in ascending order) for a quiz.
+ *
+ * @param { string } token - The authorized user's token.
+ * @param { number } quizId - The Id of the quiz.
+ * @returns { object } - Object of Arrays containing the sessionIds of of active and inactive sessions for a quiz.
+ *
+ */
+export function adminQuizSessionView(
+  token: string,
+  quizId: number
+): object | { error: string } {
+  const thisUser = getUser(token);
+
+  // Checks valid Token
+  if (!thisUser) {
+    throw HTTPError(401, 'Invalid token');
+  }
+
+  // Checks valid Quiz
+  const quiz = getQuiz(quizId);
+  if (!quiz) {
+    throw HTTPError(403, 'Invalid QuizId');
+  }
+
+  // Check if the user owns this quiz
+  if (quiz.ownerId !== thisUser.userId) {
+    throw HTTPError(403, 'Forbidden: The token is correct but does not belong to this user.');
+  }
+
+  const sessions = {
+    activeSessions: [] as number[],
+    inactiveSessions: [] as number[],
+  };
+
+  for (const session of quiz.sessions) {
+    if (session.state === QuizState.END) {
+      sessions.inactiveSessions.push(session.sessionId);
+    } else {
+      sessions.activeSessions.push(session.sessionId);
+    }
+  }
+
+  // Sorts in ascending order
+  sessions.activeSessions.sort((a, b) => a - b);
+  sessions.inactiveSessions.sort((a, b) => a - b);
+
+  return sessions;
+}
+
+
+/** adminUpdateQuizSession
+ * Get the final results for all players for a completed quiz session in a csv format and generate a link.
+ *
+ * @param {string} token - an authorized user token.
+ * @param {number} quizId - The id for the quiz.
+ * @param {number} sessionId - the id for the session.
+ * @param {Quizstate} action - the state of the quiz.
+ * @returns {object} quizId - the quiz's ID; a number
+ *
+ *
+ */
+export function adminUpdateQuizSession(
+  token: string,
+  quizId: number,
+  sessionId: number,
+  action: string
+) {
+  const thisUser = getUser(token);
+
+  if (!thisUser) {
+    throw HTTPError(401, 'Status 401 - Invalid token');
+  }
+
+  // Get the quiz
+  const quiz = getQuiz(quizId);
+
+  // if quiz Id is invalid return error
+  if (!quiz) throw HTTPError(400, 'Quiz does not exist.');
+  // 403 Valid token is provided, but user is not an owner of this quiz
+  if (quiz.ownerId !== thisUser.userId) throw HTTPError(403, 'Forbidden: The token is correct but does not belong to user');
+  // get the session from the quiz - may need a helper function
+  const session = getQuizSession(sessionId);
+  // 400 Session Id does not refer to a valid session within this quiz
+  if (!session) throw HTTPError(400, 'Status 400 - Session does not exist.');
+
+  // Action provided is not a valid Action enum
+  const quizState = getQuizState(action);
+  if (quizState === null) throw HTTPError(400, 'Status 400 - Action provided is not a valid Action enum');
+
+  // Action enum cannot be applied in the current state (see spec for details)
+  if (updateSessionState(quizState, session) === null) throw HTTPError(400, 'Status 400 - Action enum cannot be applied in the current state.');
+
   return {};
 }
