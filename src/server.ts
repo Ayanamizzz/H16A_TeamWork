@@ -548,6 +548,134 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
 
   return res.json(response);
 });
+
+
+// v2 version
+
+// adminQuizTrashView
+app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const response = adminQuizTrash(token);
+
+  res.json(response);
+});
+
+// adminQuizRestore
+app.post('/v2/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const response = adminQuizRestore(quizId, token);
+
+  res.json(response);
+});
+
+// adminQuizTrashEmpty
+app.delete('/v2/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizIds = req.query.quizIds as string;
+  const response = adminQuizEmptyTrash(token, quizIds);
+
+  res.json(response);
+});
+
+// adminQuizTransfer --- CODE MUST BE UPDATED NEED NEW VERSION OF FUNC
+app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const { userEmail } = req.body;
+
+  const response = adminQuizTransfer(token, quizId, userEmail);
+
+
+  if ('error' in response && response.error.includes('401')) return res.status(401).json(response);
+  if ('error' in response && response.error.includes('403')) return res.status(403).json(response);
+  if ('error' in response) return res.status(400).json(response);
+
+  res.json(response);
+});
+
+// adminQuizCreateQuestion
+app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const { question, duration, points, answers, thumbnailUrl } = req.body.questionBody;
+  const response = adminQuestionCreate(
+    token,
+    quizId,
+    question,
+    duration,
+    points,
+    answers,
+    thumbnailUrl
+  );
+
+
+  if ('error' in response && response.error.includes('401')) return res.status(401).json(response);
+  if ('error' in response && response.error.includes('403')) return res.status(403).json(response);
+  if ('error' in response) return res.status(400).json(response);
+
+  res.json(response);
+});
+
+// adminQuizQuestionUpdate
+app.put('/v2/admin/quiz/:quizid/question/:questionid',
+  (req: Request, res: Response) => {
+    const token = req.headers.token as string;
+    const quizId = parseInt(req.params.quizid);
+    const questionId = parseInt(req.params.questionid);
+    const { question, duration, points, answers, thumbnailUrl } = req.body.questionBody;
+    const response = adminQuestionUpdate(
+      token,
+      quizId,
+      questionId,
+      question,
+      duration,
+      points,
+      answers,
+      thumbnailUrl
+    );
+
+    res.json(response);
+  }
+);
+
+// adminQuizDeleteQuestion
+app.delete('/v2/admin/quiz/:quizid/question/:questionid',
+  (req: Request, res: Response) => {
+    const token = req.headers.token as string;
+    const quizId = parseInt(req.params.quizid);
+    const questionId = parseInt(req.params.questionid);
+
+    const response = adminQuizDeleteQuestion(token, quizId, questionId);
+
+    res.json(response);
+  }
+);
+
+// adminQuizMoveQuestion
+app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+
+  const { newPosition } = req.body;
+
+  const response = adminQuizQuestionMove(token, quizId, questionId, newPosition);
+
+  res.json(response);
+});
+
+// adminQuizDuplicateQuestion
+app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+
+  const response = adminQuizDuplicateQuestion(token, quizId, questionId);
+  
+  res.json(response);
+});
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
