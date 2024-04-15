@@ -35,12 +35,75 @@ export interface Quiz {
   questions:Array<Question>;
   numQuestions:number;
   duration:number;
+
+  thumbnailUrl?: string;
+  sessions: Session[];
 }
 
 export interface Session {
   sessionId: number,
   userId: number,
+  autoStartNum: number,
+  state: QuizState,
+  atQuestion: number,
+  timeElapsed: number,
+  timer: ReturnType<typeof setTimeout>,
+  players: Player[],
+  questionResults: QuestionResult[],
+  chat: ChatMessage[],
+  quiz: QuizCopy,
 }
+
+export enum QuizState {
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULTS',
+  END = 'END'
+}
+
+export interface ChatMessage {
+  messageBody: string,
+  playerId: number,
+  playerName: string,
+  timeSent: number,
+}
+
+export interface QuizCopy {
+  quizId: number,
+  name: string,
+  description: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  ownerId: number,
+  questions:Array<Question>;
+  numQuestions: number,
+  duration: number,
+
+  thumbnailUrl?: string,
+}
+
+
+
+export interface Player {
+  playerId: number,
+  name: string,
+}
+
+export interface QuestionResult {
+  questionId: number,
+  playersCorrectListAndScore: PlayerQuestionResult[],
+  playersIncorrectList: string[],
+  totalAnswerTime: number,
+}
+
+export interface PlayerQuestionResult {
+  name: string,
+  score: number
+}
+
 
 export interface Data {
   users: User[];

@@ -2,7 +2,7 @@ import validator from 'validator';
 import { getData, setData } from './dataStore';
 import { nanoid } from 'nanoid';
 import { getUser } from './other';
-import { HTTPError } from 'http-errors';
+import HTTPError from 'http-errors';
 
 interface userInDetail {
   userId: number;
@@ -12,14 +12,15 @@ interface userInDetail {
   numFailedPasswordsSinceLastLogin: number;
 }
 
+
 /**
  * Register a new admin user.
- *
+ * 
  * @param {string} email - the email of the current logged in admin user
  * @param {string} password - the password of the current logged in admin user
  * @param {string} nameFirst - the fisrt name of the current logged in admin user
  * @param {string} nameLast - the last name of the current logged in admin user
- * @returns {{ token: string }}
+ * @returns {{token: string}}
  *
  */
 
@@ -97,12 +98,13 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   return { token: token };
 }
 
+
 /**
  * Login an admin user.
- *
+ * 
  * @param {string} email - the email of the current logged in admin user
  * @param {string} password - the password of the current logged in admin user
- * @returns {{ token: string }}
+ * @returns {{token: string}}
  *
  */
 
@@ -136,6 +138,7 @@ export function adminAuthLogin(email: string, password: string): { token: string
         setData(data);
 
         return { token: token };
+  
       } else {
         user.numFailedPasswordsSinceLastLogin++;
         setData(data);
@@ -149,27 +152,29 @@ export function adminAuthLogin(email: string, password: string): { token: string
   return { error: 'Email address does not exist' };
 }
 
-/**
+
+/** 
  * Logs out an admin user who has an active quiz session.
- *
+ * 
  * @param {string} token - the token of the current logged in admin user
- * @returns {{}}
+ * @returns {} 
  */
 
 export function adminAuthLogout(token: string): object | { error: string } {
   const data = getData();
 
   const user = data.users.find((user) => user.token.includes(token));
-  if (!user) {
+  if (!user) { 
     throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
-  }
-
+  } 
+	
   const i = user.token.indexOf(token);
   user.token.splice(i, 1);
 
   setData(data);
   return {};
 }
+
 
 /**
  * Get the details of this admin user(non-password).
@@ -197,18 +202,19 @@ export function adminUserDetails(token: string): { user: userInDetail } | { erro
   };
 }
 
+
 /**
  * Update the details of this admin user(non-password).
- *
+ * 
  * @param {string} token - the token of the current logged in admin user
  * @param {string} email - the email of the current logged in admin user
  * @param {string} nameFirst - the first name of the current logged in admin user
  * @param {string} nameLast - the last name of the current logged in admin user
- * @returns {unknown}
+ * @returns {}
  *
  */
 
-export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): unknown | { error: string } {
+export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): {} | { error: string } {
   const data = getData();
 
   const currentUser = getUser(token);
@@ -249,24 +255,25 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
   return {};
 }
 
+
 /**
  * Update the password of this admin user.
- *
+ * 
  * @param {string} token - the token of the current logged in admin user
  * @param {string} oldPassword - the oldPassword of the current logged in admin user
  * @param {string} newPassword - the newPassword of the current logged in admin user
- * @returns {unknown}
+ * @returns {}
  *
  */
 
-export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): unknown | { error: string } {
+export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): {} | { error: string } {
   const data = getData();
 
   const currentUser = getUser(token);
   if (currentUser === null) {
     throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
-  }
-
+  } 
+  
   if (currentUser.password !== oldPassword) {
     throw HTTPError(400, 'Old Password is not the correct old password.');
   } else if (oldPassword === newPassword) {
