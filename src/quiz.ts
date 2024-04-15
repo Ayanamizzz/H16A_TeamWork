@@ -504,7 +504,15 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
  * @returns {Object} - An object containing the ID of the newly created question, or an error object if the question could not be created.
  */
 
-export function adminQuestionCreate(token: string, quizId: number, questionBody: Question): { questionId: number } | { error: string } {
+export function adminQuestionCreate(
+  token: string,
+  quizId: number,
+  question: string,
+  duration: number,
+  points: number,
+  answers: Array<Answer>,
+  thumbnailUrl: string
+): { questionId: number } | { error: string } {
   const data = getData();
   const user = getUser(token);
   if (user === null) {

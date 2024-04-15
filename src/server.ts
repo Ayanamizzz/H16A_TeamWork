@@ -102,6 +102,14 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const token = req.body.token;
+  const response = adminAuthLogout(token);
+  
+  res.json(response);
+});
+
+// adminAuthLogout
+app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
 
   const response = adminAuthLogout(token);
   if ('error' in response) {
@@ -665,13 +673,13 @@ app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
   res.json(response);
 });
 
-// adminQuizDuplicateQuestion
+// adminQuizQuestionDuplicate
 app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
 
-  const response = adminQuizDuplicateQuestion(token, quizId, questionId);
+  const response = adminQuizQuestionDuplicate(token, quizId, questionId);
   
   res.json(response);
 });
