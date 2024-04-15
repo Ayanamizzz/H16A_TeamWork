@@ -107,17 +107,6 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   res.json(response);
 });
 
-// adminAuthLogout
-app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
-  const token = req.headers.token as string;
-
-  const response = adminAuthLogout(token);
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
-  res.json(response);
-});
-
 // adminUserDetails Request
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   // const token = parseInt(req.query.token as string, 10);
@@ -559,6 +548,61 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
 
 
 // v2 version
+
+// adminAuthLogout
+app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+
+  const response = adminAuthLogout(token);
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  res.json(response);
+});
+
+// adminUserDetails Request
+app.get('/v2/admin/user/details', (req: Request, res: Response) => {
+  // const token = parseInt(req.query.token as string, 10);
+  const token = req.headers.token as string;
+  const response = adminUserDetails(token);
+
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+
+  return res.json(response);
+});
+
+// adminUserDetailsUpdate
+app.put('/v2/admin/user/details', (req: Request, res: Response) => {
+  const token = req.headers.token as string
+  const { email, nameFirst, nameLast } = req.body;
+  const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+
+  return res.json(response);
+});
+
+// adminUserPasswordUpdate
+app.put('/v2/admin/user/password', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const { oldPassword, newPassword } = req.body;
+  const response = adminUserPasswordUpdate(token, oldPassword, newPassword);
+
+  if ('error' in response && response.error.includes('401')) {
+    return res.status(401).json(response);
+  }
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  return res.json(response);
+});
 
 // adminQuizTrashView
 app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
