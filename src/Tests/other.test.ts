@@ -4,7 +4,6 @@ import config from '../config.json';
 const port = config.port;
 const url = config.url;
 
-
 describe('test clear', () => {
   beforeEach(() => {
     // Clear the data store before each test if necessary

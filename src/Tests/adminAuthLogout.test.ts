@@ -8,12 +8,9 @@ const web = `${url}:${port}`;
 
 function logoutTesting(token: string) {
   return request('POST', web + '/v1/admin/auth/logout', {
-    json: {
-      token: token,
-    },
+    json: { token: token }
   });
 }
-
 
 describe('adminAuthLogout', () => {
   beforeEach(() => {
@@ -22,40 +19,33 @@ describe('adminAuthLogout', () => {
 
   // Test with valid token.
   test('Logout success: ', () => {
-    const user = register(        
+    const user = register(
       'z5437798@gmail.com',
       'Wind4ever',
       'Ma',
-      'Jin',
-    )
+      'Jin'
+    );
+    expect(user).toStrictEqual({ token: expect.any(String) });
 
-    expect(user).toStrictEqual({
-      token: expect.any(String),
-    });
-    
     const logoutResponse = logoutTesting(user.token);
     const logoutData = JSON.parse(logoutResponse.body.toString());
     expect(logoutResponse.statusCode).toBe(200);
     expect(logoutData).toEqual({});
-
   });
 
   // Test with empty or invalid token.
   test('Error: Token is empty or invalid.', () => {
-    const user = register(        
+    const user = register(
       'z5437798@gmail.com',
       'Wind4ever',
       'Ma',
-      'Jin',
-    )
+      'Jin'
+    );
+    expect(user).toStrictEqual({ token: expect.any(String) });
 
-    expect(user).toStrictEqual({
-      token: expect.any(String),
-    });
     const logoutResponse = logoutTesting('Invalid token');
     const logoutData = JSON.parse(logoutResponse.body.toString());
     expect(logoutResponse.statusCode).toBe(401);
     expect(logoutData).toEqual({ error: expect.any(String) });
-
   });
 });

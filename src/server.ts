@@ -384,7 +384,7 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, userEmail } = req.body;
 
-  const response = adminQuizTransfer(token, quizId, userEmail);
+  const response = adminQuizTransfer(quizId, token, userEmail);
 
   if ('error' in response) {
     switch (response.error) {
@@ -488,7 +488,7 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request,
   const quizId = parseInt(req.params.quizId);
   const token = req.body.token as string;
   const questionId = parseInt(req.params.questionId);
-  const response = adminQuizQuestionDuplicate(token, quizId, questionId);
+  const response = adminQuizQuestionDuplicate(quizId, questionId, token);
 
   if ('error' in response && response.error.includes('401')) {
     return res.status(401).json(response);
@@ -531,7 +531,7 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
   const questionid = parseInt(req.params.questionid);
   const token = req.query.token as string;
 
-  const response = adminQuestionDelete(token, quizid, questionid);
+  const response = adminQuestionDelete(quizid, questionid, token);
 
   if ('error' in response) {
     if (response.error.includes('401')) {

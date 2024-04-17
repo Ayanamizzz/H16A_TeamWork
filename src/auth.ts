@@ -2,7 +2,7 @@ import validator from 'validator';
 import { getData, setData } from './dataStore';
 import { nanoid } from 'nanoid';
 import { getUser } from './other';
-import { HTTPError } from 'http-errors';
+import createError from 'http-errors';
 
 interface userInDetail {
   userId: number;
@@ -161,7 +161,7 @@ export function adminAuthLogout(token: string): object | { error: string } {
 
   const user = data.users.find((user) => user.token.includes(token));
   if (!user) {
-    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
   const i = user.token.indexOf(token);
@@ -182,7 +182,7 @@ export function adminUserDetails(token: string): { user: userInDetail } | { erro
   const currentUser = getUser(token);
 
   if (currentUser == null) {
-    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
   return {
@@ -213,30 +213,30 @@ export function adminUserDetailsUpdate(token: string, email: string, nameFirst: 
 
   const currentUser = getUser(token);
   if (currentUser == null) {
-    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
   for (const user of data.users) {
     if (user.email === email && user.userId !== currentUser.userId) {
-      throw HTTPError(400, 'Email is currently used by another user.');
+      throw createError(400, 'Email is currently used by another user.');
     }
   }
 
   if (!validator.isEmail(email)) {
-    throw HTTPError(400, 'Email does not satisfy.');
+    throw createError(400, 'Email does not satisfy.');
   }
 
   const isValidName = /^[a-zA-Z\s'-]+$/;
   if (!isValidName.test(nameFirst)) {
-    throw HTTPError(400, 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
+    throw createError(400, 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
   } else if (!isValidName.test(nameLast)) {
-    throw HTTPError(400, 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
+    throw createError(400, 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
   }
 
   if (nameFirst.length < 2 || nameFirst.length > 20) {
-    throw HTTPError(400, 'NameFirst is less than 2 characters or more than 20 characters.');
+    throw createError(400, 'NameFirst is less than 2 characters or more than 20 characters.');
   } else if (nameLast.length < 2 || nameLast.length > 20) {
-    throw HTTPError(400, 'NameLast is less than 2 characters or more than 20 characters.');
+    throw createError(400, 'NameLast is less than 2 characters or more than 20 characters.');
   }
 
   // find the user depends on the given authUserId, then update the details.
@@ -264,29 +264,29 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
 
   const currentUser = getUser(token);
   if (currentUser === null) {
-    throw HTTPError(401, 'Token does not refer to valid logged in user quiz session.');
+    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
   }
 
   if (currentUser.password !== oldPassword) {
-    throw HTTPError(400, 'Old Password is not the correct old password.');
+    throw createError(400, 'Old Password is not the correct old password.');
   } else if (oldPassword === newPassword) {
-    throw HTTPError(400, 'Old Password and New Password match exactly.');
+    throw createError(400, 'Old Password and New Password match exactly.');
   }
 
   for (const password of currentUser.oldPasswords) {
     if (password === newPassword) {
-      throw HTTPError(400, 'New Password has already been used before by this user.');
+      throw createError(400, 'New Password has already been used before by this user.');
     }
   }
 
   if (newPassword.length < 8) {
-    throw HTTPError(400, 'New Password is less than 8 characters.');
+    throw createError(400, 'New Password is less than 8 characters.');
   }
 
   const hasLetter = /[A-Za-z]/.test(newPassword);
   const hasNumber = /\d/.test(newPassword);
   if (!hasLetter && !hasNumber) {
-    throw HTTPError(400, 'New Password does not contain at least one number and at least one letter.');
+    throw createError(400, 'New Password does not contain at least one number and at least one letter.');
   }
 
   currentUser.password = newPassword;
@@ -294,4 +294,3 @@ export function adminUserPasswordUpdate(token: string, oldPassword: string, newP
   setData(data);
   return {};
 }
-
