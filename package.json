@@ -1,6 +1,7 @@
 {
   "scripts": {
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "ts-node": "ts-node",
     "ts-node-dev": "ts-node-dev",
     "tsc": "tsc --project tsconfig.json",
