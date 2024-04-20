@@ -897,29 +897,6 @@ components:
           type: array
           items:
             $ref: '#/components/group/Message'
-        QuizAnalytics:
-      type: object  
-      properties:
-        averageScore:
-          type: number
-          example: 75
-        questionBreakdown:
-          type: array
-          items:
-            type: object
-            properties:  
-              questionId:
-                type: integer
-                example: 1
-              correctAnswerPercentage:
-                type: integer  
-                example: 80
-    CollaboratorsAdded:  
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
 
 paths:
 
@@ -2388,7 +2365,7 @@ paths:
             $ref: '#/components/return/Error'
       security:
         - Iteration 3 Token Authentication: []
-    /v2/admin/quiz/{quizid}/analytics:
+  /v2/admin/quiz/{quizid}/analytics:
     get:
       summary: Get quiz analytics and insights  
       description: Retrieve analytics and insights for a specific quiz
