@@ -1,60 +1,71 @@
-export interface User {
-  userId: number;
+import fs from 'fs';
+
+export interface name {
   nameFirst: string;
   nameLast: string;
+  nameFull: string;
+}
+
+export interface user {
+  userId: number;
+  name: name;
   email: string;
   password: string;
-  numSuccessfulLogins: number;
   numFailedPasswordsSinceLastLogin: number;
-  oldPasswords: Array<string>;
-  token: Array<string>;
+  numSuccessfulLogins: number;
+  quizzesCreated: number[];
+  pastPasswords: string[];
 }
 
-export interface Answer {
-    answerId: number;
-    answer: string;
-    colour: string;
-    correct: boolean
+export interface token {
+  authUserId: number;
+  token: string;
 }
 
-export interface Question {
-    questionId: number;
-    question: string;
-    duration:number;
-    points: number;
-    answers: Array<Answer>
+export enum Colours {
+  RED = 'red',
+  BLUE = 'blue',
+  GREEN = 'green',
+  YELLOW = 'yellow',
+  PURPLE = 'purple',
+  PINK = 'pink'
 }
 
-export interface Quiz {
+export interface option {
+  answer: string;
+  correct: boolean;
+  colour: Colours;
+  answerId: number;
+}
+
+export interface question {
+  questionId: number;
+  duration: number;
+  points: number;
+  answers: option[];
+}
+
+export interface quiz {
+  quizName: string;
+  quizId: number;
+  description: string;
+  authorUserId: number;
+  questionBank: question[];
+  timeCreated: string;
+  timeLastEditted: string;
+  thumbnailUrl: string;
+}
+
+export interface returnObject {
   quizId: number;
   name: string;
-  description: string;
-  timeCreated: number;
-  timeLastEdited: number;
-  ownerId: number;
-  questions:Array<Question>;
-  numQuestions:number;
-  duration:number;
-
-  thumbnailUrl?: string;
-  sessions: Session[];
 }
 
-export interface Session {
-  sessionId: number,
-  userId: number,
-  autoStartNum: number,
-  state: QuizState,
-  atQuestion: number,
-  timeElapsed: number,
-  timer: ReturnType<typeof setTimeout>,
-  players: Player[],
-  questionResults: QuestionResult[],
-  chat: ChatMessage[],
-  quiz: QuizCopy,
+export interface iniQuizzes {
+  quizzes: returnObject[];
 }
 
-export enum QuizState {
+export enum State {
   LOBBY = 'LOBBY',
   QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
   QUESTION_OPEN = 'QUESTION_OPEN',
@@ -64,60 +75,14 @@ export enum QuizState {
   END = 'END'
 }
 
-export interface ChatMessage {
-  messageBody: string,
-  playerId: number,
-  playerName: string,
-  timeSent: number,
+export enum Action {
+  NEXT_QUESTION = 'NEXT_QUESTION',
+  GO_TO_ANSWER = 'GO_TO_ANSWER',
+  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS',
+  FINISH_COUNTDOWN = 'FINISH_COUNTDOWN',
+  END = 'END'
 }
 
-export interface QuizCopy {
-  quizId: number,
-  name: string,
-  description: string,
-  timeCreated: number,
-  timeLastEdited: number,
-  ownerId: number,
-  questions:Array<Question>;
-  numQuestions: number,
-  duration: number,
-
-  thumbnailUrl?: string,
-}
-
-
-
-export interface Player {
-  playerId: number,
-  name: string,
-}
-
-export interface QuestionResult {
-  questionId: number,
-  playersCorrectListAndScore: PlayerQuestionResult[],
-  playersIncorrectList: string[],
-  totalAnswerTime: number,
-}
-
-export interface PlayerQuestionResult {
-  name: string,
-  score: number
-}
-
-
-export interface Data {
-  users: User[];
-  quizzes: Quiz[];
-  quizzesTrash: Quiz[];
-  sessions: Session[];
-}
-
-let data: Data = {
-  users: [],
-  quizzes: [],
-  quizzesTrash: [],
-  sessions: [],
-};
 
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
@@ -138,13 +103,14 @@ Example usage
 */
 
 // Use get() to access the data
-function getData() {
-  return data;
-}
+export const getData = () => {
+  const data = fs.readFileSync('./dataStore.json');
+  return JSON.parse(String(data));
+};
 
 // Use set(newData) to pass in the entire data object, with modifications made
-function setData(newData: Data) {
-  data = newData;
-}
+export const setData = (newData : any) => {
+  const data = JSON.stringify(newData);
+  fs.writeFileSync('./dataStore.json', data);
+};
 
-export { getData, setData };
