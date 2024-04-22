@@ -922,26 +922,6 @@ export function playerJoin(sessionId: number, name: string) {
   return { playerId: playerId };
 }
 
-/**
- * Provides details of player Status
- * @param playerId Id of player
- * @returns session state and number Question
- */
-export function playerStatus(playerId: number) {
-  const data = getData();
-  for (const session of data.quizSessions) {
-    const player = session.players.find((player: any) => player.playerId === playerId);
-    if (player !== undefined) {
-      return {
-        state: session.state,
-        atQuestion: session.atQuestion
-      };
-    }
-  }
-
-  return { error: 'PlayerId does not exist' };
-}
-
 /// ////////////////////////////////////////////////////////////////////////////
 // Helper functions:
 
