@@ -927,7 +927,104 @@ export const newSession = (quizId: number, authUserId: number, autoStartNum: num
   return { sessionId: newSessionId };
 };
 
+/**
+ * Update the state of a particular quiz session by sending an action command.
+ *
+ * @param {number} quizId - the id of the quiz
+ * @param {any} action - action
+ * @param {number} authUserId - the userId of the current logged in admin user
+ * @param {number} sessionId - the session id
+ * @returns empty object
+ *
+ */
+export const updateSessionState = (quizId: number, authUserId: number, sessionId: number, action: any) => {
+  const dataStore = getData();
+  const user = dataStore.users.find((user: user) => user.userId === authUserId);
+  const quiz = dataStore.quizzes.find((quiz: quiz) => quiz.quizId === quizId);
+  if (quiz === undefined) {
+    return { error: 'quizId does not refer to a valid quiz' };
+  }
+  const ownQuizzes = user.quizzesCreated;
+  if (!ownQuizzes.includes(quizId)) {
+    return { error: 'quizId does not refer to a quiz that this user owns' };
+  }
+  const sessionsWithQuiz = dataStore.quizSessions.filter((session: any) => session.metadata.quizId === quizId);
 
+  const session = dataStore.quizSessions.find((session: any) => session.sessionId === sessionId);
+  if (sessionsWithQuiz.length <= 0 || session === undefined) {
+    return { error: 'Session Id does not refer to a valid session within this quiz' };
+  }
+  if (!Object.values(Action).includes(action)) {
+    return { error: 'action is not valid Action' };
+  }
 
+  if (action === Action.NEXT_QUESTION) {
+    if (session.state !== State.LOBBY && session.state !== State.QUESTION_CLOSE && session.state !== State.ANSWER_SHOW) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    if (session.atQuestion - 1 === session.metadata.questionBank.length) {
+      session.state = State.FINAL_RESULTS;
+    } else {
+      // Go to next question -> set a timer for 0.1 seconds of countdown -> timer of duration of question -> close question
+      if (session.state !== State.LOBBY) session.atQuestion++;
+      session.state = State.QUESTION_COUNTDOWN;
+      moveState(sessionId, State.QUESTION_OPEN, COUNTDOWNTIMER);
+    }
+  } else if (action === Action.GO_TO_ANSWER) {
+    if (session.state !== State.QUESTION_OPEN && session.state !== State.QUESTION_CLOSE) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    session.state = State.ANSWER_SHOW;
+  } else if (action === Action.GO_TO_FINAL_RESULTS) {
+    if (session.state !== State.QUESTION_CLOSE && session.state !== State.ANSWER_SHOW) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    session.state = State.FINAL_RESULTS;
+  } else if (action === Action.END) {
+    session.state = State.END;
+  } else if (
+    action === Action.FINISH_COUNTDOWN &&
+    session.state === State.QUESTION_COUNTDOWN
+  ) {
+    session.state = State.QUESTION_OPEN;
+    const question = session.metadata.questionBank[session.atQuestion];
+    moveState(sessionId, State.QUESTION_CLOSE, question.duration);
+  }
+  setData(dataStore);
+  return {};
+};
 
+/**
+ * Moves session to another state after miliseconds
+ * @param sessionId Session Id
+ * @param targetState new State for session
+ * @param milliseconds when to move session to that state
+ */
+function moveState(sessionId: number, targetState: State, milliseconds: number) {
+  // Set time to change state
+  setTimeout(() => {
+    const data = getData();
+    const session = data.quizSessions.find((session: any) => session.sessionId === sessionId);
+    if (session === undefined) return;
+    if (session.state === State.QUESTION_CLOSE) return;
+
+    session.state = targetState;
+    setData(data);
+
+    if (targetState === State.QUESTION_OPEN) {
+      // Set another timeout for QUESTIONCLOSE
+      const questionDuration = session.metadata.questionBank[session.atQuestion].duration * 1000;
+
+      setTimeout(() => {
+        const dataStore = getData();
+        const session1 = data.quizSessions.find((session: any) => session.sessionId === sessionId);
+        if (session1 === undefined) return;
+        if (session1.state === State.QUESTION_CLOSE) return;
+
+        session1.state = State.QUESTION_CLOSE;
+        setData(dataStore);
+      }, questionDuration);
+    }
+  }, milliseconds);
+}
 
