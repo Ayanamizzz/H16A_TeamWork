@@ -25,7 +25,7 @@ Error tests for quiz creation:
 - name is already used by the current logged in user for another quiz
 - description is more than 100 characters in length
 *NOTE: error messages will only show one error at a time with priority given
-from the above list
+from the above lists
 */
 
 describe('POST/v1/admin/quiz', () => {
