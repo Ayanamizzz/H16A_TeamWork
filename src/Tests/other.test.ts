@@ -1,35 +1,46 @@
-import request from 'sync-request-curl';
-import config from '../config.json';
+import { clear } from './other';
+import { getData, setData } from './../dataStore';
 
-const port = config.port;
-const url = config.url;
-
-describe('test clear', () => {
-  beforeEach(() => {
-    // Clear the data store before each test if necessary
-    request('DELETE', `${url}:${port}/v1/clear`, {});
+describe('testing clear function', () => {
+  test('Returns an empty object', () => {
+    expect(clear()).toStrictEqual({});
   });
 
-  test('Success: test clear', () => {
-    // Create a new user.
-    let response = request('POST', `${url}:${port}/v1/admin/auth/register`, {
-      json: {
-        email: 'z5437798@gmail.com',
-        password: 'Wind4ever',
-        nameFirst: 'Ma',
-        nameLast: 'Jin',
-      },
-    });
-    response = request('DELETE', `${url}:${port}/v1/clear`, {});
-    expect(response.statusCode).toStrictEqual(200);
-    // Log in as the new user.
+  test('Clears data', () => {
+    const store = getData();
 
-    response = request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'z5437798@gmail.com',
-        password: 'Wind4ever',
-      },
+    const numbers:number[] = [1, 2, 3, 5, 6];
+    const courseCodes:string[] = ['1511', '3541', '1140'];
+
+    (store as any).numbers = numbers;
+    (store as any).courseCodes = courseCodes;
+
+    setData(store);
+    clear();
+
+    expect(getData()).toStrictEqual({
+      users: [],
+      quizzes: [],
+      tokens: [],
+      trash: [],
+      quizSessions: []
     });
-    expect(response.statusCode).toStrictEqual(400);
   });
+
+  test('Clears if data even if data is empty', () => {
+    const newDataObject = {};
+    setData(newDataObject);
+    clear();
+    expect(getData()).toStrictEqual({
+      users: [],
+      quizzes: [],
+      tokens: [],
+      trash: [],
+      quizSessions: []
+    });
+  });
+});
+
+afterAll(() => {
+  clear();
 });
