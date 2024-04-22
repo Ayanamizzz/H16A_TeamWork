@@ -1,100 +1,61 @@
-import validator from 'validator';
 import { getData, setData } from './dataStore';
-import { nanoid } from 'nanoid';
-import { getUser } from './other';
-import createError from 'http-errors';
-
-interface userInDetail {
-  userId: number;
-  name: string;
-  email: string;
-  numSuccessfulLogins: number;
-  numFailedPasswordsSinceLastLogin: number;
-}
+import { user, token } from './dataStore';
+import validator from 'validator';
+import CryptoJS from 'crypto-js';
 
 /**
  * Register a new admin user.
  *
  * @param {string} email - the email of the current logged in admin user
  * @param {string} password - the password of the current logged in admin user
- * @param {string} nameFirst - the fisrt name of the current logged in admin user
+ * @param {string} nameFirst - the first name of the current logged in admin user
  * @param {string} nameLast - the last name of the current logged in admin user
- * @returns {{ token: string }}
+ * @returns {{ authUserId: number }}
  *
  */
-
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): { token: string } | { error: string } {
-  const data = getData();
-
-  // Query all user's email whether it is query email
-  for (const user of data.users) {
-    if (email === user.email) {
-      return { error: 'Email address is used by another user.' };
-    }
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): any {
+  if (emailIsTaken(email)) {
+    return { error: 'email has already been registered' };
+  } else if (!validator.isEmail(email)) {
+    return { error: 'email is invalid' };
+  } else if (!validName(nameFirst)) {
+    return { error: 'nameFirst must only contain letters, spaces, hyphens, or apostrophes' };
+  } else if (nameFirst.length < 2) {
+    return { error: 'nameFirst must be longer than 2 characters' };
+  } else if (nameFirst.length > 20) {
+    return { error: 'nameFirst cannot be longer than 20 characters' };
+  } else if (!validName(nameLast)) {
+    return { error: 'nameLast must only contain letters, spaces, hyphens, or apostrophes' };
+  } else if (nameLast.length < 2) {
+    return { error: 'nameLast must be longer than 2 characters' };
+  } else if (nameLast.length > 20) {
+    return { error: 'nameLast cannot be longer than 20 characters' };
+  } else if (password.length < 8) {
+    return { error: 'password must be longer than 8 characters' };
+  } else if (!/[a-zA-Z]/.test(password)) {
+    return { error: 'password must contain at least 1 letter' };
+  } else if (!/[0-9]/.test(password)) {
+    return { error: 'password must contain at least 1 number' };
   }
-
-  // Call the isEmail function of the website to determine whether it is an email address
-  if (!validator.isEmail(email)) {
-    return { error: ' Code 400 - Email does not satisfy.' };
-  }
-
-  // Name must be at least two characters long， Maximum 20 characters
-  const isValidName = /^[a-zA-Z\s'-]+$/;
-  if (isValidName.test(nameFirst) === false) {
-    return { error: 'nameFirst is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
-  } else if (isValidName.test(nameLast) === false) {
-    return { error: 'nameLast is not vaildNameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
-  }
-
-  // Check namefirst or namefirst is less than 2 characters or more than 20 characters.
-  if (nameFirst.length < 2 || nameFirst.length > 20) {
-    return { error: 'NameFirst is less than 2 characters or more than 20 characters' };
-  } else if (nameLast.length < 2 || nameLast.length > 20) {
-    return { error: 'NameLast is less than 2 characters or more than 20 characters' };
-  } else if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
-    return { error: 'Password is less than 8 characters or does not contain at least one number and at least one letter' };
-  }
-
-  let userId = 0;
-  const length = data.users.length;
-  if (length === 0) {
-    userId = 0;
-  } else {
-    userId = length;
-  }
-
-  const isnotSameToken = (token: string): boolean => {
-    for (const user of data.users) {
-      for (const item of user.token) {
-        if (item === token) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
-  let token;
-  do {
-    token = nanoid(10);
-  } while (!isnotSameToken(token));
-
-  // push users'data to dataStore(and setData to data)
-  const oldPasswordSting: string[] = [];
-  data.users.push({
-    userId: userId,
-    nameFirst: nameFirst,
-    nameLast: nameLast,
+  const dataStore = getData();
+  const users = dataStore.users;
+  const newId = users.length;
+  users.push({
+    userId: newId,
+    name: {
+      nameFirst: nameFirst,
+      nameLast: nameLast,
+      nameFull: `${nameFirst} ${nameLast}`,
+    },
     email: email,
-    password: password,
+    password: sha256Hash(password),
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
-    oldPasswords: oldPasswordSting,
-    token: [token],
+    quizzesCreated: [],
+    pastPasswords: [],
   });
-
-  setData(data);
-  return { token: token };
+  setData(dataStore);
+  return { authUserId: newId };
 }
 
 /**
@@ -102,71 +63,42 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
  *
  * @param {string} email - the email of the current logged in admin user
  * @param {string} password - the password of the current logged in admin user
- * @returns {{ token: string }}
+ * @returns {{ authUserId: number }}
  *
  */
-
-export function adminAuthLogin(email: string, password: string): { token: string } | { error: string} {
-  const data = getData();
-
-  for (const user of data.users) {
-    if (user.email === email) {
-      if (user.password === password) {
-        user.numFailedPasswordsSinceLastLogin = 0;
-        user.numSuccessfulLogins++;
-        setData(data);
-
-        const isnotSameToken = (token: string): boolean => {
-          for (const user of data.users) {
-            for (const item of user.token) {
-              if (item === token) {
-                return false;
-              }
-            }
-          }
-          return true;
-        };
-
-        let token: string;
-        do {
-          token = nanoid(10);
-        } while (!isnotSameToken(token));
-
-        user.token.push(token);
-        setData(data);
-
-        return { token: token };
-      } else {
-        user.numFailedPasswordsSinceLastLogin++;
-        setData(data);
-        return { error: 'Password is not correct for the given email' };
-      }
-    }
+export function adminAuthLogin(email: string, password: string): { authUserId: number } | { error: string } {
+  const dataStore = getData();
+  const users = dataStore.users;
+  const user = users.find((user: user) => user.email === email);
+  if (user === undefined) {
+    return { error: 'email does not exist' };
   }
-
-  // Error address does not exist
-  setData(data);
-  return { error: 'Email address does not exist' };
+  if (user.password !== sha256Hash(password)) {
+    // Update numFailedPasswords
+    dataStore.users.find((user: user) => user.email === email).numFailedPasswordsSinceLastLogin++;
+    setData(dataStore);
+    return { error: 'password was incorrect for given email' };
+  }
+  // Update numSuccessful logins
+  dataStore.users.find((user: user) => user.email === email).numSuccessfulLogins++;
+  dataStore.users.find((user: user) => user.email === email).numFailedPasswordsSinceLastLogin = 0;
+  setData(dataStore);
+  return { authUserId: user.userId };
 }
 
 /**
  * Logs out an admin user who has an active quiz session.
  *
- * @param {string} token - the token of the current logged in admin user
- * @returns {{}}
+ * @param {number} authUserId - the userId of the current logged in admin user
  */
-
-export function adminAuthLogout(token: string): object | { error: string } {
+export function adminAuthLogout(authUserId: number): any | { error: string } {
   const data = getData();
-
-  const user = data.users.find((user) => user.token.includes(token));
-  if (!user) {
-    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
-  }
-
-  const i = user.token.indexOf(token);
-  user.token.splice(i, 1);
-
+  const user = data.users.find((user: user) => user.userId === authUserId);
+  // Not used. Commented out if needed at later time
+  // const token = data.tokens.find((token: token) => token.authUserId === authUserId);
+  user.numSuccessfulLogins = 0;
+  const indexToRemove = data.tokens.findIndex((token: token) => token.authUserId === authUserId);
+  data.trash.splice(indexToRemove, 1);
   setData(data);
   return {};
 }
@@ -174,123 +106,116 @@ export function adminAuthLogout(token: string): object | { error: string } {
 /**
  * Get the details of this admin user(non-password).
  *
- * @param {string} token - the token of the current logged in admin user
- * @returns {{user}} - user details
+ * @param {number} authUserId - the userId of the current logged in admin user
  */
-
-export function adminUserDetails(token: string): { user: userInDetail } | { error: string } {
-  const currentUser = getUser(token);
-
-  if (currentUser == null) {
-    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
-  }
-
+export function adminUserDetails(authUserId: number): any | { error: string } {
+  const data = getData();
+  const user = data.users.find((user: user) => user.userId === authUserId);
   return {
-    user:
-      {
-        userId: currentUser.userId,
-        name: currentUser.nameFirst + ' ' + currentUser.nameLast,
-        email: currentUser.email,
-        numSuccessfulLogins: currentUser.numSuccessfulLogins,
-        numFailedPasswordsSinceLastLogin: currentUser.numFailedPasswordsSinceLastLogin,
-      }
+    user: {
+      userId: user.userId,
+      name: user.name.nameFull,
+      email: user.email,
+      numSuccessfulLogins: user.numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin
+    }
   };
 }
 
 /**
  * Update the details of this admin user(non-password).
  *
- * @param {string} token - the token of the current logged in admin user
+ * @param {number} authUserId - the userId of the current logged in admin user
  * @param {string} email - the email of the current logged in admin user
  * @param {string} nameFirst - the first name of the current logged in admin user
  * @param {string} nameLast - the last name of the current logged in admin user
- * @returns {unknown}
  *
  */
-
-export function adminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string): unknown | { error: string } {
-  const data = getData();
-
-  const currentUser = getUser(token);
-  if (currentUser == null) {
-    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
+export function adminUserDetailUpdate(authUserId: number, email: string, nameFirst: string, nameLast: string): any | { error: string } {
+  const dataStore = getData();
+  const user = dataStore.users.find((user:user) => user.userId === authUserId);
+  if (emailIsTaken(email)) {
+    return { error: 'Email is currently used by another user (excluding the current authorised user)' };
+  } else if (!validator.isEmail(email)) {
+    return { error: 'email is invalid' };
+  } else if (!validName(nameFirst)) {
+    return { error: 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+  } else if (nameFirst.length < 2) {
+    return { error: 'NameFirst is less than 2 characters' };
+  } else if (nameFirst.length > 20) {
+    return { error: 'NameFirst is more than 20 characters' };
+  } else if (!validName(nameLast)) {
+    return { error: 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes' };
+  } else if (nameLast.length < 2) {
+    return { error: 'NameLast is less than 2 characters' };
+  } else if (nameLast.length > 20) {
+    return { error: 'NameLast is more than 20 characters' };
   }
-
-  for (const user of data.users) {
-    if (user.email === email && user.userId !== currentUser.userId) {
-      throw createError(400, 'Email is currently used by another user.');
-    }
-  }
-
-  if (!validator.isEmail(email)) {
-    throw createError(400, 'Email does not satisfy.');
-  }
-
-  const isValidName = /^[a-zA-Z\s'-]+$/;
-  if (!isValidName.test(nameFirst)) {
-    throw createError(400, 'NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
-  } else if (!isValidName.test(nameLast)) {
-    throw createError(400, 'NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.');
-  }
-
-  if (nameFirst.length < 2 || nameFirst.length > 20) {
-    throw createError(400, 'NameFirst is less than 2 characters or more than 20 characters.');
-  } else if (nameLast.length < 2 || nameLast.length > 20) {
-    throw createError(400, 'NameLast is less than 2 characters or more than 20 characters.');
-  }
-
-  // find the user depends on the given authUserId, then update the details.
-  const user = getUser(token);
   user.email = email;
-  user.nameFirst = nameFirst;
-  user.nameLast = nameLast;
-
-  setData(data);
+  user.name.nameFirst = nameFirst;
+  user.name.nameLast = nameLast;
+  user.name.nameFull = `${nameFirst} ${nameLast}`;
+  setData(dataStore);
   return {};
 }
 
 /**
  * Update the password of this admin user.
  *
- * @param {string} token - the token of the current logged in admin user
+ * @param {number} authUserId - the userId of the current logged in admin user
  * @param {string} oldPassword - the oldPassword of the current logged in admin user
  * @param {string} newPassword - the newPassword of the current logged in admin user
- * @returns {unknown}
  *
  */
-
-export function adminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string): unknown | { error: string } {
+export function adminUserPasswordUpdate(authUserId: number, oldPassword: string, newPassword: string): any | { error: string } {
   const data = getData();
-
-  const currentUser = getUser(token);
-  if (currentUser === null) {
-    throw createError(401, 'Token does not refer to valid logged in user quiz session.');
+  const user = data.users.find((user: user) => user.userId === authUserId);
+  if (sha256Hash(oldPassword) !== user.password) {
+    return { error: 'Old Password is not the correct old password' };
+  } else if (newPassword.length < 8) {
+    return { error: 'password must be longer than 8 characters' };
+  } else if (!/[a-zA-Z]/.test(newPassword)) {
+    return { error: 'password must contain at least 1 letter' };
+  } else if (!/[0-9]/.test(newPassword)) {
+    return { error: 'password must contain at least 1 number' };
+  } else if (user.pastPasswords.includes(sha256Hash(newPassword))) {
+    return { error: 'New Password has already been used before by this user' };
   }
-
-  if (currentUser.password !== oldPassword) {
-    throw createError(400, 'Old Password is not the correct old password.');
-  } else if (oldPassword === newPassword) {
-    throw createError(400, 'Old Password and New Password match exactly.');
-  }
-
-  for (const password of currentUser.oldPasswords) {
-    if (password === newPassword) {
-      throw createError(400, 'New Password has already been used before by this user.');
-    }
-  }
-
-  if (newPassword.length < 8) {
-    throw createError(400, 'New Password is less than 8 characters.');
-  }
-
-  const hasLetter = /[A-Za-z]/.test(newPassword);
-  const hasNumber = /\d/.test(newPassword);
-  if (!hasLetter && !hasNumber) {
-    throw createError(400, 'New Password does not contain at least one number and at least one letter.');
-  }
-
-  currentUser.password = newPassword;
-  currentUser.oldPasswords.push(oldPassword);
+  user.pastPasswords.push(sha256Hash(oldPassword));
+  user.password = sha256Hash(newPassword);
   setData(data);
   return {};
+}
+
+// Helper Functions:
+/**
+ * Returns bool that email is taken or not.
+ */
+function emailIsTaken(email: string): boolean {
+  const dataStore = getData();
+  const users = dataStore.users;
+  if (users !== undefined && users.length > 0) {
+    const user = users.find((user: user) => user.email === email);
+    return user !== undefined;
+  }
+  return false;
+}
+
+/**
+ * Returns bool that name follows the format or not.
+ */
+function validName(name: string): boolean {
+  const condition = /[^a-zA-Z\s-'"]/;
+  return !condition.test(name);
+}
+
+/**
+ * Returns a hexadecimal SHA256 hash of input returned as a string.
+ */
+function sha256Hash(data: string | number): string {
+  // Below tep is necessary as a hash of a number will be different to a hash of the string of that number.
+  const dataToHash = data.toString();
+  const hash = CryptoJS.SHA256(dataToHash);
+  // Below step is necessary such that the hash to returned as hexadecimal string and not a binary string.
+  return hash.toString(CryptoJS.enc.Hex);
 }
