@@ -1,6 +1,41 @@
+import { User, getData, setData, Answer, Quiz, Question, QuizState } from './dataStore';
+import { getUser, getQuiz, CreateaSessionId, getQuizSession, getQuizState, updateSessionState } from './other';
+import HTTPError from 'http-errors';
 import { User, getData, setData, Answer, Quiz, Question } from './dataStore';
 import { getUser } from './other';
 import createError from 'http-errors';
+
+// Description
+// Provide a list of all quizzes that are owned by the currently logged in user.
+
+// Description:
+// Given basic details about a new quiz, create one for the logged in user.
+function newQuestionsId(quiz: Quiz): number {
+  let newId = 0;
+  while (quiz.questions.some((question: Question) => question.questionId === newId)) {
+    newId++;
+  }
+  return newId;
+}
+
+function updateColoursAndTimeEditied (quizId: number, questionId: number) {
+  const data = getData();
+  const quiz = data.quizzes.find((quiz: Quiz) => quizId === quiz.quizId);
+
+  const colourKeys = ['red', 'blue', 'green', 'yellow', 'purple', 'pink'];
+  const indexOfQuestion = quiz.questions.findIndex((question: Question) => question.questionId === questionId);
+
+  for (const answer of quiz.questions[indexOfQuestion].answers) {
+    // Randomly selects a colour
+    const randomIndex = Math.floor(Math.random() * colourKeys.length);
+    answer.colour = colourKeys[randomIndex];
+  }
+
+  // Updates time last edited
+  quiz.timeLastEdited = Date.now();
+
+  setData(data);
+}
 
 /**
  * Lists all user's quizzes.
@@ -81,7 +116,9 @@ export function adminQuizCreate(token: string, name: string, description: string
     ownerId: tokenId,
     questions: [],
     numQuestions: 0,
-    duration: 0
+    duration: 0,
+    sessions: [],
+    thumbnailUrl: thumbnailUrl,
   });
 
   setData(data);
@@ -746,4 +783,216 @@ export function adminQuizQuestionDuplicate(quizId: number, questionId: number, t
 
   setData(data);
   return { newQuestionId: newQuestionId };
+}
+
+
+/**
+ *
+ * @param quizId - the quiz's ID
+ * @param token - an authorized user token
+ * @returns { sessionId: number } - The session id for the newly created session
+ */
+export function adminQuizSessionStart(
+  token: string,
+  quizId: number,
+  autoStartNum: number
+) {
+  const data = getData();
+  const user = getUser(token);
+
+  if (!user) {
+    throw HTTPError(401, 'Invalid token');
+  }
+
+  for (const trashQuiz of data.quizzesTrash) {
+    if (trashQuiz.quizId === quizId) {
+      throw HTTPError(400, 'Quiz is in the trash');
+    }
+  }
+
+  const quiz = getQuiz(quizId);
+
+  if (quiz.ownerId !== user.userId) {
+    throw HTTPError(403, 'User doesn\'t own this quiz');
+  }
+
+  if (autoStartNum > 50) {
+    throw HTTPError(400, 'autoStart num cannot be greater than 50');
+  }
+
+  // Check the number of active quizzes
+  let count = 0;
+  for (const session of quiz.sessions) {
+    if (session.state !== QuizState.END) {
+      count++;
+    }
+  }
+  if (count > 10) {
+    throw HTTPError(400, 'A quiz cannot have more than 10 active sessions');
+  }
+
+  if (quiz.questions.length === 0) {
+    throw HTTPError(400, 'The quiz has no questions in it');
+  }
+
+  const sessionId = CreateaSessionId();
+
+  // Get quiz copy data
+
+  let quizCopy = null;
+
+  // Thumbnail exists
+  if (quiz.thumbnailUrl !== undefined) {
+    quizCopy = {
+      quizId: quiz.quizId,
+      name: quiz.name,
+      description: quiz.description,
+      timeCreated: quiz.timeCreated,
+      timeLastEdited: quiz.timeLastEdited,
+      ownerId: quiz.ownerId,
+      numQuestions: quiz.numQuestions,
+      questions: quiz.questions,
+      duration: quiz.duration,
+      thumbnailUrl: quiz.thumbnailUrl
+    };
+  } else {
+    // Thumbnail doesn't exist
+    quizCopy = {
+      quizId: quiz.quizId,
+      name: quiz.name,
+      description: quiz.description,
+      timeCreated: quiz.timeCreated,
+      timeLastEdited: quiz.timeLastEdited,
+      ownerId: quiz.ownerId,
+      numQuestions: quiz.numQuestions,
+      questions: quiz.questions,
+      duration: quiz.duration,
+    };
+  }
+
+  quiz.sessions.push({
+    sessionId: sessionId,
+    autoStartNum: autoStartNum,
+    state: QuizState.LOBBY,
+    atQuestion: 0,
+    timeElapsed: 0,
+    timer: null,
+    players: [],
+    questionResults: [],
+    chat: [],
+    quiz: quizCopy,
+  });
+
+  const quizSession = getQuizSession(sessionId);
+  // Now add each questionId of the quiz into questionResults
+
+  for (const question of quizCopy.questions) {
+    quizSession.questionResults.push({
+      questionId: question.questionId,
+      playersCorrectListAndScore: [],
+      playersIncorrectList: [],
+      totalAnswerTime: 0,
+    });
+  }
+
+  return {
+    sessionId: sessionId
+  };
+}
+
+
+/**
+ * Retrieves active and inactive session ids (sorted in ascending order) for a quiz.
+ *
+ * @param { string } token - The authorized user's token.
+ * @param { number } quizId - The Id of the quiz.
+ * @returns { object } - Object of Arrays containing the sessionIds of of active and inactive sessions for a quiz.
+ *
+ */
+export function adminQuizSessionView(
+  token: string,
+  quizId: number
+): object | { error: string } {
+  const thisUser = getUser(token);
+
+  // Checks valid Token
+  if (!thisUser) {
+    throw HTTPError(401, 'Invalid token');
+  }
+
+  // Checks valid Quiz
+  const quiz = getQuiz(quizId);
+  if (!quiz) {
+    throw HTTPError(403, 'Invalid QuizId');
+  }
+
+  // Check if the user owns this quiz
+  if (quiz.ownerId !== thisUser.userId) {
+    throw HTTPError(403, 'Forbidden: The token is correct but does not belong to this user.');
+  }
+
+  const sessions = {
+    activeSessions: [] as number[],
+    inactiveSessions: [] as number[],
+  };
+
+  for (const session of quiz.sessions) {
+    if (session.state === QuizState.END) {
+      sessions.inactiveSessions.push(session.sessionId);
+    } else {
+      sessions.activeSessions.push(session.sessionId);
+    }
+  }
+
+  // Sorts in ascending order
+  sessions.activeSessions.sort((a, b) => a - b);
+  sessions.inactiveSessions.sort((a, b) => a - b);
+
+  return sessions;
+}
+
+
+/** adminUpdateQuizSession
+ * Get the final results for all players for a completed quiz session in a csv format and generate a link.
+ *
+ * @param {string} token - an authorized user token.
+ * @param {number} quizId - The id for the quiz.
+ * @param {number} sessionId - the id for the session.
+ * @param {Quizstate} action - the state of the quiz.
+ * @returns {object} quizId - the quiz's ID; a number
+ *
+ *
+ */
+export function adminUpdateQuizSession(
+  token: string,
+  quizId: number,
+  sessionId: number,
+  action: string
+) {
+  const thisUser = getUser(token);
+
+  if (!thisUser) {
+    throw HTTPError(401, 'Status 401 - Invalid token');
+  }
+
+  // Get the quiz
+  const quiz = getQuiz(quizId);
+
+  // if quiz Id is invalid return error
+  if (!quiz) throw HTTPError(400, 'Quiz does not exist.');
+  // 403 Valid token is provided, but user is not an owner of this quiz
+  if (quiz.ownerId !== thisUser.userId) throw HTTPError(403, 'Forbidden: The token is correct but does not belong to user');
+  // get the session from the quiz - may need a helper function
+  const session = getQuizSession(sessionId);
+  // 400 Session Id does not refer to a valid session within this quiz
+  if (!session) throw HTTPError(400, 'Status 400 - Session does not exist.');
+
+  // Action provided is not a valid Action enum
+  const quizState = getQuizState(action);
+  if (quizState === null) throw HTTPError(400, 'Status 400 - Action provided is not a valid Action enum');
+
+  // Action enum cannot be applied in the current state (see spec for details)
+  if (updateSessionState(quizState, session) === null) throw HTTPError(400, 'Status 400 - Action enum cannot be applied in the current state.');
+
+  return {};
 }
