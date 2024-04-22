@@ -1,85 +1,336 @@
+import { port, url } from '../config.json';
+
+const SERVER_URL = `${url}:${port}`;
+
 import request from 'sync-request-curl';
-import config from '../config.json';
-import { Quiz } from '../dataStore';
-const port = config.port;
-const url = config.url;
+// import request from 'sync-request';
 
-// function handleResponse(res: Response) {
-//   const body = JSON.parse(res.body.toString());
-//   if (res.statusCode >= 400) {
-//     expect(body).toEqual({ error: expect.any(String) });
-//     return res.statusCode;
-//   }
+export const stringToObjection = (res: any) => JSON.parse(res.body.toString());
 
-//   return body;
-// }
+export const getReq = (url: string, data?: any, header?: any) => {
+  const res = request('GET', url, { qs: data, headers: header });
+  return stringToObjection(res);
+};
 
-/**
- * Creates a user with a token in HTTP
- * @param {string} email - The email
- * @param {string} password - The password
- * @param {string} nameFirst - The first name of the user.
- * @param {string} nameLast - The last name of the user.
- * @returns {string} - Returns an Object that belongs to the user.
- */
+export const deleteReq = (url: string, data?: any, header?: any) => {
+  const res = request('DELETE', url, { qs: data, headers: header });
+  return stringToObjection(res);
+};
 
-export function register(email: string, password: string, nameFirst: string, nameLast: string): { token: string } {
-  const res = request('POST', `${url}:${port}/v1/admin/auth/register`, {
-    json: {
-      email: email,
-      password: password,
-      nameFirst: nameFirst,
-      nameLast: nameLast,
+export const postReq = (url: string, data?: any, header?: any) => {
+  const res = request('POST', url, { json: data, headers: header });
+  return stringToObjection(res);
+};
+
+export const putRequest = (url: string, data?: any, header?: any) => {
+  const res = request('PUT', url, { json: data, headers: header });
+  return stringToObjection(res);
+};
+
+export const newUserCase = (email: string, password: string, nameFirst: string, nameLast: string) => {
+  return { email: email, password: password, nameFirst: nameFirst, nameLast: nameLast };
+};
+
+export const newLoginCase = (email: string, password: string) => {
+  return { email: email, password: password };
+};
+
+export const updateDetails = (email: string, nameFirst: string, nameLast: string) => {
+  return { email: email, nameFirst: nameFirst, nameLast: nameLast };
+};
+
+export const detailsReq = (tokens?: any) => {
+  return getReq(`${SERVER_URL}/v2/admin/user/details`, {}, { token: tokens });
+};
+
+export const logoutReq = (tokens?: any) => {
+  return postReq(`${SERVER_URL}/v2/admin/auth/logout`, {}, { token: tokens });
+};
+
+export const registerReq = (email: string, password: string, nameFirst: string, nameLast: string) => {
+  return postReq(`${SERVER_URL}/v1/admin/auth/register`, newUserCase(email, password, nameFirst, nameLast));
+};
+
+export const loginReq = (email: string, password: string) => {
+  return postReq(`${SERVER_URL}/v1/admin/auth/login`, newLoginCase(email, password));
+};
+
+export const passwordUpdateReq = (passwordOld: string, passwordNew: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/user/password`, {
+    oldPassword: passwordOld,
+    newPassword: passwordNew
+  }, { token: tokens });
+};
+
+export const updateDetailsReq = (email: string, nameFirst: string, nameLast: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/user/details`, updateDetails(email, nameFirst, nameLast), { token: tokens });
+};
+
+export const createNewQuiz = (name: string, description: string) => {
+  return { name: name, description: description };
+};
+
+export const reqNewQuiz = (name: string, description: string, tokens?: string) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz`, createNewQuiz(name, description), { token: tokens });
+};
+
+export const reqNewSession = (quizId: number, autoStartN: number, tokens?: any) => {
+  return postReq(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/start`, { autoStartNum: autoStartN }, { token: tokens });
+};
+
+export const reqNewQuestion = (quizId: number, data: any, tokens?: any) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz/${quizId}/question`, data, { token: tokens });
+};
+
+export const sendChat = (playerId: number, chat: string) => {
+  return postReq(`${SERVER_URL}/v1/player/${playerId}/chat`, { message: { messageBody: chat } });
+};
+
+export const getChat = (playerId: number) => {
+  return getReq(`${SERVER_URL}/v1/player/${playerId}/chat`, {});
+};
+
+export const nameModify = (name: string) => {
+  return { name: name };
+};
+
+export const descriptionModify = (description: string) => {
+  return { description: description };
+};
+
+export const requestQuizList = (token?: any) => {
+  return getReq(`${SERVER_URL}/v2/admin/quiz/list`, {}, { token: token });
+};
+
+export const reqQuizDelete = (quizId: number, tokens?: any) => {
+  return deleteReq(`${SERVER_URL}/v2/admin/quiz/${quizId}`, {}, { token: tokens });
+};
+
+export const requestDescriptionUpdate = (quizId: number, description: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/quiz/${quizId}/description`, descriptionModify(description), { token: tokens });
+};
+
+export const reqQuizInfo = (quizId: number, tokens?: any) => {
+  return getReq(`${SERVER_URL}/v2/admin/quiz/${quizId}`, {}, { token: tokens });
+};
+
+export const reqNameModify = (quizId: number, name: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/quiz/${quizId}/name`, nameModify(name), { token: tokens });
+};
+
+export const reqEmptyTrash = (quizIds: number[], tokens?: any) => {
+  return deleteReq(`${SERVER_URL}/v2/admin/quiz/trash/empty`, { quizIds: quizIds }, { token: tokens });
+};
+
+export const reqTrash = (tokens?: any) => {
+  return getReq(`${SERVER_URL}/v2/admin/quiz/trash`, {}, { token: tokens });
+};
+
+export const reqModifyQuizThumbnail = (quizId: number, url: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v1/admin/quiz/${quizId}/thumbnail`, { imgUrl: url }, { token: tokens });
+};
+
+// DeleteQuestion
+export const reqDeleteQuestion = (quizId: number, questionId: number, tokens?: any) => {
+  return deleteReq(`${SERVER_URL}/v2/admin/quiz/${quizId}/question/${questionId}`, {}, { token: tokens });
+};
+
+// SessionDetails
+export const reqGetSessionStatus = (quizId: number, sessionId: string, token?: any) => {
+  return getReq(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/${sessionId}`, {}, { token: token });
+};
+
+// other
+export const reqSessionStateUpdate = (quizId: number, sessionId: number, actions: string, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/${sessionId}`, { action: actions }, { token: tokens });
+};
+
+// playerJoin
+export const reqPlayerJoin = (sessionId: number, name: string) => {
+  return postReq(`${SERVER_URL}/v1/player/join`, { sessionId: sessionId, name: name });
+};
+
+// QuestionInfo
+export const putRequestForOriginRes = (url: string, data: any, header?: any) => {
+  const res = request('PUT', url, { json: data, headers: header });
+  return res;
+};
+
+export const reqPlayerQuestionInfo = (playerId: number, questionPosition: number) => {
+  return getReq(`${SERVER_URL}/v1/player/${playerId}/question/${questionPosition}`, {});
+};
+
+export const reqSessionStateUpdateForOriginRes = (quizId: number, sessionId: number, actions: string, tokens?: any) => {
+  return putRequestForOriginRes(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/${sessionId}`, { action: actions }, { token: tokens });
+};
+
+// playerResult
+export const reqPlayerResults = (playerId: number) => {
+  return getReq(`${SERVER_URL}/v1/player/${playerId}/results`, {});
+};
+
+// playerStatus
+export const reqPlayerStatus = (playerId: number) => {
+  return getReq(`${SERVER_URL}/v1/player/${playerId}`, {});
+};
+
+// questionDuplicate
+export const reqDuplicateQuestion = (quizId: number, questionId: number, tokens?: any) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`, {}, { token: tokens });
+};
+
+// Move
+export const reqMoveQuestion = (quizId: number, questionId: number, position: number, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/quiz/${quizId}/question/${questionId}/move`, { newPosition: position }, { token: tokens });
+};
+
+// result
+export const reqQuestionResults = (playerId: number, questionPosition: number) => {
+  return getReq(`${SERVER_URL}/v1/player/${playerId}/question/${questionPosition}/results`, {});
+};
+
+// questionUpdate
+export const requestquizNew = (name: string, description: string, tokens?: string) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz`, createNewQuiz(name, description), { token: tokens });
+};
+
+export const reqQuestionUpdate = (quizId: number, questionId: number, data: any, tokens?: any) => {
+  return putRequest(`${SERVER_URL}/v2/admin/quiz/${quizId}/question/${questionId}`, data, { token: tokens });
+};
+
+export const quizNewWithQuestion = () => {
+  const user1Token = registerReq('z5437798@gmail.com', 'Wind4ever', 'Ma', 'Jin');
+  const user1Quiz1 = requestquizNew('quiz1', 'description', user1Token.token);
+  const quiz1Question1 = reqNewQuestion(
+    user1Quiz1.quizId,
+    {
+      questionBody: {
+        question: 'Who i am',
+        duration: 4,
+        points: 4,
+        thumbnailUrl: 'https://www.pngall.com/wp-content/uploads/2016/04/Potato-PNG-Clipart.png',
+        answers: [
+          {
+            answer: 'Take some deep breaths',
+            correct: true
+          },
+          {
+            answer: 'Who knows',
+            correct: false
+          },
+          {
+            answer: 'Cry more',
+            correct: false
+          },
+          {
+            answer: 'lmao',
+            correct: false
+          }
+        ]
+      }
     },
-  });
-
-  return JSON.parse(res.body.toString());
-}
-
-export function quizCreate(
-  token: string,
-  name: string,
-  description: string
-) {
-  const response = request('POST', `${url}:${port}/v1/admin/quiz`, {
-    json: {
-      token: token,
-      name: name,
-      description: description,
+    user1Token.token
+  );
+  reqNewQuestion(
+    user1Quiz1.quizId,
+    {
+      questionBody: {
+        question: 'Another question?',
+        duration: 4,
+        points: 4,
+        thumbnailUrl: 'https://www.pngall.com/wp-content/uploads/2016/04/Potato-PNG-Clipart.png',
+        answers: [
+          {
+            answer: 'Take some deep breaths',
+            correct: true
+          },
+          {
+            answer: 'Who knows',
+            correct: false
+          },
+          {
+            answer: 'Cry more',
+            correct: false
+          },
+          {
+            answer: 'lmao',
+            correct: false
+          }
+        ]
+      }
     },
-  });
-  return JSON.parse(response.body.toString());
-}
+    user1Token.token
+  );
+  return {
+    token: user1Token.token,
+    quizId: user1Quiz1.quizId,
+    questionId: quiz1Question1.questionId
+  };
+};
 
-/**
- * delete quiz in http call
- * @param {number} quizId - QuizId Number.
- * @returns {} - Returns empty object.
- */
+// Restore
+export const reqRestoreQuiz = (quizId: number, tokens?: any) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz/${quizId}/restore`, {}, { token: tokens });
+};
 
-export function deleteQuiz(token: string, quizId: number): object {
-  const response = request('DELETE', `${url}:${port}/v1/admin/quiz/${quizId}`, {
-    qs: {
-      token: token,
+// CSVResults
+export const reqGetSessionCSVResults = (quizId: number, sessionId: number, token?: string) => {
+  return getReq(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/${sessionId}/results/csv`, {}, { token: token });
+};
+
+// SessionResults
+export const reqGetSessionResults = (quizId: number, sessionId: number, token?: string) => {
+  return getReq(`${SERVER_URL}/v1/admin/quiz/${quizId}/session/${sessionId}/results`, {}, { token: token });
+};
+
+// Transfer
+export const reqQuizTransfer = (quizId: number, email: string, tokens?: any) => {
+  return postReq(`${SERVER_URL}/v2/admin/quiz/${quizId}/transfer`, { userEmail: email }, { token: tokens });
+};
+
+// StartSession
+export const newQuizWithQuestion = () => {
+  const newToken = registerReq('z5437798@gmail.com', 'Wind4ever', 'Ma', 'Jin');
+  const newQuiz = reqNewQuiz('Quiz1', '', newToken.token);
+  reqNewQuestion(
+    newQuiz.quizId,
+    {
+      questionBody: {
+        thumbnailUrl: 'https://www.pngall.com/wp-content/uploads/2016/04/Potato-PNG-Clipart.png',
+        question: 'Why am i crying',
+        duration: 4,
+        points: 4,
+        answers: [
+          {
+            answer: 'Take some deep breaths',
+            correct: true
+          },
+          {
+            answer: 'Who knows',
+            correct: false
+          },
+          {
+            answer: 'Cry more',
+            correct: false
+          },
+          {
+            answer: 'lmao',
+            correct: false
+          }
+        ]
+      }
     },
-  });
-  return JSON.parse(response.body.toString());
-}
+    newToken.token
+  );
+  return { token: newToken.token, quizId: newQuiz.quizId };
+};
 
-export function QuizList(token: string) {
-  const quizzesRaw = request('GET', `${url}:${port}/v1/admin/quiz/list`, {
-    qs: {
-      token: token,
-    },
-  });
-  return JSON.parse(quizzesRaw.body.toString());
-}
+// SubmitAnswer
+export const requestSubmitAnswer = (playerid: number, questionposition: number, answerId: number[]) => {
+  return putRequest(`${SERVER_URL}/v1/player/${playerid}/question/${questionposition}/answer`, { answerIds: answerId });
+};
 
-export function QuizzesFromTrash(token: string): Quiz[] {
-  const response = request('GET', `${url}:${port}/v1/admin/quiz/trash`, {
-    qs: {
-      token: token,
-    },
-  });
-  return JSON.parse(response.body.toString());
-}
+// SessionList
+export const reqSessionList = (quizId: number, tokens?: any) => {
+  return getReq(`${SERVER_URL}/v1/admin/quiz/${quizId}/sessions`, {}, { token: tokens });
+};
