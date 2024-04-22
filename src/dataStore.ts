@@ -83,7 +83,6 @@ export enum Action {
   END = 'END'
 }
 
-
 // YOU SHOULD MODIFY THIS OBJECT ABOVE ONLY
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
@@ -113,4 +112,3 @@ export const setData = (newData : any) => {
   const data = JSON.stringify(newData);
   fs.writeFileSync('./dataStore.json', data);
 };
-
