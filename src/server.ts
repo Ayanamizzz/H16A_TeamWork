@@ -24,6 +24,21 @@ import v1PlayerRoute from './route/v1PlayerRoute';
 import v2adminQuizRoute from './route/v2AdminQuizRoute';
 import interceptorMiddleware from './interceptor/interceptorMiddleware';
 
+import { createClient } from '@vercel/kv';
+
+// Replace this with your API_URL
+// E.g. https://large-poodle-44208.kv.vercel-storage.com
+const KV_REST_API_URL="https://choice-husky-44782.upstash.io";
+// Replace this with your API_TOKEN
+// E.g. AaywASQgOWE4MTVkN2UtODZh...
+const KV_REST_API_TOKEN="Aa7uASQgOWU5MTM1NTgtZDE3Ni00NjdkLWFhNTEtNTdjOTMwMDk3ZTI5ZDAxZjEyNjEzOTBiNDVjZGIzOWIxNjFlYmE3YzlkMTU=";
+
+const database = createClient({
+  url: KV_REST_API_URL,
+  token: KV_REST_API_TOKEN,
+});
+
+
 // Set up web app
 const app = express();
 // Use middleware that allows us to access the JSON body of requests
