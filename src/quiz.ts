@@ -822,184 +822,210 @@ export function adminQuizQuestionDuplicate(authUserId: number, quizId: number, q
   return { newQuestionId: newQuestion.questionId };
 }
 
-
 /**
- * Provides chat from a session
- * @param playerId Id of player
- * @returns chat history
+ * Update the thumbnail for the quiz.
+ *
+ * @param {number} quizId - the id of the quiz
+ * @param {string} imgUrl - e.g "http://google.com/some/image/path.jpg"
+ * @param {number} authUserId - the userId of the current logged in admin user
+ * @returns Empty object
+ *
  */
-export function getChatHistory(playerId: number) {
-  const data = getData();
-  const quizSessions = data.quizSessions;
-  for (const session of quizSessions) {
-    const player = session.players.find((player: any) => player.playerId === playerId);
-    if (player !== undefined) {
-      return { messages: session.messages };
-    }
-  }
-  return { error: 'PlayerId does not exist' };
-}
-
-/**
- * Adds a chat to a session
- * @param playerId Id of player
- * @param message chat message
- * @returns empty object
- */
-export function chat(playerId: number, message: string) {
-  const data = getData();
-  const quizSessions = data.quizSessions;
-  for (const session of quizSessions) {
-    const player = session.players.find((player: any) => player.playerId === playerId);
-    if (player !== undefined) {
-      if (message.length < 1 || message.length > 100) {
-        return {
-          error: 'Message body is less than 1 character or more than 100 characters'
-        };
-      }
-      session.messages.push({
-        messageBody: message,
-        playerId: playerId,
-        playerName: player.name,
-        timeSent: Math.floor(new Date().getTime() / 1000)
-      });
-      setData(data);
-      return {};
-    }
-  }
-  return {
-    error: 'PlayerId does not exist'
-  };
-}
-
-
-/**
- * Returns to a player the results of the session they were a part of
- * @param playerId Id of a player in a session
- */
-export function playerResults(playerId: number) {
-  const data = getData();
-  for (const session of data.quizSessions) {
-    const player = session.players.find((player: any) => player.playerId === playerId);
-    if (player !== undefined) {
-      if (session.state !== State.FINAL_RESULTS) return { error: 'Session is not in FINAL_RESULTS state' };
-      return {};
-    }
-  }
-  return { error: 'PlayerId does not exist' };
-}
-
-
-/// ////////////////////////////////////////////////////////////////////////////
-// Helper functions:
-
-/**
- * Finds the next avaliable quizId by checking active quizzes and those in trash
- */
-function quizNameIsTaken(authUserID: number, name: string): boolean {
+export const changeThumbnail = (imgUrl: string, quizId: number, authUserId: number) => {
   const dataStore = getData();
-  for (const quiz of dataStore.quizzes) {
-    if (quiz.authorUserId === authUserID && quiz.quizName === name) {
-      return true;
-    }
+  const user = dataStore.users.find((user: user) => user.userId === authUserId);
+  const quiz = dataStore.quizzes.find((quiz: quiz) => quiz.quizId === quizId);
+  if (quiz === undefined) {
+    return { error: 'quizId does not refer to a valid quiz' };
   }
-  return false;
-}
-
-/**
- * Checks if quiz name has already been used by the user.
- */
-function getNewQuizId():number {
-  const dataStore = getData();
-  const quizzes = dataStore.quizzes;
-  const quizzesInTrash = dataStore.trash;
-  let newId = 0;
-  while (
-    quizzes.some((quiz: quiz) => quiz.quizId === newId) ||
-    quizzesInTrash.some((quiz: quiz) => quiz.quizId === newId)
-  ) {
-    newId++;
-  }
-  return newId;
-}
-
-/**
- * Finds the next possible Question Id avaliable for a specific quiz.
- */
-function newQuestionId(quiz: quiz): number {
-  let newId = 0;
-  while (quiz.questionBank.some((question: question) => question.questionId === newId)) {
-    newId++;
-  }
-  return newId;
-}
-
-/**
- * Update colours and time editied.
- */
-function updateColoursAndTimeEditied (quizId: number, questionId: number) {
-  const data = getData();
-  const quiz = data.quizzes.find((quiz: quiz) => quizId === quiz.quizId);
-
-  const indexOfQuestion = quiz.questionBank.findIndex((question: question) => question.questionId === questionId);
-
-  for (const answer of quiz.questionBank[indexOfQuestion].answers) {
-    // Randomly selects a colour
-    const colourValues = Object.values(Colours);
-    const randomIndex = Math.floor(Math.random() * colourValues.length);
-    answer.colour = colourValues[randomIndex];
-    answer.answerId = rn({ min: 0, max: 100000, integer: true });
+  const ownQuizzes = user.quizzesCreated;
+  if (!ownQuizzes.includes(quizId)) {
+    return { error: 'quizId does not refer to a quiz that this user owns' };
   }
 
-  // Updates time last edited
-  quiz.timeLastEdited = format(new Date(), 'dd-MM-yyyy HH:mm:ss');
+  const fileExtension = imgUrl.split('.').pop().toLowerCase();
 
-  const indexOfQuiz = data.quizzes.findIndex((quiz: quiz) => quizId === quiz.quizId);
-  data.quizzes[indexOfQuiz] = quiz;
-  setData(data);
-}
-
-/**
- * Creates a random name.
- */
-function randomName(): string {
-  const letters = getRandomCharacters(5, 'abcdefghijklmnopqrstuvwxyz');
-  const numbers = getRandomCharacters(3, '1234567890');
-
-  return letters + numbers;
-}
-
-/**
- * Get random character.
- */
-function getRandomCharacters(num: number, characters: string) {
-  let letters = '';
-
-  const length = characters.length;
-
-  while (letters.length < num) {
-    const index = Math.floor(Math.random() * length);
-    const char = characters[index];
-
-    if (!letters.includes(char)) {
-      letters += char;
-    }
+  if (fileExtension !== 'png' && fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+    return { error: 'imageUrl must return PNG or JPG' };
   }
 
-  return letters;
-}
+  const res = request('GET', imgUrl);
+  const body = res.getBody();
+  fs.writeFileSync(`./images/q${quizId}.${fileExtension}`, body, { flag: 'w' });
 
-/**
- * Finds the session based on a playerId.
- */
-const findSessionWithPlayerId = (playerId: number) => {
-  const dataStore = getData();
-  for (const session of dataStore.quizSessions) {
-    for (const player of session.players) {
-      if (player.playerId === playerId) {
-        return session;
-      }
-    }
-  }
-  return undefined;
+  quiz.thumbnailUrl = `${SERVER_URL}/images/q${quizId}.${fileExtension}`;
+  setData(dataStore);
+  return {};
 };
+
+/**
+ * Retrieves active and inactive session ids (sorted in ascending order) for a quiz.
+ *
+ * @param {number} quizId - the id of the quiz
+ * @returns Active and non active sessions quiz is apart of
+ *
+ */
+export const viewSession = (quizId: number) => {
+  const dataStore = getData();
+  const validSessions = dataStore.quizSessions.filter((session: any) => session.metadata.quizId === quizId);
+
+  const activeSessions = validSessions.filter((session: any) => session.state !== State.END);
+  const inactiveSessions = validSessions.filter((session: any) => session.state === State.END);
+
+  const activeIds = activeSessions.map((session: any) => session.sessionId);
+  const inactiveIds = inactiveSessions.map((session: any) => session.sessionId);
+
+  activeIds.sort((a: any, b: any) => a - b);
+  inactiveIds.sort((a: any, b: any) => a - b);
+
+  return {
+    activeSessions: activeIds,
+    inactiveSessions: inactiveIds
+  };
+};
+
+/**
+ * This copies the quiz, so that any edits whilst a session is running does not affect active session.
+ *
+ * @param {number} quizId - the id of the quiz
+ * @param {number} autoStartNum - autoStartNum
+ * @param {number} authUserId - the userId of the current logged in admin user
+ * @returns new sessionId
+ *
+ */
+export const newSession = (quizId: number, authUserId: number, autoStartNum: number) => {
+  const dataStore = getData();
+  const user = dataStore.users.find((user: user) => user.userId === authUserId);
+  const quiz = dataStore.quizzes.find((quiz: quiz) => quiz.quizId === quizId);
+  if (quiz === undefined) {
+    return { error: 'quizId does not refer to a valid quiz' };
+  }
+  const ownQuizzes = user.quizzesCreated;
+  if (!ownQuizzes.includes(quizId)) {
+    return { error: 'quizId does not refer to a quiz that this user owns' };
+  }
+  if (autoStartNum > 50) {
+    return { error: 'autoStartNum mast be less than 50' };
+  } else if (quiz.questionBank.length <= 0) {
+    return { error: 'quiz must have at least 1 question' };
+  }
+  const nActiveSessions = dataStore.quizSessions.filter((session: any) => session.state !== State.END).length;
+  if (nActiveSessions >= 10) {
+    return { error: 'already 10 sessions that are not in END state currently exist' };
+  }
+  const newSessionId = rn({ min: 0, max: 100000, integer: true });
+  dataStore.quizSessions.push({
+    sessionId: newSessionId,
+    autoStartNum: autoStartNum,
+    state: State.LOBBY,
+    atQuestion: 0,
+    players: [],
+    metadata: quiz,
+    messages: [],
+  });
+  setData(dataStore);
+  return { sessionId: newSessionId };
+};
+
+/**
+ * Update the state of a particular quiz session by sending an action command.
+ *
+ * @param {number} quizId - the id of the quiz
+ * @param {any} action - action
+ * @param {number} authUserId - the userId of the current logged in admin user
+ * @param {number} sessionId - the session id
+ * @returns empty object
+ *
+ */
+export const updateSessionState = (quizId: number, authUserId: number, sessionId: number, action: any) => {
+  const dataStore = getData();
+  const user = dataStore.users.find((user: user) => user.userId === authUserId);
+  const quiz = dataStore.quizzes.find((quiz: quiz) => quiz.quizId === quizId);
+  if (quiz === undefined) {
+    return { error: 'quizId does not refer to a valid quiz' };
+  }
+  const ownQuizzes = user.quizzesCreated;
+  if (!ownQuizzes.includes(quizId)) {
+    return { error: 'quizId does not refer to a quiz that this user owns' };
+  }
+  const sessionsWithQuiz = dataStore.quizSessions.filter((session: any) => session.metadata.quizId === quizId);
+
+  const session = dataStore.quizSessions.find((session: any) => session.sessionId === sessionId);
+  if (sessionsWithQuiz.length <= 0 || session === undefined) {
+    return { error: 'Session Id does not refer to a valid session within this quiz' };
+  }
+  if (!Object.values(Action).includes(action)) {
+    return { error: 'action is not valid Action' };
+  }
+
+  if (action === Action.NEXT_QUESTION) {
+    if (session.state !== State.LOBBY && session.state !== State.QUESTION_CLOSE && session.state !== State.ANSWER_SHOW) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    if (session.atQuestion - 1 === session.metadata.questionBank.length) {
+      session.state = State.FINAL_RESULTS;
+    } else {
+      // Go to next question -> set a timer for 0.1 seconds of countdown -> timer of duration of question -> close question
+      if (session.state !== State.LOBBY) session.atQuestion++;
+      session.state = State.QUESTION_COUNTDOWN;
+      moveState(sessionId, State.QUESTION_OPEN, COUNTDOWNTIMER);
+    }
+  } else if (action === Action.GO_TO_ANSWER) {
+    if (session.state !== State.QUESTION_OPEN && session.state !== State.QUESTION_CLOSE) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    session.state = State.ANSWER_SHOW;
+  } else if (action === Action.GO_TO_FINAL_RESULTS) {
+    if (session.state !== State.QUESTION_CLOSE && session.state !== State.ANSWER_SHOW) {
+      return { error: `Action enum cannot be applied in the current state (${session.state})` };
+    }
+    session.state = State.FINAL_RESULTS;
+  } else if (action === Action.END) {
+    session.state = State.END;
+  } else if (
+    action === Action.FINISH_COUNTDOWN &&
+    session.state === State.QUESTION_COUNTDOWN
+  ) {
+    session.state = State.QUESTION_OPEN;
+    const question = session.metadata.questionBank[session.atQuestion];
+    moveState(sessionId, State.QUESTION_CLOSE, question.duration);
+  }
+  setData(dataStore);
+  return {};
+};
+
+/**
+ * Moves session to another state after miliseconds
+ * @param sessionId Session Id
+ * @param targetState new State for session
+ * @param milliseconds when to move session to that state
+ */
+function moveState(sessionId: number, targetState: State, milliseconds: number) {
+  // Set time to change state
+  setTimeout(() => {
+    const data = getData();
+    const session = data.quizSessions.find((session: any) => session.sessionId === sessionId);
+    if (session === undefined) return;
+    if (session.state === State.QUESTION_CLOSE) return;
+
+    session.state = targetState;
+    setData(data);
+
+    if (targetState === State.QUESTION_OPEN) {
+      // Set another timeout for QUESTIONCLOSE
+      const questionDuration = session.metadata.questionBank[session.atQuestion].duration * 1000;
+
+      setTimeout(() => {
+        const dataStore = getData();
+        const session1 = data.quizSessions.find((session: any) => session.sessionId === sessionId);
+        if (session1 === undefined) return;
+        if (session1.state === State.QUESTION_CLOSE) return;
+
+        session1.state = State.QUESTION_CLOSE;
+        setData(dataStore);
+      }, questionDuration);
+    }
+  }, milliseconds);
+}
+
+
