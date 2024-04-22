@@ -18,6 +18,10 @@ tags:
     description: Iteration 3 routes are a modification of iteration 1 and iteration 2 routes
   - name: "Iteration 3 (New)"
     description: Iteration 3 routes that are a mix of new routes as well as slightly modified routes from iteration 1 and 2
+  - name: "Iteration 4 (Modified)"  
+    description: Iteration 4 routes that are a modification of routes from previous iterations
+  - name: "Iteration 4 (New)"
+    description: Iteration 4 routes that introduce new functionality
 
 components:
   prim:
@@ -2357,6 +2361,83 @@ paths:
             If any of the following are true:
             - Session Id does not refer to a valid session within this quiz
             - Session is not in FINAL_RESULTS state
+          schema:
+            $ref: '#/components/return/Error'
+      security:
+        - Iteration 3 Token Authentication: []
+  /v2/admin/quiz/{quizid}/analytics:
+    get:
+      summary: Get quiz analytics and insights  
+      description: Retrieve analytics and insights for a specific quiz
+      tags:
+        - "Iteration 4 (New)"  
+      parameters:
+        - $ref: '#/components/path/QuizId'
+        - $ref: '#/components/header/Token'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/QuizAnalytics'
+        400:
+          description: |  
+            If any of the following are true:
+            - quiz ID does not refer to a valid quiz
+          schema:
+            $ref: '#/components/return/Error'
+        401:
+          description: Token is not a valid structure
+          schema:
+            $ref: '#/components/return/Error'
+        403:
+          description: Provided token is valid structure, but not for logged in session
+          schema:
+            $ref: '#/components/return/Error'
+      security:
+        - Iteration 3 Token Authentication: []
+
+  /v2/admin/quiz/{quizid}/collaborators:
+    post:
+      summary: Add collaborators to a quiz
+      description: Add collaborators to a specific quiz with set permissions  
+      tags:
+        - "Iteration 4 (New)"
+      parameters:
+        - $ref: '#/components/path/QuizId'  
+        - $ref: '#/components/header/Token'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              collaboratorEmails:
+                type: array
+                items:
+                  type: string
+                  example: user1@example.com
+              permissions:  
+                type: string
+                example: edit
+      responses:
+        200:
+          description: OK
+          schema:  
+            $ref: '#/components/return/CollaboratorsAdded'
+        400:
+          description: |
+            If any of the following are true:  
+            - quiz ID does not refer to a valid quiz
+            - one or more collaborator emails are not valid users
+            - permissions is not one of "view", "edit"  
+          schema:
+            $ref: '#/components/return/Error'
+        401:
+          description: Token is not a valid structure
+          schema:
+            $ref: '#/components/return/Error'
+        403:  
+          description: Provided token is valid structure, but not for logged in session
           schema:
             $ref: '#/components/return/Error'
       security:
