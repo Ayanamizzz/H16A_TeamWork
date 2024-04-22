@@ -64,6 +64,18 @@ type token = {
   sessionId: string,
 }
 
+//dataBase
+app.get('/data', async (req: Request, res: Response) => {
+  const data = await database.hgetall("data:names");
+  res.status(200).json(data);
+});
+
+app.put('/data', async (req: Request, res: Response) => {
+  const { data } = req.body;
+  await database.hset("data:names", { data });
+  return res.status(200).json({});
+});
+
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
   const data = req.query.echo as string;
